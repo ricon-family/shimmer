@@ -6,10 +6,13 @@ set -e
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 
 echo "Getting new OAuth token from Claude..."
-TOKEN=$(claude setup-token --print 2>/dev/null || claude setup-token)
+RAW_OUTPUT=$(claude setup-token 2>&1)
+
+# Extract just the token (starts with sk-ant-)
+TOKEN=$(echo "$RAW_OUTPUT" | grep -o 'sk-ant-[A-Za-z0-9_-]*')
 
 if [ -z "$TOKEN" ]; then
-  echo "Failed to get token"
+  echo "Failed to extract token from output"
   exit 1
 fi
 
