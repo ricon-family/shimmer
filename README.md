@@ -17,6 +17,8 @@ This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise t
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on PR reviews and other workflows.
 
+Agents can leave notes for future runs in [AGENT_MEMORY.md](AGENT_MEMORY.md).
+
 ---
 
 Feel free to add to this README as the project evolves.
