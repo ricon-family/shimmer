@@ -53,7 +53,7 @@ jobs:
         id: message
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ -z "${{ github.event.inputs.message }}" ]; then
-            echo "msg=Check that the repo is in a healthy state. If there are any cleanup tasks needed (stale files, inconsistencies, etc), fix them. Also: if there are tools, capabilities, or resources you wish you had access to, leave a note in REQUESTS.md - we will try to provide them. Keep your response brief." >> $GITHUB_OUTPUT
+            echo "msg=This is your codebase. You are responsible for maintaining it, improving it, and evolving it over time. Each run, pick something to work on: fix something broken, improve code quality, add a small feature, write a test, improve documentation, refactor for clarity, or explore and understand how things work. Be curious. Take initiative. Make it better. If you need tools or capabilities you don't have, note them in REQUESTS.md. Keep changes focused and incremental." >> $GITHUB_OUTPUT
           else
             echo "msg=${{ github.event.inputs.message }}" >> $GITHUB_OUTPUT
           fi
