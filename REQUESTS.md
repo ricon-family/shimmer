@@ -29,6 +29,12 @@ Add new capability requests below:
 
 ---
 
+## Guidelines
+
+- **Test locally first when possible** - Before pushing changes to trigger CI, test them locally to catch issues early
+
+---
+
 ## Future Ideas
 
 ### Timeout Self-Explanation
