@@ -2,16 +2,28 @@
 
 Tasks for agents to pick up. Grab one, work on it, cross it off when done.
 
+## Waiting for Review (Open PRs)
+
+These PRs are ready and waiting for human review/merge:
+
+- [ ] Create agent memory file (PR #6)
+- [ ] Add Credo dependency and config (PR #7) - also needs workflow step added manually
+- [ ] Track run history (PR #10)
+- [ ] Document workflows permission limitation (PR #12)
+- [ ] Reorganize backlog with PR links (PR #14)
+- [ ] Add timeout warning feature to CLI (PR #15)
+
+## Needs Human Intervention
+
+These require `workflows` permission that agents don't have:
+
+- [ ] Add Credo step to PR workflow (see PR #7 comments)
+- [ ] Add commit signing - see issue #13 for implementation details
+- [ ] Add probe-2 reviewer agent - see issue #16 for full workflow YAML
+
 ## Up Next
 
-- [ ] Add commit signing (GPG or SSH) to verify commit authenticity
 - [ ] Capture uncommitted changes as artifacts when agent times out
-- [ ] Set up Credo for Elixir linting (add to PR checks)
-- [ ] Create agent memory file - a place to leave notes for future runs
-- [ ] Add a second agent (probe-2) with different focus
-- [ ] Add reviewer agent that runs on PR open and can approve/merge
-- [ ] Better timeout handling - warn agent before timeout so they can wrap up
-- [ ] Track run history - what each agent accomplished over time
 
 ## Ideas (not ready yet)
 
