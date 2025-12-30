@@ -22,3 +22,7 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 cli-*.tar
 
+# Ignore the compiled escript binary (built via "mix escript.build")
+# The GitHub workflow rebuilds this on each run
+/cli
+
