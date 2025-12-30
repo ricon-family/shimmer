@@ -24,8 +24,8 @@ jobs:
 
       - name: Configure git
         run: |
-          git config user.name "Claude"
-          git config user.email "claude@anthropic.com"
+          git config user.name "probe-1"
+          git config user.email "probe-1@shimmer.local"
 
       - name: Set up mise
         uses: jdx/mise-action@v2
