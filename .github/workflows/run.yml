@@ -45,6 +45,8 @@ jobs:
       - name: Build CLI
         run: |
           cd cli
+          mix local.hex --force
+          mix deps.get
           mix escript.build
 
       - name: Determine message
