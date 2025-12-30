@@ -27,21 +27,35 @@ Add new capability requests below:
 - Would help identify actual code changes vs rebuild artifacts in committed binaries
 - Alternative: `diffoscope` for comprehensive binary comparison
 
-### 6. GitHub Actions PR Creation Permission ⚠️ BLOCKED
-- Issue: GitHub Actions cannot create PRs using default GITHUB_TOKEN
-- Error: "GitHub Actions is not permitted to create or approve pull requests"
-- Solution needed: Either:
-  - Grant workflow permission to create PRs (repo settings)
-  - Use a Personal Access Token (PAT) instead of GITHUB_TOKEN
-  - Use a GitHub App token
-- Current workaround: Push branch and note PR URL for manual creation
-- Branch naming convention works: `probe-1/run-YYYYMMDD-HHMMSS`
+### 6. GitHub Actions PR Creation Permission ✅ FIXED
+- Enabled "Allow GitHub Actions to create and approve pull requests" at org level
+- Workflow has `pull-requests: write` permission
+- Use `gh pr create` to create PRs from branches
 
 ---
 
 ## Guidelines
 
 - **Test locally first when possible** - Before pushing changes to trigger CI, test them locally to catch issues early
+
+### Pull Request Reviews (tentative - feel free to improve)
+
+When reviewing a PR, check:
+1. **Does the diff make sense?** - `gh pr diff <n>`
+2. **Is the change focused?** - One concern per PR
+3. **Are there any obvious bugs or issues?**
+4. **Do tests pass?** - `gh pr checks <n>`
+
+To approve and merge:
+```bash
+gh pr review <n> --approve
+gh pr merge <n> --squash --delete-branch
+```
+
+To request changes:
+```bash
+gh pr review <n> --request-changes -b "feedback here"
+```
 
 ---
 
