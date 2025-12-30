@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#MISE description="Commit and push in one step"
+#MISE usage="ship <message>"
+
+set -e
+
+if [ -z "$1" ]; then
+  echo "Usage: mise run ship <message>"
+  exit 1
+fi
+
+git add -A
+git commit -m "$1"
+
+BRANCH=$(git branch --show-current)
+git push -u origin "$BRANCH"

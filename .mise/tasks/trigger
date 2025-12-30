@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE description="Trigger the GitHub Actions workflow manually"
+#MISE usage="trigger [message]"
+
+set -e
+
+MESSAGE="${1:-}"
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+
+gh workflow run run.yml -f message="$MESSAGE"
+echo "Triggered workflow on $REPO"
+echo "View at: https://github.com/$REPO/actions"
