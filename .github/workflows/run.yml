@@ -13,6 +13,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   run:
@@ -61,7 +62,7 @@ jobs:
         id: message
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ -z "${{ github.event.inputs.message }}" ]; then
-            echo "msg=Your name is probe-1. This is your codebase. Check BACKLOG.md for tasks to work on - pick one, do it well, and check it off. If nothing in the backlog appeals to you, explore and improve something. Keep changes focused. If you need capabilities you don't have, note them in REQUESTS.md. WORKFLOW: You are on branch '${{ steps.branch.outputs.name }}'. Commit your changes, push, then create a PR to main with 'gh pr create'." >> $GITHUB_OUTPUT
+            echo "msg=Your name is probe-1. This is your codebase. Check BACKLOG.md for tasks to work on - pick one, do it well, and check it off. If nothing in the backlog appeals to you, explore and improve something. Keep changes focused. If you need tools or capabilities you don't have, open a GitHub issue with 'gh issue create' to request them. WORKFLOW: You are on branch '${{ steps.branch.outputs.name }}'. Commit your changes, push, then create a PR to main with 'gh pr create'." >> $GITHUB_OUTPUT
           else
             echo "msg=${{ github.event.inputs.message }}" >> $GITHUB_OUTPUT
           fi
