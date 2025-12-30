@@ -45,10 +45,19 @@ jobs:
           cd cli
           mix escript.build
 
+      - name: Determine message
+        id: message
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "msg=Scheduled maintenance run. Check that the repo is in a healthy state. If there are any cleanup tasks needed (stale files, inconsistencies, etc), fix them. If everything looks good, just confirm all is well. Keep your response brief." >> $GITHUB_OUTPUT
+          else
+            echo "msg=${{ github.event.inputs.message }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run CLI
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: ./cli/cli "${{ github.event.inputs.message }}"
+        run: ./cli/cli "${{ steps.message.outputs.msg }}"
 
       - name: Push changes if any
         run: |
