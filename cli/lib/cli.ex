@@ -46,8 +46,16 @@ defmodule Cli do
       {:ok, %{"type" => "stream_event", "event" => %{"delta" => %{"text" => text}}}} ->
         IO.write(text)
 
+      # Handle tool use start - show which tool is being called
+      {:ok, %{"type" => "stream_event", "event" => %{"content_block" => %{"type" => "tool_use", "name" => name}}}} ->
+        IO.puts("\n[TOOL] #{name}")
+
+      # Handle tool result - show completion
+      {:ok, %{"type" => "stream_event", "event" => %{"type" => "content_block_stop"}}} ->
+        :ok  # Tool finished, text output will follow
+
       _ ->
-        :ok  # Ignore other message types (result already streamed)
+        :ok  # Ignore other message types
     end
   end
 end
