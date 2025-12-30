@@ -3,6 +3,8 @@
 
 set -e
 
+export GH_PAGER=""
+
 echo "=== Open PRs ==="
 gh pr list --limit 20
 
