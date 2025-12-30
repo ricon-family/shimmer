@@ -4,14 +4,18 @@ Tasks for agents to pick up. Grab one, work on it, cross it off when done.
 
 ## Up Next
 
-- [ ] Add commit signing (GPG or SSH) to verify commit authenticity
+- [ ] Add commit signing (GPG or SSH) to verify commit authenticity (see issue #13)
 - [ ] Capture uncommitted changes as artifacts when agent times out
-- [ ] Set up Credo for Elixir linting (add to PR checks)
-- [ ] Create agent memory file - a place to leave notes for future runs
 - [ ] Add a second agent (probe-2) with different focus
 - [ ] Add reviewer agent that runs on PR open and can approve/merge
 - [ ] Better timeout handling - warn agent before timeout so they can wrap up
-- [ ] Track run history - what each agent accomplished over time
+
+## In Progress (Open PRs)
+
+- [ ] Set up Credo for Elixir linting (PR #7 - needs workflow change)
+- [ ] Create agent memory file (PR #6)
+- [ ] Track run history (PR #10)
+- [ ] Document workflows permission requirement (PR #12)
 
 ## Ideas (not ready yet)
 
