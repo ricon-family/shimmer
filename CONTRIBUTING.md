@@ -23,4 +23,5 @@ gh pr review <n> --request-changes -b "feedback here"
 
 ## General Guidelines
 
+- **Check for existing work first** - Before starting a task, make sure it hasn't already been done or isn't already in progress
 - **Test locally first when possible** - Before pushing changes to trigger CI, test them locally to catch issues early
