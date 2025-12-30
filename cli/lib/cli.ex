@@ -7,7 +7,7 @@ defmodule Cli do
 
     if message != "" do
       escaped_message = String.replace(message, "'", "'\\''")
-      {output, status} = System.shell("claude -p '#{escaped_message}' --output-format text", close_stdin: true)
+      {output, status} = System.shell("claude -p '#{escaped_message}' --output-format text --dangerously-skip-permissions", close_stdin: true)
       IO.write(output)
       System.halt(status)
     else
