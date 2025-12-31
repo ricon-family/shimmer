@@ -309,9 +309,9 @@ defmodule Cli do
   end
 
   def format_tool_input(%{"file_path" => path, "old_string" => old, "new_string" => new}) do
-    old_preview = old |> String.slice(0, 60) |> String.replace("\n", "\\n")
-    new_preview = new |> String.slice(0, 60) |> String.replace("\n", "\\n")
-    "  #{path}\n  - #{old_preview}...\n  + #{new_preview}..."
+    old_preview = old |> truncate(60) |> String.replace("\n", "\\n")
+    new_preview = new |> truncate(60) |> String.replace("\n", "\\n")
+    "  #{path}\n  - #{old_preview}\n  + #{new_preview}"
   end
 
   def format_tool_input(%{"file_path" => path}) do
@@ -327,19 +327,27 @@ defmodule Cli do
 
   def format_tool_input(%{"url" => url, "prompt" => prompt} = input) do
     desc = Map.get(input, "description", "")
-    prompt_preview = String.slice(prompt, 0, 100)
-    "  #{desc}\n  url: #{url}\n  prompt: #{prompt_preview}..."
+    prompt_preview = truncate(prompt, 100)
+    "  #{desc}\n  url: #{url}\n  prompt: #{prompt_preview}"
   end
 
   def format_tool_input(%{"prompt" => prompt} = input) do
-    prompt_preview = String.slice(prompt, 0, 100)
+    prompt_preview = truncate(prompt, 100)
 
     case Map.get(input, "description") do
-      nil -> "  prompt: #{prompt_preview}..."
-      "" -> "  prompt: #{prompt_preview}..."
-      desc -> "  #{desc}\n  prompt: #{prompt_preview}..."
+      nil -> "  prompt: #{prompt_preview}"
+      "" -> "  prompt: #{prompt_preview}"
+      desc -> "  #{desc}\n  prompt: #{prompt_preview}"
     end
   end
 
   def format_tool_input(_), do: nil
+
+  defp truncate(string, limit) do
+    if String.length(string) > limit do
+      String.slice(string, 0, limit) <> "..."
+    else
+      string
+    end
+  end
 end
