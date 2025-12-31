@@ -1,7 +1,25 @@
 #!/usr/bin/env bash
 #MISE description="Watch the latest workflow run until completion"
+#MISE usage="watch [agent]"
 
 set -e
 
-RUN_ID=$(gh run list --workflow=run.yml --limit 1 --json databaseId -q '.[0].databaseId')
+AGENT="${1:-probe-1}"
+
+# Map agent names to workflow files
+case "$AGENT" in
+  probe-1)
+    WORKFLOW="probe-1.yml"
+    ;;
+  critic)
+    WORKFLOW="critic.yml"
+    ;;
+  *)
+    echo "Unknown agent: $AGENT"
+    echo "Available agents: probe-1, critic"
+    exit 1
+    ;;
+esac
+
+RUN_ID=$(gh run list --workflow="$WORKFLOW" --limit 1 --json databaseId -q '.[0].databaseId')
 gh run watch "$RUN_ID"
