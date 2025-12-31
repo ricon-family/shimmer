@@ -3,6 +3,11 @@ defmodule Cli do
   @timeout_seconds 540
   @logger_port 8000
   @prompts_dir "cli/lib/prompts"
+  @default_model "claude-opus-4-5-20251101"
+
+  defp get_model do
+    System.get_env("CLAUDE_MODEL", @default_model)
+  end
 
   def main(args) do
     {opts, rest} = parse_args(args)
@@ -11,6 +16,7 @@ defmodule Cli do
     IO.puts("Running at: #{DateTime.utc_now()}")
     IO.puts("Message: #{message}")
     IO.puts("Timeout: #{@timeout_seconds}s")
+    IO.puts("Model: #{get_model()}")
     if opts[:agent], do: IO.puts("Agent: #{opts[:agent]}")
     if opts[:log_context], do: IO.puts("Context logging: enabled")
     IO.puts("---")
@@ -86,7 +92,7 @@ defmodule Cli do
 
     # Pipe empty stdin to close it, use stream-json with --verbose and --include-partial-messages for real streaming
     cmd =
-      "echo | #{env_prefix}timeout #{@timeout_seconds} claude -p '#{escaped_message}'#{system_prompt_flag} --model claude-opus-4-5-20251101 --output-format stream-json --verbose --include-partial-messages --dangerously-skip-permissions"
+      "echo | #{env_prefix}timeout #{@timeout_seconds} claude -p '#{escaped_message}'#{system_prompt_flag} --model #{get_model()} --output-format stream-json --verbose --include-partial-messages --dangerously-skip-permissions"
 
     port = Port.open({:spawn, cmd}, [:binary, :exit_status, :stderr_to_stdout])
     status = stream_output(port, %{tool_input: ""})
