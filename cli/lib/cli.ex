@@ -3,18 +3,31 @@ defmodule Cli do
   @timeout_seconds 540
 
   def main(args) do
-    message = Enum.join(args, " ")
+    {opts, remaining} = parse_args(args)
+    agent = opts[:agent]
+    message = Enum.join(remaining, " ")
+
     IO.puts("Running at: #{DateTime.utc_now()}")
+    if agent, do: IO.puts("Agent: #{agent}")
     IO.puts("Message: #{message}")
     IO.puts("Timeout: #{@timeout_seconds}s")
     IO.puts("---")
 
     if message != "" do
       escaped_message = String.replace(message, "'", "'\\''")
+      system_prompt = load_system_prompt(agent)
 
-      # Pipe empty stdin to close it, use stream-json with --verbose and --include-partial-messages for real streaming
-      cmd =
+      # Build command with optional system prompt
+      base_cmd =
         "echo | timeout #{@timeout_seconds} claude -p '#{escaped_message}' --model claude-opus-4-5-20251101 --output-format stream-json --verbose --include-partial-messages --dangerously-skip-permissions"
+
+      cmd =
+        if system_prompt do
+          escaped_prompt = String.replace(system_prompt, "'", "'\\''")
+          "#{base_cmd} --append-system-prompt '#{escaped_prompt}'"
+        else
+          base_cmd
+        end
 
       port = Port.open({:spawn, cmd}, [:binary, :exit_status, :stderr_to_stdout])
       status = stream_output(port, %{tool_input: ""})
@@ -27,6 +40,43 @@ defmodule Cli do
       System.halt(status)
     else
       IO.puts("No message provided, skipping Claude")
+    end
+  end
+
+  defp parse_args(args), do: parse_args(args, [], [])
+
+  defp parse_args(["--agent", agent | rest], opts, remaining) do
+    parse_args(rest, [{:agent, agent} | opts], remaining)
+  end
+
+  defp parse_args([arg | rest], opts, remaining) do
+    parse_args(rest, opts, remaining ++ [arg])
+  end
+
+  defp parse_args([], opts, remaining), do: {opts, remaining}
+
+  defp load_system_prompt(nil), do: nil
+
+  defp load_system_prompt(agent) do
+    prompts_dir = Path.join([File.cwd!(), "cli", "lib", "prompts"])
+    common_path = Path.join(prompts_dir, "common.txt")
+    agent_path = Path.join([prompts_dir, "agents", "#{agent}.txt"])
+
+    common = read_file_or_empty(common_path)
+    agent_specific = read_file_or_empty(agent_path)
+
+    case {common, agent_specific} do
+      {"", ""} -> nil
+      {c, ""} -> c
+      {"", a} -> a
+      {c, a} -> "#{c}\n\n#{a}"
+    end
+  end
+
+  defp read_file_or_empty(path) do
+    case File.read(path) do
+      {:ok, content} -> String.trim(content)
+      {:error, _} -> ""
     end
   end
 
