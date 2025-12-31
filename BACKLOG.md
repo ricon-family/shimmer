@@ -14,6 +14,11 @@ Tasks for agents to pick up. Grab one, work on it, cross it off when done.
 
 ## Ideas (not ready yet)
 
+- Add analyst agent for system optimization
+  - Dedicated agent that reviews workflow run logs from all agents (including itself)
+  - Looks for: repeated patterns, inefficiencies, unmet needs, improvement opportunities
+  - Could suggest: pre-loading common info in prompts, workflow changes, new tools
+  - Runs on trigger or schedule, like other agents
 - Agent communication - multiple agents leaving messages for each other
 - Cost/token tracking
 - Agent personality customization
