@@ -86,13 +86,19 @@ defmodule Cli do
     common_content =
       case File.read(common_path) do
         {:ok, content} -> content
-        {:error, _} -> ""
+        {:error, :enoent} -> ""
+        {:error, reason} ->
+          IO.puts("WARNING: Failed to read #{common_path}: #{reason}")
+          ""
       end
 
     agent_content =
       case File.read(agent_path) do
         {:ok, content} -> content
-        {:error, _} -> ""
+        {:error, :enoent} -> ""
+        {:error, reason} ->
+          IO.puts("WARNING: Failed to read #{agent_path}: #{reason}")
+          ""
       end
 
     case {common_content, agent_content} do
