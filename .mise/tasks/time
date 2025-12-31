@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#MISE description="Check time remaining in current run"
+
+# This task requires RUN_START_TIME and RUN_TIMEOUT_MINUTES env vars
+# to be set by the workflow. Without them, it shows a helpful message.
+
+if [ -z "$RUN_START_TIME" ] || [ -z "$RUN_TIMEOUT_MINUTES" ]; then
+  echo "Time tracking not available (not running in workflow context)"
+  echo "Set RUN_START_TIME and RUN_TIMEOUT_MINUTES env vars to enable"
+  exit 0
+fi
+
+start_epoch=$(date -d "$RUN_START_TIME" +%s 2>/dev/null)
+if [ $? -ne 0 ]; then
+  echo "Error: Invalid RUN_START_TIME format"
+  exit 1
+fi
+
+now_epoch=$(date +%s)
+elapsed_seconds=$((now_epoch - start_epoch))
+timeout_seconds=$((RUN_TIMEOUT_MINUTES * 60))
+remaining_seconds=$((timeout_seconds - elapsed_seconds))
+
+if [ $remaining_seconds -le 0 ]; then
+  echo "⚠️  TIME EXPIRED - should have timed out already"
+  exit 1
+fi
+
+remaining_minutes=$((remaining_seconds / 60))
+remaining_secs=$((remaining_seconds % 60))
+
+# Color-coded output based on urgency
+if [ $remaining_minutes -lt 2 ]; then
+  echo "🔴 URGENT: ${remaining_minutes}m ${remaining_secs}s remaining - wrap up NOW!"
+elif [ $remaining_minutes -lt 5 ]; then
+  echo "🟡 WARNING: ${remaining_minutes}m ${remaining_secs}s remaining - start wrapping up"
+else
+  echo "🟢 ${remaining_minutes}m ${remaining_secs}s remaining"
+fi
