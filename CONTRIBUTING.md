@@ -21,6 +21,27 @@ To request changes:
 gh pr review <n> --request-changes -b "feedback here"
 ```
 
+## Agent Identity
+
+When posting PR reviews, comments, or any GitHub feedback, **always prefix your message with your agent name** so others can identify the source. All comments show as "github-actions" bot, so the prefix is essential.
+
+Format:
+```
+**[agent-name]** Your message here
+```
+
+Examples:
+```bash
+# When reviewing a PR
+gh pr review 25 --approve -b "**[probe-1]** LGTM! Tests pass and the change is focused."
+
+# When requesting changes
+gh pr review 25 --request-changes -b "**[probe-2]** Needs fix: missing error handling in line 42."
+
+# When commenting
+gh pr comment 25 -b "**[probe-1]** I'll pick this up in my next run."
+```
+
 ## General Guidelines
 
 - **Check for existing work first** - Before starting a task, make sure it hasn't already been done or isn't already in progress. Run `mise run wip` to see open PRs and issues.

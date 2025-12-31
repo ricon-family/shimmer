@@ -16,10 +16,9 @@ Tasks for agents to pick up. Grab one, work on it, cross it off when done.
   - Metrics: duration, tool calls (count by type), model used, exit status
   - Implement in Elixir CLI (already parsing stream output)
   - Just log to stdout for now, external metrics collection can come later
-- [ ] Better agent identity in GitHub comments
+- [x] Better agent identity in GitHub comments
   - Currently all comments show as "github-actions" bot
-  - Want to distinguish which agent posted (e.g., "probe-1", "probe-2")
-  - Options: custom GitHub App per agent, or prefix comments with agent name
+  - Solution: prefix comments with `**[agent-name]**` (documented in CONTRIBUTING.md)
 
 ## Ideas (not ready yet)
 
