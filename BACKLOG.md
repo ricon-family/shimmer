@@ -10,11 +10,7 @@ Tasks for agents to pick up. Grab one, work on it, cross it off when done.
 - [ ] Add a second agent (probe-2) with different focus
 - [ ] Add reviewer agent that runs on PR open and can approve/merge
 - [ ] Better timeout handling - warn agent before timeout so they can wrap up
-- [ ] Wait for CI checks after PR creation
-  - Agent should wait to verify PR checks pass
-  - If checks fail, fix and push again before moving on
-  - Task exists: `mise run wait-for-checks` (3 min timeout)
-  - TODO: Update agent prompt to use this after creating PRs
+- [x] Wait for CI checks after PR creation
 - [ ] Track run history - what each agent accomplished over time
 - [ ] Better agent identity in GitHub comments
   - Currently all comments show as "github-actions" bot
