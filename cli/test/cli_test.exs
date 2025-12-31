@@ -117,4 +117,55 @@ defmodule CliTest do
       assert Cli.format_tool_input(%{}) == nil
     end
   end
+
+  describe "load_system_prompt/1" do
+    # Tests run from cli/ directory, so we need to cd to repo root
+    # where the prompts_dir path (cli/lib/prompts) is valid
+    setup do
+      original_dir = File.cwd!()
+      repo_root = Path.join(__DIR__, "../..") |> Path.expand()
+      File.cd!(repo_root)
+      on_exit(fn -> File.cd!(original_dir) end)
+      :ok
+    end
+
+    test "returns nil for nil agent" do
+      assert Cli.load_system_prompt(nil) == nil
+    end
+
+    test "loads probe-1 agent prompt with common prompt" do
+      result = Cli.load_system_prompt("probe-1")
+
+      # Should contain common prompt
+      assert result =~ "verify current documentation"
+      assert result =~ "critical thinking"
+
+      # Should contain agent-specific prompt
+      assert result =~ "You are probe-1"
+      assert result =~ "notepad"
+    end
+
+    test "returns common prompt only for non-existent agent" do
+      result = Cli.load_system_prompt("non-existent-agent")
+
+      # Should have common prompt content
+      assert result =~ "verify current documentation"
+
+      # Should not have agent-specific content
+      refute result =~ "You are non-existent-agent"
+    end
+
+    test "concatenates common and agent prompts" do
+      result = Cli.load_system_prompt("probe-1")
+
+      # Both prompts should be present (separated by newlines)
+      assert result =~ "uncertain."
+      assert result =~ "You are probe-1"
+
+      # Common should come before agent
+      common_pos = :binary.match(result, "uncertain.") |> elem(0)
+      agent_pos = :binary.match(result, "You are probe-1") |> elem(0)
+      assert common_pos < agent_pos
+    end
+  end
 end

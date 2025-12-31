@@ -39,9 +39,11 @@ defmodule Cli do
     {opts, rest}
   end
 
-  defp load_system_prompt(nil), do: nil
+  @doc false
+  def load_system_prompt(nil), do: nil
 
-  defp load_system_prompt(agent_name) do
+  @doc false
+  def load_system_prompt(agent_name) do
     common_path = Path.join([@prompts_dir, "common.txt"])
     agent_path = Path.join([@prompts_dir, "agents", "#{agent_name}.txt"])
 
