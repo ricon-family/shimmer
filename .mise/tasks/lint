@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#MISE description="Run all checks (format, credo, test)"
+
+set -e
+
+cd cli
+
+echo "==> Checking formatting..."
+mix format --check-formatted
+
+echo "==> Running Credo..."
+mix credo --strict
+
+echo "==> Running tests..."
+mix test
+
+echo "==> All checks passed!"
