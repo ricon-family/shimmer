@@ -1,4 +1,4 @@
-name: Run
+name: probe-1
 
 on:
   schedule:

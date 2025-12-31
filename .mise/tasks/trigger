@@ -11,7 +11,7 @@ REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 # Map agent names to workflow files
 case "$AGENT" in
   probe-1)
-    WORKFLOW="run.yml"
+    WORKFLOW="probe-1.yml"
     ;;
   critic)
     WORKFLOW="critic.yml"
