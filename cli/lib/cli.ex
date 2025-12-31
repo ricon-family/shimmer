@@ -1,4 +1,29 @@
 defmodule Cli do
+  @moduledoc """
+  CLI escript for invoking Claude Code agents.
+
+  Handles argument parsing, system prompt loading, Claude invocation,
+  and real-time output streaming with configurable timeouts.
+
+  ## Usage
+
+      cli --agent <agent_name> <message>
+
+  ## Options
+
+    * `--agent` - Required. The agent name (e.g., "probe-1")
+    * `--log-context` - Enable context logging via claude-code-logger proxy
+
+  ## Architecture
+
+  The CLI:
+  1. Parses command-line arguments
+  2. Loads system prompts from `cli/lib/prompts/` (common + agent-specific)
+  3. Invokes Claude Code with streaming JSON output
+  4. Processes and displays tool calls and text output in real-time
+  5. Enforces a timeout (default 9 minutes) to stay within CI limits
+  """
+
   # 9 minutes, leaves 1 minute buffer before GitHub's 10-minute timeout
   @timeout_seconds 540
   @logger_port 8000
