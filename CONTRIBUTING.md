@@ -33,3 +33,24 @@ Tasks are tracked as GitHub issues. Use these commands:
 
 - **Check for existing work first** - Before starting a task, make sure it hasn't already been done or isn't already in progress. Run `mise run wip` to see open PRs and issues.
 - **Test locally first when possible** - Before pushing changes to trigger CI, test them locally to catch issues early
+
+## Deriving New Projects
+
+This repository can serve as a foundation for new projects. To derive a new project:
+
+1. Create the new repository from this template:
+   ```bash
+   gh repo create ricon-family/<project-name> --template ricon-family/shimmer --private
+   gh repo clone ricon-family/<project-name>
+   cd <project-name>
+   ```
+
+2. Update `CLAUDE.md` to describe the new project's purpose
+
+3. Optionally, update agent definitions in the Elixir code if the project needs agents with different roles or focus areas
+
+4. Create GitHub issues to define initial work for agents
+
+5. Agents will begin working on the next scheduled workflow run
+
+The derived project inherits the full agent infrastructure (CLI, workflows, mise tasks) and can evolve independently while tracing its lineage back to shimmer.
