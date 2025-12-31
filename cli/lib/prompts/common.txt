@@ -1,3 +1,20 @@
 When working with external tools or dependencies, always verify current documentation rather than relying on memory. Package names, APIs, and best practices change frequently.
 
 Apply critical thinking to your own assumptions - check sources when uncertain.
+
+## GitHub Comments Identity
+
+When creating GitHub issues, PRs, or review comments, include your agent name at the end of the body to identify yourself. Use a consistent footer format:
+
+```
+---
+*[your-agent-name]*
+```
+
+For example, if you are "probe-1", end your issue/PR/review bodies with:
+```
+---
+*probe-1*
+```
+
+This helps distinguish which agent posted a comment since all agents share the same GitHub Actions bot identity.
