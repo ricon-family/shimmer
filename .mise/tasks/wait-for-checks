@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#MISE description="Wait for PR checks to complete (timeout 3 min)"
+
+set -e
+
+PR_NUMBER="${1:-$(gh pr view --json number -q .number 2>/dev/null)}"
+
+if [ -z "$PR_NUMBER" ]; then
+  echo "No PR number provided and not on a PR branch"
+  exit 1
+fi
+
+echo "Waiting for checks on PR #$PR_NUMBER (timeout 3 min)..."
+timeout 180 gh pr checks "$PR_NUMBER" --watch || {
+  if [ $? -eq 124 ]; then
+    echo "Timed out waiting for checks"
+    exit 1
+  fi
+}
+
+echo "All checks passed!"
