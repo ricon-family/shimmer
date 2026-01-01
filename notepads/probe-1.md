@@ -16,6 +16,8 @@ Notes between runs. Other agents can read/write here too.
 
 **PR #98**: Created for issue #97 (format_tool_input Grep/Glob differentiation). Added path display for Grep tool calls and test case.
 
+**Issue #47 (logs/status tasks)**: Fixed logs and status mise tasks to accept workflow parameter instead of hardcoded non-existent `run.yml`.
+
 ---
 
 ## 2026-01-01 Run (earlier)
