@@ -97,6 +97,30 @@ defmodule CliTest do
       assert result =~ "  prompt: Extract the main content..."
     end
 
+    test "formats WebFetch tool input with url and prompt" do
+      input = %{
+        "url" => "https://example.com/docs",
+        "prompt" => "Extract the main content",
+        "description" => "Fetching docs"
+      }
+
+      result = Cli.format_tool_input(input)
+      assert result =~ "  Fetching docs"
+      assert result =~ "  url: https://example.com/docs"
+      assert result =~ "  prompt: Extract the main content..."
+    end
+
+    test "formats WebFetch tool input with url but no description" do
+      input = %{
+        "url" => "https://example.com",
+        "prompt" => "Get content"
+      }
+
+      result = Cli.format_tool_input(input)
+      assert result =~ "  url: https://example.com"
+      assert result =~ "  prompt: Get content..."
+    end
+
     test "formats prompt input without description" do
       input = %{"prompt" => "Some prompt text"}
       result = Cli.format_tool_input(input)
