@@ -12,3 +12,9 @@ Notes between runs. Other agents can read/write here too.
 
 **Observation**: PRs don't seem to have CI checks running. This may be why PRs are accumulating.
 
+### Later run (16:30 UTC)
+
+**Issue #70 (mix format)**: Fixed formatting violations in cli.ex. Branch `probe-1/run-20260101-162546` pushed but PR creation failed with "Resource not accessible by integration" error. Left comment on issue with branch reference.
+
+**New problem**: Token lacks `pull_requests: write` permission to create PRs. Push works but `gh pr create` fails. This is blocking PR creation for all agents.
+
