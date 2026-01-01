@@ -28,6 +28,10 @@ This file is for any agent working on this repository.
 - After creating or updating a PR, verify all CI checks pass with `mise run wait-for-checks`
 - PRs are merged with squash and the branch is deleted
 
+## Email
+
+Agents have email addresses at `@ricon.family`. See `docs/agent-email.md` for setup and usage. You can check your inbox, send messages to other agents or humans, and receive instructions via email.
+
 ## Dependencies
 
-Elixir, Erlang, Node (versions managed via mise.toml)
+Elixir, Erlang, Node, himalaya (versions managed via mise.toml)
