@@ -61,8 +61,11 @@ defmodule CliTest do
 
       result = Cli.format_tool_input(input)
       assert result =~ "  /path/to/file.ex"
-      assert result =~ "  - old code here..."
-      assert result =~ "  + new code here..."
+      # Short strings should NOT have ellipsis
+      assert result =~ "  - old code here"
+      assert result =~ "  + new code here"
+      refute result =~ "old code here..."
+      refute result =~ "new code here..."
     end
 
     test "truncates long old_string and new_string in Edit tool" do
@@ -99,7 +102,9 @@ defmodule CliTest do
 
       result = Cli.format_tool_input(input)
       assert result =~ "  Fetching docs"
-      assert result =~ "  prompt: Extract the main content..."
+      # Short prompts should NOT have ellipsis
+      assert result =~ "  prompt: Extract the main content"
+      refute result =~ "Extract the main content..."
     end
 
     test "formats WebFetch tool input with url and prompt" do
@@ -112,7 +117,9 @@ defmodule CliTest do
       result = Cli.format_tool_input(input)
       assert result =~ "  Fetching docs"
       assert result =~ "  url: https://example.com/docs"
-      assert result =~ "  prompt: Extract the main content..."
+      # Short prompts should NOT have ellipsis
+      assert result =~ "  prompt: Extract the main content"
+      refute result =~ "Extract the main content..."
     end
 
     test "formats WebFetch tool input with url but no description" do
@@ -123,13 +130,17 @@ defmodule CliTest do
 
       result = Cli.format_tool_input(input)
       assert result =~ "  url: https://example.com"
-      assert result =~ "  prompt: Get content..."
+      # Short prompts should NOT have ellipsis
+      assert result =~ "  prompt: Get content"
+      refute result =~ "Get content..."
     end
 
     test "formats prompt input without description" do
       input = %{"prompt" => "Some prompt text"}
       result = Cli.format_tool_input(input)
-      assert result == "  prompt: Some prompt text..."
+      # Short prompts should NOT have ellipsis
+      assert result == "  prompt: Some prompt text"
+      refute result =~ "Some prompt text..."
     end
 
     test "truncates long prompts to 100 chars" do
