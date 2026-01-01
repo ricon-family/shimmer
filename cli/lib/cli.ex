@@ -302,6 +302,12 @@ defmodule Cli do
     "  pattern: #{pattern}"
   end
 
+  def format_tool_input(%{"url" => url, "prompt" => prompt} = input) do
+    desc = Map.get(input, "description", "")
+    prompt_preview = String.slice(prompt, 0, 100)
+    "  #{desc}\n  url: #{url}\n  prompt: #{prompt_preview}..."
+  end
+
   def format_tool_input(%{"prompt" => prompt} = input) do
     prompt_preview = String.slice(prompt, 0, 100)
 
