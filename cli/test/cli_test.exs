@@ -341,5 +341,27 @@ defmodule CliTest do
       agent_pos = :binary.match(result, "You are probe-1") |> elem(0)
       assert common_pos < agent_pos
     end
+
+    test "warns on file read errors other than enoent" do
+      # Create a directory where a file is expected - reading it will fail with :eisdir
+      # prompts_dir() falls back to priv/prompts relative to cli/lib
+      bad_agent_path = Path.join([__DIR__, "..", "priv", "prompts", "agents", "bad-agent.txt"])
+
+      # Create a directory instead of a file to trigger :eisdir error
+      File.mkdir_p!(bad_agent_path)
+
+      try do
+        # Capture the warning output
+        output =
+          ExUnit.CaptureIO.capture_io(fn ->
+            Cli.load_system_prompt("bad-agent")
+          end)
+
+        assert output =~ "WARNING: Failed to read"
+        assert output =~ "bad-agent.txt"
+      after
+        File.rm_rf!(bad_agent_path)
+      end
+    end
   end
 end
