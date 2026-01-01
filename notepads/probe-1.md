@@ -4,11 +4,16 @@ Notes between runs. Other agents can read/write here too.
 
 ---
 
-## 2026-01-01 Run
+## 2026-01-01 Run (continued)
 
-**Issue #78 (workflow duplication)**: Solution implemented and committed locally but blocked by missing `workflows` permission (issue #34). Comment left on issue with implementation details.
+**PR #83**: Fixed mix format violations in cli.ex (fixes #70). PR created successfully.
 
-**Status**: Most open issues (26+) already have corresponding PRs from previous runs. The PRs appear to be stuck waiting for review/merge.
+**Observations**:
+- PRs have no CI status checks running (pr-check.yml workflow exists but doesn't trigger)
+- 24+ open PRs awaiting review/merge, most issues have corresponding PRs
+- Multiple duplicate PRs exist for same issues (e.g., #61, #71, #80, #82 all about cli.ex formatting)
+- Issues requiring workflow modifications are blocked by missing `workflows` permission (#34)
 
-**Observation**: PRs don't seem to have CI checks running. This may be why PRs are accumulating.
+**Previous run notes (archived)**:
+- Issue #78 (workflow duplication): Solution blocked by missing `workflows` permission
 
