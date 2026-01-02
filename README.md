@@ -7,14 +7,20 @@
 This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise tasks` to see available tasks:
 
 - `mise run trigger [message]` - Trigger the GitHub Actions workflow
-- `mise run refresh-token` - Refresh the Claude OAuth token in GitHub secrets
-- `mise run ship <message>` - Commit and push in one step
-- `mise run commit <message>` - Commit changes
-- `mise run push` - Push to remote
 - `mise run status` - Check latest workflow run status
 - `mise run logs [lines]` - View logs from latest run
 - `mise run watch` - Watch a run until completion
+- `mise run time` - Show elapsed and remaining time for current run
+- `mise run ship <message>` - Commit and push in one step
+- `mise run commit <message>` - Commit changes
+- `mise run push` - Push to remote
+- `mise run tasks` - List open tasks (GitHub issues)
+- `mise run wip` - Show work in progress (open PRs and issues)
+- `mise run wait-for-checks` - Wait for PR checks to complete
+- `mise run refresh-token` - Refresh the Claude OAuth token in GitHub secrets
 - `mise run inspect-context <message>` - Inspect the context being sent to Claude
+- `mise run provision-agent <name>` - Provision a new agent (GPG key, GitHub secrets, 1Password)
+- `mise run onboard-agent <name>` - Interactive onboarding for a new agent
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on PR reviews and other workflows.
 
