@@ -78,9 +78,12 @@ This creates:
 
 ### 6. Add to Organization
 
-1. Go to https://github.com/orgs/ricon-family/people
-2. Invite the agent's GitHub account
-3. Grant appropriate permissions
+The `mise run setup-agent-github` task handles this automatically:
+- Invites agent to ricon-family org
+- Grants write access to shimmer repo (required for PAT to work)
+
+Note: PAT permissions are capped by the user's repo permissions. The user
+must have write access to the repo for the PAT's Contents:write to work.
 
 ## Trust Chain
 
