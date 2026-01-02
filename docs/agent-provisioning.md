@@ -12,107 +12,54 @@ This document describes how to provision a new agent with a full identity.
 ## Quick Start
 
 ```bash
-# 1. Create GPG key and store in GitHub secrets
+# 1. Create email account at mail provider (use password from 1Password after step 2)
+
+# 2. Provision agent (GPG key, GitHub secrets, 1Password entries)
 mise run provision-agent <agent-name>
 
-# 2. Store all credentials in 1Password (generates passwords for new entries)
-mise run store-agent-credentials <agent-name>
+# 3. Interactive GitHub account setup + verification
+mise run onboard-agent <agent-name>
 ```
 
-## Full Provisioning Steps
+## How It Works
 
-### 1. Create Email Account
+### provision-agent
 
-Create an email account at the email provider:
-- Email: `<agent>@ricon.family`
-- Use the generated password from 1Password (`<agent> - Email`)
+Creates the agent's cryptographic identity:
+- Generates GPG key for `<agent>@ricon.family`
+- Signs key with org key (`admin@ricon.family`)
+- Stores GPG keys as GitHub secrets (`<AGENT>_GPG_PRIVATE_KEY`, `<AGENT>_GPG_PUBLIC_KEY`)
+- Creates 1Password entries with generated passwords:
+  - `<agent> - Email` (for mail.ricon.family)
+  - `<agent> - GPG` (key details + public key for easy copy)
+  - `<agent> - GitHub` (account credentials)
 
-Add the password as a GitHub secret:
-```bash
-gh secret set <AGENT>_EMAIL_PASSWORD
-```
+### onboard-agent
 
-### 2. Generate and Sign GPG Key
+Interactive walkthrough for GitHub account setup:
+1. **Create GitHub Account** - shows credentials from 1Password
+2. **Email Verification** - auto-fetches verification code from email
+3. **Organization Setup** - invites to org, adds to `agents` team (grants write access)
+4. **Upload GPG Key** - shows public key to copy
+5. **Create PAT** - instructions for fine-grained token
+6. **Approve PAT** - reminder for admin approval (web UI only)
+7. **Store PAT** - commands to save in 1Password and GitHub secrets
+8. **Verify** - triggers test workflow to confirm signed commits work
 
-Run the provisioning task:
-```bash
-mise run provision-agent <agent-name>
-```
+## Organization Structure
 
-This creates:
-- `<AGENT>_GPG_PRIVATE_KEY` - for signing commits
-- `<AGENT>_GPG_PUBLIC_KEY` - for verification
+### Teams
 
-### 3. Create GitHub Account
+| Team | Access | Purpose |
+|------|--------|---------|
+| `agents` | Write on shimmer | All AI agents - grants repo access automatically |
 
-1. Get credentials from 1Password (`<agent> - GitHub`)
-2. Go to https://github.com/join
-3. Use the email, username, password, and country from 1Password
-4. Check agent's email for verification code: `himalaya envelope list` / `himalaya message read <id>`
-
-### 4. Upload GPG Key to GitHub
-
-1. Export the public key:
-   ```bash
-   gpg --armor --export <agent>@ricon.family
-   ```
-2. Go to GitHub → Settings → SSH and GPG keys → New GPG key
-3. Paste the public key
-
-### 5. Generate PAT
-
-1. Go to GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
-2. Create token with:
-   - **Token name**: `shimmer-agent`
-   - **Resource owner**: `ricon-family`
-   - **Repository access**: Only select repositories → `ricon-family/shimmer`
-   - **Permissions**: `Contents: Read and write`, `Workflows: Read and write`
-3. **IMPORTANT**: Org admin must approve the PAT request at:
-   https://github.com/organizations/ricon-family/settings/personal-access-token-requests
-   (This cannot be done via CLI - web UI only)
-4. Store as secret:
-   ```bash
-   op item edit "<agent> - GitHub" --vault Agents "PAT[password]=<token>"
-   gh secret set <AGENT>_GITHUB_PAT
-   ```
-
-### 6. Add to Organization
-
-The `mise run setup-agent-github` task handles this automatically:
-- Invites agent to ricon-family org
-- Grants write access to shimmer repo (required for PAT to work)
-
-Note: PAT permissions are capped by the user's repo permissions. The user
-must have write access to the repo for the PAT's Contents:write to work.
-
-## Trust Chain
-
-All agent keys are signed by the org key, which is signed by the org admin:
+### Trust Chain
 
 ```
 rikonor@gmail.com (personal)
     └── signs → admin@ricon.family (org)
                     └── signs → <agent>@ricon.family
-```
-
-This proves:
-- The org admin authorized the agent
-- The agent belongs to ricon.family
-
-## Workflow Integration
-
-Add these steps to agent workflows:
-
-```yaml
-- name: Setup email
-  env:
-    EMAIL_PASSWORD: ${{ secrets.<AGENT>_EMAIL_PASSWORD }}
-  run: ./scripts/setup-email.sh <agent>
-
-- name: Setup GPG
-  env:
-    GPG_PRIVATE_KEY: ${{ secrets.<AGENT>_GPG_PRIVATE_KEY }}
-  run: ./scripts/setup-gpg.sh <agent>
 ```
 
 ## Secrets Reference
@@ -131,17 +78,31 @@ Add these steps to agent workflows:
 | Item | Contents |
 |------|----------|
 | `<agent> - Email` | username, email, password, URL |
-| `<agent> - GPG` | Key ID, Fingerprint, Email, Private Key |
-| `<agent> - GitHub` | username, email, password, country, URL |
+| `<agent> - GPG` | Key ID, Fingerprint, Email, Private Key, Public Key, GitHub Title |
+| `<agent> - GitHub` | username, email, password, country, URL, PAT |
+
+## Workflow Integration
+
+```yaml
+- name: Setup email
+  env:
+    EMAIL_PASSWORD: ${{ secrets.<AGENT>_EMAIL_PASSWORD }}
+  run: ./scripts/setup-email.sh <agent>
+
+- name: Setup GPG
+  env:
+    GPG_PRIVATE_KEY: ${{ secrets.<AGENT>_GPG_PRIVATE_KEY }}
+  run: ./scripts/setup-gpg.sh <agent>
+```
 
 ## Current Agents
 
-| Agent | Email | GPG | GitHub | PAT |
-|-------|-------|-----|--------|-----|
-| quick | ✅ | ✅ | ✅ | ✅ |
-| brownie | ✅ | ✅ | ⬜ | ⬜ |
-| junior | ✅ | ✅ | ⬜ | ⬜ |
-| johnson | ✅ | ✅ | ⬜ | ⬜ |
-| k7r2 | ✅ | ✅ | ⬜ | ⬜ |
-| x1f9 | ✅ | ✅ | ⬜ | ⬜ |
-| c0da | ✅ | ✅ | ⬜ | ⬜ |
+| Agent | Email | GPG | GitHub | PAT | Verified |
+|-------|-------|-----|--------|-----|----------|
+| quick | ✅ | ✅ | ✅ | ✅ | ✅ |
+| brownie | ✅ | ✅ | ✅ | ✅ | ✅ |
+| junior | ✅ | ✅ | ⬜ | ⬜ | ⬜ |
+| johnson | ✅ | ✅ | ⬜ | ⬜ | ⬜ |
+| k7r2 | ✅ | ✅ | ⬜ | ⬜ | ⬜ |
+| x1f9 | ✅ | ✅ | ⬜ | ⬜ | ⬜ |
+| c0da | ✅ | ✅ | ⬜ | ⬜ | ⬜ |

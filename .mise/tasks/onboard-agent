@@ -124,8 +124,8 @@ else
   gh api --method PUT "orgs/ricon-family/memberships/$GITHUB_USERNAME" -f role=member > /dev/null 2>&1 || true
 fi
 
-echo "[auto] Granting write access to shimmer repo..."
-gh api --method PUT "repos/ricon-family/shimmer/collaborators/$GITHUB_USERNAME" -f permission=write > /dev/null 2>&1 || true
+echo "[auto] Adding to agents team (grants write access)..."
+gh api --method PUT "orgs/ricon-family/teams/agents/memberships/$GITHUB_USERNAME" -f role=member > /dev/null 2>&1 || true
 
 echo ""
 echo "[YOU] Accept the org invitation as $GITHUB_USERNAME:"
