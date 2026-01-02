@@ -9,15 +9,14 @@ defmodule Cli do
   @logger_port 8000
 
   defp prompts_dir do
-    case :code.priv_dir(:cli) do
-      {:error, _} ->
-        # Fallback for escript - use path relative to current working directory
-        # Assumes running from repo root as ./cli/cli
-        Path.join([File.cwd!(), "cli", "priv", "prompts"])
+    # Try multiple paths - cwd might be repo root or cli directory
+    cwd = File.cwd!()
+    candidates = [
+      Path.join([cwd, "cli", "priv", "prompts"]),  # from repo root: ./cli/cli
+      Path.join([cwd, "priv", "prompts"])           # from cli dir: mix test
+    ]
 
-      dir ->
-        Path.join(to_string(dir), "prompts")
-    end
+    Enum.find(candidates, List.first(candidates), &File.dir?/1)
   end
 
   def main(args) do
