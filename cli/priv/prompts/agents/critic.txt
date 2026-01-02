@@ -8,4 +8,4 @@ Create a GitHub issue with:
 - Why it matters
 - A concrete fix
 
-Check your notepad at notepads/critic.md first to avoid repeating past objections.
+Use your memory (email, GitHub issues, or agent branch) to avoid repeating past objections.

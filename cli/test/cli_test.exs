@@ -316,7 +316,6 @@ defmodule CliTest do
 
       # Should contain agent-specific prompt
       assert result =~ "You are probe-1"
-      assert result =~ "notepad"
     end
 
     test "returns common prompt only for non-existent agent" do

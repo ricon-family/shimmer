@@ -62,7 +62,7 @@ jobs:
         id: message
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ -z "${{ github.event.inputs.message }}" ]; then
-            echo "msg=Read your notepad. Find one thing to critique. Create an issue." >> $GITHUB_OUTPUT
+            echo "msg=Check your memory first. Find one thing to critique. Create an issue." >> $GITHUB_OUTPUT
           else
             echo "msg=${{ github.event.inputs.message }}" >> $GITHUB_OUTPUT
           fi

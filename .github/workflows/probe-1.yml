@@ -62,7 +62,7 @@ jobs:
         id: message
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ -z "${{ github.event.inputs.message }}" ]; then
-            echo "msg=Read your notepad first. Check for feedback on open PRs. Run 'mise run tasks' to find work. Pick an issue and implement it. Branch: ${{ steps.branch.outputs.name }}. Commit, push, then 'gh pr create'. After creating a PR, run 'mise run wait-for-checks'." >> $GITHUB_OUTPUT
+            echo "msg=Check your inbox and memory first. Check for feedback on open PRs. Run 'mise run tasks' to find work. Pick an issue and implement it. Branch: ${{ steps.branch.outputs.name }}. Commit, push, then 'gh pr create'. After creating a PR, run 'mise run wait-for-checks'." >> $GITHUB_OUTPUT
           else
             echo "msg=${{ github.event.inputs.message }}" >> $GITHUB_OUTPUT
           fi
