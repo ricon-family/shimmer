@@ -11,9 +11,12 @@ defmodule Cli do
   defp prompts_dir do
     # Try multiple paths - cwd might be repo root or cli directory
     cwd = File.cwd!()
+
     candidates = [
-      Path.join([cwd, "cli", "priv", "prompts"]),  # from repo root: ./cli/cli
-      Path.join([cwd, "priv", "prompts"])           # from cli dir: mix test
+      # from repo root: ./cli/cli
+      Path.join([cwd, "cli", "priv", "prompts"]),
+      # from cli dir: mix test
+      Path.join([cwd, "priv", "prompts"])
     ]
 
     Enum.find(candidates, List.first(candidates), &File.dir?/1)
@@ -105,8 +108,12 @@ defmodule Cli do
 
   defp read_prompt_file(path) do
     case File.read(path) do
-      {:ok, content} -> content
-      {:error, :enoent} -> ""
+      {:ok, content} ->
+        content
+
+      {:error, :enoent} ->
+        ""
+
       {:error, reason} ->
         IO.puts("WARNING: Failed to read #{path}: #{reason}")
         ""
@@ -205,6 +212,9 @@ defmodule Cli do
     end
   end
 
+  # Flush partial buffer after this many milliseconds of inactivity
+  @buffer_flush_timeout_ms 100
+
   defp stream_output(port, %{buffer: buffer} = state) do
     receive do
       {^port, {:data, data}} ->
@@ -224,6 +234,45 @@ defmodule Cli do
       {^port, {:exit_status, status}} ->
         print_usage_summary(state)
         status
+    after
+      @buffer_flush_timeout_ms ->
+        # Flush partial buffer on timeout to show long lines in progress
+        case buffer do
+          "" ->
+            stream_output(port, state)
+
+          partial ->
+            flush_partial_buffer(partial)
+            stream_output(port, %{state | buffer: ""})
+        end
+    end
+  end
+
+  @doc """
+  Flush incomplete JSON lines from the buffer without processing them as JSON.
+  These are partial lines that haven't completed yet, so we try to extract
+  any text content for display.
+
+  Returns `:ok` after writing any extracted text to stdout.
+  """
+  def flush_partial_buffer(partial) do
+    # Try to extract text from partial JSON if it looks like a streaming event
+    # Pattern: look for "text":" followed by content
+    case Regex.run(~r/"text"\s*:\s*"((?:[^"\\]|\\.)*)$/, partial) do
+      [_, text] ->
+        # Unescape basic JSON escapes (order matters - backslash first)
+        unescaped =
+          text
+          |> String.replace("\\\\", "\x00BACKSLASH\x00")
+          |> String.replace("\\n", "\n")
+          |> String.replace("\\t", "\t")
+          |> String.replace("\\\"", "\"")
+          |> String.replace("\x00BACKSLASH\x00", "\\")
+
+        IO.write(unescaped)
+
+      nil ->
+        :ok
     end
   end
 

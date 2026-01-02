@@ -302,6 +302,58 @@ defmodule CliTest do
     end
   end
 
+  describe "flush_partial_buffer/1" do
+    import ExUnit.CaptureIO
+
+    test "extracts and outputs text from partial JSON with text field" do
+      # Simulates a partial streaming event with incomplete text
+      partial = ~s({"type":"stream_event","event":{"delta":{"text":"Hello wor)
+
+      output = capture_io(fn -> Cli.flush_partial_buffer(partial) end)
+      assert output == "Hello wor"
+    end
+
+    test "handles JSON escapes in partial text" do
+      partial = ~s({"type":"stream_event","event":{"delta":{"text":"line1\\nline2\\ttab)
+
+      output = capture_io(fn -> Cli.flush_partial_buffer(partial) end)
+      assert output == "line1\nline2\ttab"
+    end
+
+    test "handles escaped quotes in partial text" do
+      partial = ~s({"type":"stream_event","event":{"delta":{"text":"said \\"hello)
+
+      output = capture_io(fn -> Cli.flush_partial_buffer(partial) end)
+      assert output == "said \"hello"
+    end
+
+    test "handles escaped backslashes in partial text" do
+      partial = ~s({"type":"stream_event","event":{"delta":{"text":"path\\\\to)
+
+      output = capture_io(fn -> Cli.flush_partial_buffer(partial) end)
+      assert output == "path\\to"
+    end
+
+    test "outputs nothing for partial JSON without text field" do
+      partial = ~s({"type":"stream_event","event":{"delta":{"partial_json":"{)
+
+      output = capture_io(fn -> Cli.flush_partial_buffer(partial) end)
+      assert output == ""
+    end
+
+    test "outputs nothing for non-JSON partial data" do
+      partial = "some random data without json structure"
+
+      output = capture_io(fn -> Cli.flush_partial_buffer(partial) end)
+      assert output == ""
+    end
+
+    test "outputs nothing for empty string" do
+      output = capture_io(fn -> Cli.flush_partial_buffer("") end)
+      assert output == ""
+    end
+  end
+
   describe "load_system_prompt/1" do
     test "returns nil for nil agent" do
       assert Cli.load_system_prompt(nil) == nil
