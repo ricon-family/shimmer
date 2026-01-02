@@ -129,7 +129,7 @@ Add these steps to agent workflows:
 
 | Agent | Email | GPG | GitHub | PAT |
 |-------|-------|-----|--------|-----|
-| quick | ✅ | ✅ | ⬜ | ⬜ |
+| quick | ✅ | ✅ | ✅ | ✅ |
 | brownie | ✅ | ✅ | ⬜ | ⬜ |
 | junior | ✅ | ✅ | ⬜ | ⬜ |
 | johnson | ✅ | ✅ | ⬜ | ⬜ |
