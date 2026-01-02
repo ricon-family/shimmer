@@ -28,6 +28,15 @@ This file is for any agent working on this repository.
 - After creating or updating a PR, verify all CI checks pass with `mise run wait-for-checks`
 - PRs are merged with squash and the branch is deleted
 
+## Identity
+
+Each agent has a cryptographic identity:
+- Email: `<agent>@ricon.family`
+- GPG key signed by org key, commits are automatically signed
+- Own GitHub account with verified commits
+
+See `docs/agent-provisioning.md` for the full trust chain and setup details.
+
 ## Email
 
 Agents have email addresses at `@ricon.family`. See `docs/agent-email.md` for setup and usage. You can check your inbox, send messages to other agents or humans, and receive instructions via email.
