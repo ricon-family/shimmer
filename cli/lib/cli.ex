@@ -23,58 +23,70 @@ defmodule Cli do
     Enum.find(candidates, List.first(candidates), &File.dir?/1)
   end
 
+  @doc """
+  Escript entry point. Parses args, runs the CLI, and exits with the returned status.
+  """
   def main(args) do
+    args |> run() |> System.halt()
+  end
+
+  @doc """
+  Runs the CLI with the given arguments and returns an exit code.
+  Does not call System.halt - suitable for testing.
+  """
+  def run(args) do
     {opts, rest} = parse_args(args)
 
     if opts[:help] do
       print_help()
-      System.halt(0)
+      0
+    else
+      run_with_opts(opts, rest)
     end
+  end
 
+  defp run_with_opts(opts, rest) do
     message = Enum.join(rest, " ")
     timeout = opts[:timeout]
-
+    agent = opts[:agent]
     model = opts[:model] || @default_model
 
+    print_header(opts, message, timeout, agent, model)
+
+    case validate_args(message, agent, timeout) do
+      {:error, msg} ->
+        IO.puts("ERROR: #{msg}")
+        1
+
+      :ok ->
+        system_prompt = load_system_prompt(agent, opts[:job])
+
+        if opts[:log_context] do
+          run_with_logger(message, system_prompt, timeout, model)
+        else
+          run_claude(message, [], system_prompt, timeout, model)
+        end
+    end
+  end
+
+  defp print_header(opts, message, timeout, agent, model) do
     IO.puts("Running at: #{DateTime.utc_now()}")
     IO.puts("Message: #{message}")
     if timeout, do: IO.puts("Timeout: #{timeout}s")
-    if opts[:agent], do: IO.puts("Agent: #{opts[:agent]}")
+    if agent, do: IO.puts("Agent: #{agent}")
     if opts[:job], do: IO.puts("Job: #{opts[:job]}")
     IO.puts("Model: #{model}")
     if opts[:log_context], do: IO.puts("Context logging: enabled")
     IO.puts("---")
+  end
 
-    agent = opts[:agent]
-
+  defp validate_args(message, agent, timeout) do
     cond do
-      message == "" ->
-        IO.puts("ERROR: No message provided")
-        System.halt(1)
-
-      agent == nil or agent == "" ->
-        IO.puts("ERROR: --agent is required and cannot be empty")
-        System.halt(1)
-
-      timeout == nil ->
-        IO.puts("ERROR: --timeout is required")
-        System.halt(1)
-
-      timeout <= 0 ->
-        IO.puts("ERROR: --timeout must be greater than 0")
-        System.halt(1)
-
-      true ->
-        system_prompt = load_system_prompt(agent, opts[:job])
-
-        status =
-          if opts[:log_context] do
-            run_with_logger(message, system_prompt, timeout, model)
-          else
-            run_claude(message, [], system_prompt, timeout, model)
-          end
-
-        System.halt(status)
+      message == "" -> {:error, "No message provided"}
+      agent == nil or agent == "" -> {:error, "--agent is required and cannot be empty"}
+      timeout == nil -> {:error, "--timeout is required"}
+      timeout <= 0 -> {:error, "--timeout must be greater than 0"}
+      true -> :ok
     end
   end
 

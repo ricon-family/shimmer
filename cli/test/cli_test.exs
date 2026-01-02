@@ -3,49 +3,44 @@ defmodule CliTest do
   doctest Cli
   import ExUnit.CaptureIO
 
+  # Helper to capture both IO output and return value from Cli.run
+  defp run_cli(args) do
+    output =
+      capture_io(fn ->
+        send(self(), {:result, Cli.run(args)})
+      end)
+
+    receive do
+      {:result, exit_code} -> {output, exit_code}
+    end
+  end
+
   describe "invalid argument handling" do
     test "warns about unknown arguments" do
-      # Use invalid args that will also fail validation (no --agent)
-      # This ensures main exits early without trying to run Claude
-      output =
-        capture_io(fn ->
-          try do
-            Cli.main(["--agnet", "quick", "--timeout", "60"])
-          catch
-            :exit, _ -> :ok
-          end
-        end)
-
+      {output, _exit_code} = run_cli(["--agnet", "quick", "--timeout", "60"])
       assert output =~ "WARNING: Unknown arguments ignored: --agnet"
     end
 
     test "warns about multiple unknown arguments" do
-      output =
-        capture_io(fn ->
-          try do
-            Cli.main(["--agnet", "quick", "--tiemout", "60"])
-          catch
-            :exit, _ -> :ok
-          end
-        end)
-
+      {output, _exit_code} = run_cli(["--agnet", "quick", "--tiemout", "60"])
       assert output =~ "WARNING: Unknown arguments ignored:"
       assert output =~ "--agnet"
       assert output =~ "--tiemout"
     end
 
     test "no warning for valid arguments" do
-      # Omit message so main exits early with "No message provided"
-      output =
-        capture_io(fn ->
-          try do
-            Cli.main(["--agent", "quick", "--timeout", "60"])
-          catch
-            :exit, _ -> :ok
-          end
-        end)
-
+      {output, _exit_code} = run_cli(["--agent", "quick", "--timeout", "60"])
       refute output =~ "WARNING: Unknown arguments ignored"
+    end
+
+    test "returns exit code 1 for missing agent" do
+      {_output, exit_code} = run_cli(["--timeout", "60", "hello"])
+      assert exit_code == 1
+    end
+
+    test "returns exit code 1 for missing message" do
+      {_output, exit_code} = run_cli(["--agent", "quick", "--timeout", "60"])
+      assert exit_code == 1
     end
   end
 
