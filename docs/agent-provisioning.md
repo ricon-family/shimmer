@@ -7,19 +7,17 @@ This document describes how to provision a new agent with a full identity.
 - Access to `admin@ricon.family` GPG key (org signing key)
 - Access to email provider to create accounts
 - GitHub account with org admin access
+- 1Password CLI (`op`) signed in: `mise use -g 1password-cli && op signin`
 
 ## Quick Start
 
-For agents that already have email accounts:
-
 ```bash
-mise run provision-agent <agent-name> [--force]
-```
+# 1. Create GPG key and store in GitHub secrets
+mise run provision-agent <agent-name>
 
-This will:
-1. Generate a GPG key (or use existing)
-2. Sign it with the org key
-3. Store keys as GitHub secrets
+# 2. Store all credentials in 1Password (generates passwords for new entries)
+mise run store-agent-credentials <agent-name>
+```
 
 ## Full Provisioning Steps
 
@@ -27,7 +25,7 @@ This will:
 
 Create an email account at the email provider:
 - Email: `<agent>@ricon.family`
-- Store password securely
+- Use the generated password from 1Password (`<agent> - Email`)
 
 Add the password as a GitHub secret:
 ```bash
@@ -47,10 +45,10 @@ This creates:
 
 ### 3. Create GitHub Account
 
-1. Go to https://github.com/join
-2. Use `<agent>@ricon.family` as the email
-3. Username: `<agent>-ricon` or similar
-4. Verify email
+1. Get credentials from 1Password (`<agent> - GitHub`)
+2. Go to https://github.com/join
+3. Use the email, username, password, and country from 1Password
+4. Check agent's email for verification code: `himalaya envelope list` / `himalaya message read <id>`
 
 ### 4. Upload GPG Key to GitHub
 
@@ -110,7 +108,7 @@ Add these steps to agent workflows:
 
 ## Secrets Reference
 
-Each agent should have these secrets:
+### GitHub Secrets (for CI)
 
 | Secret | Purpose |
 |--------|---------|
@@ -118,6 +116,14 @@ Each agent should have these secrets:
 | `<AGENT>_GPG_PRIVATE_KEY` | Commit signing |
 | `<AGENT>_GPG_PUBLIC_KEY` | Key verification |
 | `<AGENT>_GITHUB_PAT` | GitHub API access with workflow permissions |
+
+### 1Password (Agents vault)
+
+| Item | Contents |
+|------|----------|
+| `<agent> - Email` | username, email, password, URL |
+| `<agent> - GPG` | Key ID, Fingerprint, Email, Private Key |
+| `<agent> - GitHub` | username, email, password, country, URL |
 
 ## Current Agents
 
