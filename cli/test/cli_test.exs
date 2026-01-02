@@ -318,6 +318,32 @@ defmodule CliTest do
       assert result =~ "You are probe-1"
     end
 
+    test "loads agent prompt with job" do
+      result = Cli.load_system_prompt("quick", "probe")
+
+      # Should contain common prompt
+      assert result =~ "verify current documentation"
+
+      # Should contain agent identity
+      assert result =~ "You are quick"
+      assert result =~ "quick@ricon.family"
+
+      # Should contain job description
+      assert result =~ "explore the codebase"
+      assert result =~ "mise run tasks"
+    end
+
+    test "loads agent prompt with critic job" do
+      result = Cli.load_system_prompt("brownie", "critic")
+
+      # Should contain agent identity
+      assert result =~ "You are brownie"
+
+      # Should contain job description
+      assert result =~ "find ONE thing"
+      assert result =~ "GitHub issue"
+    end
+
     test "returns common prompt only for non-existent agent" do
       result = Cli.load_system_prompt("non-existent-agent")
 

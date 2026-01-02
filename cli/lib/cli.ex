@@ -28,6 +28,7 @@ defmodule Cli do
     IO.puts("Message: #{message}")
     if timeout, do: IO.puts("Timeout: #{timeout}s")
     if opts[:agent], do: IO.puts("Agent: #{opts[:agent]}")
+    if opts[:job], do: IO.puts("Job: #{opts[:job]}")
     if opts[:log_context], do: IO.puts("Context logging: enabled")
     IO.puts("---")
 
@@ -44,7 +45,7 @@ defmodule Cli do
         System.halt(1)
 
       true ->
-        system_prompt = load_system_prompt(opts[:agent])
+        system_prompt = load_system_prompt(opts[:agent], opts[:job])
 
         if opts[:log_context] do
           run_with_logger(message, system_prompt, timeout)
@@ -57,65 +58,58 @@ defmodule Cli do
   defp parse_args(args) do
     {opts, rest, _} =
       OptionParser.parse(args,
-        switches: [log_context: :boolean, agent: :string, timeout: :integer]
+        switches: [log_context: :boolean, agent: :string, job: :string, timeout: :integer]
       )
 
     {opts, rest}
   end
 
   @doc """
-  Loads the system prompt for a given agent.
+  Loads the system prompt for a given agent and optional job.
 
-  Combines the common prompt from `cli/lib/prompts/common.txt` with the
-  agent-specific prompt from `cli/lib/prompts/agents/{agent_name}.txt`.
+  Combines prompts in this order:
+  1. Common prompt from `priv/prompts/common.txt`
+  2. Agent identity from `priv/prompts/agents/{agent_name}.txt`
+  3. Job description from `priv/prompts/jobs/{job_name}.txt` (if provided)
 
-  Returns `nil` if `agent_name` is `nil`. Returns the common prompt only
-  if the agent-specific prompt file is missing, or `nil` if both are missing.
+  Returns `nil` if `agent_name` is `nil`. Returns available prompts
+  if some files are missing, or `nil` if all are missing.
 
   ## Examples
 
-      iex> Cli.load_system_prompt(nil)
+      iex> Cli.load_system_prompt(nil, nil)
       nil
 
   """
-  def load_system_prompt(nil), do: nil
+  def load_system_prompt(nil, _job), do: nil
 
-  def load_system_prompt(agent_name) do
+  def load_system_prompt(agent_name, job_name) do
     dir = prompts_dir()
-    common_path = Path.join([dir, "common.txt"])
-    agent_path = Path.join([dir, "agents", "#{agent_name}.txt"])
 
-    common_content =
-      case File.read(common_path) do
-        {:ok, content} ->
-          content
+    parts =
+      [
+        read_prompt_file(Path.join([dir, "common.txt"])),
+        read_prompt_file(Path.join([dir, "agents", "#{agent_name}.txt"])),
+        if(job_name, do: read_prompt_file(Path.join([dir, "jobs", "#{job_name}.txt"])), else: "")
+      ]
+      |> Enum.reject(&(&1 == ""))
 
-        {:error, :enoent} ->
-          ""
+    case parts do
+      [] -> nil
+      parts -> Enum.join(parts, "\n\n")
+    end
+  end
 
-        {:error, reason} ->
-          IO.puts("WARNING: Failed to read #{common_path}: #{reason}")
-          ""
-      end
+  # Keep backward-compatible 1-arity version for tests
+  def load_system_prompt(agent_name), do: load_system_prompt(agent_name, nil)
 
-    agent_content =
-      case File.read(agent_path) do
-        {:ok, content} ->
-          content
-
-        {:error, :enoent} ->
-          ""
-
-        {:error, reason} ->
-          IO.puts("WARNING: Failed to read #{agent_path}: #{reason}")
-          ""
-      end
-
-    case {common_content, agent_content} do
-      {"", ""} -> nil
-      {common, ""} -> common
-      {"", agent} -> agent
-      {common, agent} -> common <> "\n\n" <> agent
+  defp read_prompt_file(path) do
+    case File.read(path) do
+      {:ok, content} -> content
+      {:error, :enoent} -> ""
+      {:error, reason} ->
+        IO.puts("WARNING: Failed to read #{path}: #{reason}")
+        ""
     end
   end
 
