@@ -1,0 +1,24 @@
+name: junior
+
+on:
+  schedule:
+    - cron: '30 * * * *'  # Every hour at :30
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Message'
+        required: false
+        type: string
+
+jobs:
+  run:
+    uses: ./.github/workflows/agent-run.yml
+    with:
+      agent-name: junior
+      job-type: readme
+      message: ${{ github.event.inputs.message }}
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      AGENT_GITHUB_PAT: ${{ secrets.JUNIOR_GITHUB_PAT }}
+      AGENT_GPG_PRIVATE_KEY: ${{ secrets.JUNIOR_GPG_PRIVATE_KEY }}
+      AGENT_EMAIL_PASSWORD: ${{ secrets.JUNIOR_EMAIL_PASSWORD }}
