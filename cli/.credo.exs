@@ -26,6 +26,7 @@
           {Credo.Check.Design.TagTODO, [exit_status: 0]},
 
           # Readability
+          {Credo.Check.Readability.AliasOrder, []},
           {Credo.Check.Readability.FunctionNames, []},
           {Credo.Check.Readability.LargeNumbers, []},
           {Credo.Check.Readability.MaxLineLength, [priority: :low, max_length: 120]},
@@ -50,6 +51,7 @@
           {Credo.Check.Refactor.NegatedConditionsWithElse, []},
           {Credo.Check.Refactor.Nesting, [max_nesting: 3]},
           {Credo.Check.Refactor.UnlessWithElse, []},
+          {Credo.Check.Refactor.WithClauses, []},
 
           # Warnings
           {Credo.Check.Warning.BoolOperationOnSameValues, []},
@@ -64,7 +66,8 @@
           {Credo.Check.Warning.UnusedKeywordOperation, []},
           {Credo.Check.Warning.UnusedListOperation, []},
           {Credo.Check.Warning.UnusedStringOperation, []},
-          {Credo.Check.Warning.UnusedTupleOperation, []}
+          {Credo.Check.Warning.UnusedTupleOperation, []},
+          {Credo.Check.Warning.UnsafeExec, []}
         ],
         disabled: [
           # Disabled - not needed for CLI tool
