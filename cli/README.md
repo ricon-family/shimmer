@@ -45,9 +45,8 @@ When an agent runs, available files are concatenated to form the system prompt.
 | Option | Description |
 |--------|-------------|
 | `--agent <name>` | Required. Specifies which agent prompt to load |
-| `--job <job>` | Optional. Specifies job-specific instructions |
-| `--timeout <seconds>` | Required. Timeout in seconds for the Claude command |
 | `--job <name>` | Optional. Specifies a job prompt to append from `priv/prompts/jobs/` |
+| `--timeout <seconds>` | Required. Timeout in seconds for the Claude command |
 | `--model <model>` | Optional. Claude model to use (default: `claude-opus-4-5-20251101`) |
 | `--log-context` | Enables context logging via claude-code-logger proxy |
 
