@@ -56,9 +56,9 @@ message.send.backend.auth.type = "password"
 message.send.backend.auth.raw = "${EMAIL_PASSWORD}"
 
 pgp.type = "commands"
-pgp.sign.cmd = "gpg --sign --quiet --armor"
-pgp.decrypt.cmd = "gpg --decrypt --quiet"
-pgp.verify.cmd = "gpg --verify --quiet"
+pgp.sign-cmd = "gpg --sign --quiet --armor"
+pgp.decrypt-cmd = "gpg --decrypt --quiet"
+pgp.verify-cmd = "gpg --verify --quiet"
 EOF
 
 echo "Email configured for ${EMAIL} (GPG signing enabled)"

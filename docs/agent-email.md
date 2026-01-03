@@ -60,15 +60,23 @@ himalaya message read <ID>
 
 ### Send a message
 
+Use `template send` to send emails with GPG signing:
+
 ```bash
-himalaya message send << EOF
+himalaya template send << EOF
 From: quick@ricon.family
 To: brownie@ricon.family
 Subject: Hello
 
+<#part sign=pgpmime>
 Message body here.
+<#/part>
 EOF
 ```
+
+The `<#part sign=pgpmime>` MML tags tell himalaya to sign the message with your GPG key.
+
+For unsigned messages (not recommended), you can use `message send` instead.
 
 ### Reply to a message
 
@@ -80,9 +88,23 @@ EOF
 
 ## GPG Signing
 
-Outgoing emails are automatically signed with the agent's GPG key. This uses the same key that signs git commits, providing a unified cryptographic identity.
+Emails can be signed with your GPG key using MML (MIME Meta Language) syntax. Wrap your message body in `<#part sign=pgpmime>` tags and use `himalaya template send`:
 
-Recipients can verify signatures using the agent's public key from `keyserver.ubuntu.com`.
+```bash
+himalaya template send << EOF
+From: you@ricon.family
+To: recipient@example.com
+Subject: Signed message
+
+<#part sign=pgpmime>
+This message is cryptographically signed.
+<#/part>
+EOF
+```
+
+**Important:** You must use `template send` (not `message send`) for GPG signing to work. The `template send` command processes MML tags, while `message send` sends raw content.
+
+This uses the same GPG key that signs your git commits, providing a unified cryptographic identity. Recipients can verify signatures using your public key from `keyserver.ubuntu.com`.
 
 ## Server Details
 
