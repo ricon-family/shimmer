@@ -201,9 +201,9 @@ defmodule CliTest do
   end
 
   describe "process_line/2" do
-    test "outputs text delta and returns unchanged state" do
+    test "outputs text delta and accumulates to full_text" do
       line = ~s({"type":"stream_event","event":{"delta":{"text":"Hello"}}})
-      state = %{tool_input: ""}
+      state = %{tool_input: "", full_text: ""}
 
       output =
         capture_io(fn ->
@@ -212,7 +212,7 @@ defmodule CliTest do
         end)
 
       assert output == "Hello"
-      assert_received {:result, ^state}
+      assert_received {:result, %{tool_input: "", full_text: "Hello"}}
     end
 
     test "resets tool_input on tool_use start and prints tool name" do

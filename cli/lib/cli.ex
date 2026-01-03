@@ -223,7 +223,7 @@ defmodule Cli do
         [:binary, :exit_status, :stderr_to_stdout, {:args, args}, {:env, env}]
       )
 
-    status = stream_output(port, %{tool_input: "", buffer: "", usage: nil, abort: false})
+    status = stream_output(port, %{tool_input: "", buffer: "", usage: nil, full_text: ""})
 
     if status == 124 do
       IO.puts("\n---")
@@ -346,7 +346,7 @@ defmodule Cli do
         print_usage_summary(state)
 
         # If agent signaled abort, override exit status
-        if state.abort do
+        if String.contains?(state.full_text, "[[ABORT]]") do
           IO.puts("\n---")
           IO.puts("Agent requested session abort via [[ABORT]]")
           1
@@ -401,13 +401,7 @@ defmodule Cli do
       # Handle streaming text deltas
       {:ok, %{"type" => "stream_event", "event" => %{"delta" => %{"text" => text}}}} ->
         IO.write(text)
-
-        # Check for ABORT signal from agent
-        if String.contains?(text, "[[ABORT]]") do
-          %{state | abort: true}
-        else
-          state
-        end
+        %{state | full_text: state.full_text <> text}
 
       # Handle tool use start - show which tool is being called
       {:ok,
