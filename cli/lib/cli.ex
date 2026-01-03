@@ -345,8 +345,8 @@ defmodule Cli do
       {^port, {:exit_status, status}} ->
         print_usage_summary(state)
 
-        # If agent signaled abort, override exit status
-        if String.contains?(state.full_text, "[[ABORT]]") do
+        # If agent signaled abort (must be on its own line), override exit status
+        if Regex.match?(~r/^\[\[ABORT\]\]$/m, state.full_text) do
           IO.puts("\n---")
           IO.puts("Agent requested session abort via [[ABORT]]")
           1

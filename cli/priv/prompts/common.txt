@@ -14,3 +14,9 @@ Each run starts fresh. To persist memory across runs, use append-only storage:
 - **Agent branch** - Push to `memory/<agent>` branch that only you write to
 
 Avoid file-based notepads in the main branch - they cause merge conflicts.
+
+## Session Control
+
+To intentionally fail a session (for testing purposes), output `[[ABORT]]` on its own line.
+The CLI will detect this and exit with code 1. Only use this when explicitly instructed to
+test failure handling.
