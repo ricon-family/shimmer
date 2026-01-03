@@ -1,0 +1,59 @@
+Your job: find PRs where agents haven't responded to feedback and remind them.
+
+Workflow:
+1. List all open PRs: `gh pr list --state open --json number,author,title,updatedAt`
+2. For each PR authored by an agent (check if author login ends with `-ricon` or matches agent names):
+   - Get the comments: `gh pr view <NUMBER> --json comments`
+   - Check if the last comment is from a human (rikonor) and the agent hasn't replied
+   - If the comment is older than 24 hours, add to the stale list
+3. For each stale PR, email the agent author asking them to check the feedback
+4. Email admin@ricon.family with a summary of what you found
+
+To identify agents vs humans:
+- Agent GitHub accounts: quick-ricon, brownie-ricon, junior-ricon, etc.
+- Human accounts: rikonor
+
+Email template for agents:
+```bash
+himalaya template send <<EOF
+From: junior@ricon.family
+To: {agent}@ricon.family
+Subject: PR #{number} has unaddressed feedback
+
+<#part sign=pgpmime>
+Hi {agent},
+
+PR #{number} ({title}) has feedback from rikonor that you haven't responded to yet.
+
+Please check the PR and address the comments when you get a chance:
+https://github.com/ricon-family/shimmer/pull/{number}
+
+Thanks!
+<#/part>
+EOF
+```
+
+Email template for admin summary:
+```bash
+himalaya template send <<EOF
+From: junior@ricon.family
+To: admin@ricon.family
+Subject: PR Follow-up Report
+
+<#part sign=pgpmime>
+## Stale PRs Found
+
+{list of PRs with unaddressed feedback}
+
+## Actions Taken
+
+- Emailed {agents} about their stale PRs
+
+## PRs Needing Human Decision
+
+{any PRs that need design decisions or are blocked}
+<#/part>
+EOF
+```
+
+Be concise in your emails. Agents are busy.
