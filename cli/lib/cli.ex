@@ -8,6 +8,8 @@ defmodule Cli do
 
   @logger_port 8000
   @default_model "claude-opus-4-5-20251101"
+  @truncate_edit_limit 60
+  @truncate_prompt_limit 100
 
   defp prompts_dir do
     # Try multiple paths - cwd might be repo root or cli directory
@@ -472,8 +474,8 @@ defmodule Cli do
   end
 
   def format_tool_input(%{"file_path" => path, "old_string" => old, "new_string" => new}) do
-    old_preview = old |> truncate(60) |> String.replace("\n", "\\n")
-    new_preview = new |> truncate(60) |> String.replace("\n", "\\n")
+    old_preview = old |> truncate(@truncate_edit_limit) |> String.replace("\n", "\\n")
+    new_preview = new |> truncate(@truncate_edit_limit) |> String.replace("\n", "\\n")
     "  #{path}\n  - #{old_preview}\n  + #{new_preview}"
   end
 
@@ -490,12 +492,12 @@ defmodule Cli do
 
   def format_tool_input(%{"url" => url, "prompt" => prompt} = input) do
     desc = Map.get(input, "description", "")
-    prompt_preview = truncate(prompt, 100)
+    prompt_preview = truncate(prompt, @truncate_prompt_limit)
     "  #{desc}\n  url: #{url}\n  prompt: #{prompt_preview}"
   end
 
   def format_tool_input(%{"prompt" => prompt} = input) do
-    prompt_preview = truncate(prompt, 100)
+    prompt_preview = truncate(prompt, @truncate_prompt_limit)
 
     case Map.get(input, "description") do
       nil -> "  prompt: #{prompt_preview}"
