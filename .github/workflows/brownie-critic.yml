@@ -1,22 +1,22 @@
-name: Run Logger
+name: brownie-critic
 
 on:
-  workflow_run:
-    workflows:
-      - quick
-      - brownie
-      - junior
-      - PR Follow-up
-    types:
-      - completed
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Message'
+        required: false
+        type: string
 
 jobs:
-  log:
+  run:
     uses: ./.github/workflows/agent-run.yml
     with:
       agent-name: brownie
-      job-type: run-log
-      message: "Log run ${{ github.event.workflow_run.id }}"
+      job-type: critic
+      message: ${{ github.event.inputs.message }}
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
       AGENT_GITHUB_PAT: ${{ secrets.BROWNIE_GITHUB_PAT }}

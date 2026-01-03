@@ -1,4 +1,4 @@
-name: Post-Merge Cleanup
+name: junior-cleanup
 
 on:
   pull_request:

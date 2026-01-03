@@ -1,22 +1,20 @@
-name: brownie
+name: brownie-run-review
 
 on:
-  schedule:
-    - cron: '0 */2 * * *'  # Every 2 hours
-  workflow_dispatch:
-    inputs:
-      message:
-        description: 'Message'
-        required: false
-        type: string
+  workflow_run:
+    workflows: ["quick-probe", "junior-readme", "brownie-critic"]
+    types:
+      - completed
 
 jobs:
-  run:
+  review:
+    # Only review failed runs
+    if: github.event.workflow_run.conclusion == 'failure'
     uses: ./.github/workflows/agent-run.yml
     with:
       agent-name: brownie
-      job-type: critic
-      message: ${{ github.event.inputs.message }}
+      job-type: run-review
+      message: "Review run ${{ github.event.workflow_run.id }}"
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
       AGENT_GITHUB_PAT: ${{ secrets.BROWNIE_GITHUB_PAT }}

@@ -1,4 +1,4 @@
-name: PR Follow-up
+name: johnson-pr-followup
 
 on:
   schedule:

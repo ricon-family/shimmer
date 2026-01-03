@@ -1,8 +1,8 @@
-name: quick
+name: junior-readme
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    - cron: '30 */6 * * *'  # Every 6 hours at :30
   workflow_dispatch:
     inputs:
       message:
@@ -14,11 +14,11 @@ jobs:
   run:
     uses: ./.github/workflows/agent-run.yml
     with:
-      agent-name: quick
-      job-type: probe
+      agent-name: junior
+      job-type: readme
       message: ${{ github.event.inputs.message }}
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      AGENT_GITHUB_PAT: ${{ secrets.QUICK_GITHUB_PAT }}
-      AGENT_GPG_PRIVATE_KEY: ${{ secrets.QUICK_GPG_PRIVATE_KEY }}
-      AGENT_EMAIL_PASSWORD: ${{ secrets.QUICK_EMAIL_PASSWORD }}
+      AGENT_GITHUB_PAT: ${{ secrets.JUNIOR_GITHUB_PAT }}
+      AGENT_GPG_PRIVATE_KEY: ${{ secrets.JUNIOR_GPG_PRIVATE_KEY }}
+      AGENT_EMAIL_PASSWORD: ${{ secrets.JUNIOR_EMAIL_PASSWORD }}

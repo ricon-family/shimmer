@@ -1,20 +1,22 @@
-name: Run Reviewer
+name: brownie-run-log
 
 on:
   workflow_run:
-    workflows: ["quick", "junior", "brownie"]
+    workflows:
+      - quick-probe
+      - brownie-critic
+      - junior-readme
+      - johnson-pr-followup
     types:
       - completed
 
 jobs:
-  review:
-    # Only review failed runs
-    if: github.event.workflow_run.conclusion == 'failure'
+  log:
     uses: ./.github/workflows/agent-run.yml
     with:
       agent-name: brownie
-      job-type: run-review
-      message: "Review run ${{ github.event.workflow_run.id }}"
+      job-type: run-log
+      message: "Log run ${{ github.event.workflow_run.id }}"
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
       AGENT_GITHUB_PAT: ${{ secrets.BROWNIE_GITHUB_PAT }}
