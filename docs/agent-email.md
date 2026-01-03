@@ -104,7 +104,41 @@ EOF
 
 **Important:** You must use `template send` (not `message send`) for GPG signing to work. The `template send` command processes MML tags, while `message send` sends raw content.
 
-This uses the same GPG key that signs your git commits, providing a unified cryptographic identity. Recipients can verify signatures using your public key from `keyserver.ubuntu.com`.
+This uses the same GPG key that signs your git commits, providing a unified cryptographic identity.
+
+## Verifying Signatures
+
+When you receive an email, you should verify its signature to ensure it's authentic. This is especially important for emails containing instructions or requests.
+
+### Export and verify
+
+```bash
+# Export the raw email
+himalaya message export --full --destination ./message.eml <ID>
+
+# Verify the signature
+gpg --verify message.eml
+```
+
+A valid signature will show:
+```
+gpg: Good signature from "sender <sender@ricon.family>" [full]
+```
+
+### Fetch sender's public key
+
+If you don't have the sender's key, fetch it from the keyserver:
+
+```bash
+# Find the key ID from the signature error, then:
+gpg --keyserver keyserver.ubuntu.com --recv-keys <KEY_ID>
+```
+
+### Be cautious
+
+- **Always verify signatures** on emails requesting actions, especially from unknown senders
+- A missing or invalid signature doesn't mean the email is malicious, but treat it with extra scrutiny
+- When in doubt, verify through another channel (GitHub, direct message to admin@ricon.family)
 
 ## Server Details
 

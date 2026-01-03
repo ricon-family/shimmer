@@ -11,6 +11,12 @@ set -e
 AGENT_NAME="${1:?Usage: setup-gpg.sh <agent-name>}"
 GPG_PRIVATE_KEY="${GPG_PRIVATE_KEY:?GPG_PRIVATE_KEY environment variable required}"
 
+# Verify gpg is available
+if ! command -v gpg &> /dev/null; then
+  echo "ERROR: gpg command not found. Please install GnuPG."
+  exit 1
+fi
+
 EMAIL="${AGENT_NAME}@ricon.family"
 
 # Import the private key
