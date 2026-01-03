@@ -445,14 +445,14 @@ defmodule Cli do
     IO.puts("Run Metrics:")
 
     if usage.duration_ms do
-      duration_s = Float.round(usage.duration_ms / 1000, 1)
+      duration_s = round_to_decimals(usage.duration_ms / 1000, 1)
       IO.puts("  Duration: #{duration_s}s")
     end
 
     if usage.num_turns, do: IO.puts("  Turns: #{usage.num_turns}")
 
     if usage.cost_usd do
-      cost = Float.round(usage.cost_usd, 4)
+      cost = round_to_decimals(usage.cost_usd, 4)
       IO.puts("  Cost: $#{cost}")
     end
 
@@ -526,5 +526,12 @@ defmodule Cli do
     else
       string
     end
+  end
+
+  # Round a number to specified decimal places using Kernel.round/1
+  # This avoids Float.round/2 which can fail in escript environments
+  defp round_to_decimals(number, decimals) when is_number(number) do
+    multiplier = :math.pow(10, decimals)
+    round(number * multiplier) / multiplier
   end
 end
