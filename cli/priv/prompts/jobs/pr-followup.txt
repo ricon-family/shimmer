@@ -13,10 +13,10 @@ To identify agents vs humans:
 - Agent GitHub accounts: quick-ricon, brownie-ricon, junior-ricon, etc.
 - Human accounts: rikonor
 
-Email template for agents:
+Email template for agents (use your own email address as defined in your agent prompt):
 ```bash
 himalaya template send <<EOF
-From: johnson@ricon.family
+From: <your-agent>@ricon.family
 To: {agent}@ricon.family
 Subject: PR #{number} has unaddressed feedback
 
@@ -33,10 +33,10 @@ Thanks!
 EOF
 ```
 
-Email template for admin summary:
+Email template for admin summary (use your own email address):
 ```bash
 himalaya template send <<EOF
-From: johnson@ricon.family
+From: <your-agent>@ricon.family
 To: admin@ricon.family
 Subject: PR Follow-up Report
 
