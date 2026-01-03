@@ -8,6 +8,8 @@ on:
 
 jobs:
   review:
+    # Skip if the triggering workflow was run-reviewer itself (prevents infinite loop)
+    if: github.event.workflow_run.name != 'Run Reviewer'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
