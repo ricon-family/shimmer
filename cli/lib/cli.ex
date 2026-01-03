@@ -211,10 +211,9 @@ defmodule Cli do
 
     # Convert env extras like "KEY=value" to {~c"KEY", ~c"value"} tuples
     env =
-      Enum.map(env_extras, fn extra ->
-        [key, value] = String.split(extra, "=", parts: 2)
-        {String.to_charlist(key), String.to_charlist(value)}
-      end)
+      env_extras
+      |> Enum.map(&parse_env_extra/1)
+      |> Enum.reject(&is_nil/1)
 
     port =
       Port.open(
@@ -276,6 +275,19 @@ defmodule Cli do
         end
 
         1
+    end
+  end
+
+  # Parse a single env extra string like "KEY=value" into a charlist tuple
+  # Returns nil and logs a warning for malformed entries
+  defp parse_env_extra(extra) do
+    case String.split(extra, "=", parts: 2) do
+      [key, value] ->
+        {String.to_charlist(key), String.to_charlist(value)}
+
+      _ ->
+        IO.puts("WARNING: Ignoring malformed env extra: #{extra}")
+        nil
     end
   end
 
