@@ -16,7 +16,7 @@ defmodule Cli do
     cwd = File.cwd!()
 
     candidates = [
-      # from repo root: ./cli/cli
+      # from repo root: ./cli/shimmer
       Path.join([cwd, "cli", "priv", "prompts"]),
       # from cli dir: mix test
       Path.join([cwd, "priv", "prompts"])
@@ -116,7 +116,7 @@ defmodule Cli do
 
   defp print_help do
     IO.puts("""
-    Usage: cli --agent <name> --timeout <seconds> [options] <message>
+    Usage: shimmer --agent <name> --timeout <seconds> [options] <message>
 
     Run Claude Code with a specific agent persona and streaming output.
 
@@ -131,8 +131,8 @@ defmodule Cli do
       -h, --help           Show this help message
 
     Examples:
-      cli --agent quick --timeout 300 "Fix the bug in cli.ex"
-      cli --agent brownie --timeout 600 --job tasks "Review the codebase"
+      shimmer --agent quick --timeout 300 "Fix the bug in cli.ex"
+      shimmer --agent brownie --timeout 600 --job tasks "Review the codebase"
     """)
   end
 

@@ -101,4 +101,4 @@ jobs:
           RUN_TIMEOUT: 540
         run: |
           export RUN_START_TIME=$(date +%s)
-          ./cli/cli --agent ${{ inputs.agent-name }} --job ${{ inputs.job-type }} --timeout $RUN_TIMEOUT "${{ steps.message.outputs.msg }}"
+          ./cli/shimmer --agent ${{ inputs.agent-name }} --job ${{ inputs.job-type }} --timeout $RUN_TIMEOUT "${{ steps.message.outputs.msg }}"
