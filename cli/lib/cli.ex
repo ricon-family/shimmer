@@ -125,14 +125,14 @@ defmodule Cli do
       --timeout <seconds>  Maximum runtime in seconds
 
     Options:
-      --job <name>         Job-specific prompt (e.g., tasks, run-review)
+      --job <name>         Job-specific prompt (e.g., probe, run-review)
       --model <model>      Claude model to use (default: claude-opus-4-5-20251101)
       --log-context        Enable context logging via proxy
       -h, --help           Show this help message
 
     Examples:
       shimmer --agent quick --timeout 300 "Fix the bug in cli.ex"
-      shimmer --agent brownie --timeout 600 --job tasks "Review the codebase"
+      shimmer --agent brownie --timeout 600 --job probe "Explore the codebase"
     """)
   end
 
