@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#MISE description="Show agent activity metrics from GitHub"
+#MISE usage="activity [--days N]"
+
+set -e
+
+DAYS="${1:-7}"
+
+export GH_PAGER=""
+
+echo "=== Agent Activity Report ==="
+echo "Last $DAYS days ($(date -d "-$DAYS days" +%Y-%m-%d) to $(date +%Y-%m-%d))"
+echo ""
+
+# Get PR data
+PR_DATA=$(gh pr list --state all --limit 200 --json author,createdAt,state,mergedAt 2>/dev/null)
+
+# Filter to agents only (login ends with -ricon)
+# and count by author
+echo "=== PRs by Agent ==="
+echo "$PR_DATA" | jq -r --arg days "$DAYS" '
+  ($days | tonumber) as $d |
+  (now - ($d * 86400)) as $cutoff |
+  map(select(.author.login | test("-ricon$"))) |
+  map(select((.createdAt | fromdateiso8601) > $cutoff)) |
+  group_by(.author.login) |
+  map({
+    agent: .[0].author.login,
+    total: length,
+    merged: map(select(.state == "MERGED")) | length,
+    closed: map(select(.state == "CLOSED")) | length,
+    open: map(select(.state == "OPEN")) | length
+  }) |
+  sort_by(-.total) |
+  .[] |
+  "\(.agent)\t\(.total) PRs (\(.merged) merged, \(.closed) closed, \(.open) open)"
+' 2>/dev/null | column -t -s $'\t' || echo "No agent PR data found"
+
+echo ""
+echo "=== Issues by Agent ==="
+ISSUE_DATA=$(gh issue list --state all --limit 200 --json author,createdAt,state 2>/dev/null)
+
+echo "$ISSUE_DATA" | jq -r --arg days "$DAYS" '
+  ($days | tonumber) as $d |
+  (now - ($d * 86400)) as $cutoff |
+  map(select(.author.login | test("-ricon$"))) |
+  map(select((.createdAt | fromdateiso8601) > $cutoff)) |
+  group_by(.author.login) |
+  map({
+    agent: .[0].author.login,
+    total: length,
+    open: map(select(.state == "OPEN")) | length,
+    closed: map(select(.state == "CLOSED")) | length
+  }) |
+  sort_by(-.total) |
+  .[] |
+  "\(.agent)\t\(.total) issues (\(.open) open, \(.closed) closed)"
+' 2>/dev/null | column -t -s $'\t' || echo "No agent issue data found"
+
+echo ""
+echo "=== Summary ==="
+AGENT_COUNT=$(echo "$PR_DATA" | jq '[.[] | select(.author.login | test("-ricon$"))] | map(.author.login) | unique | length')
+TOTAL_PRS=$(echo "$PR_DATA" | jq --arg days "$DAYS" '
+  ($days | tonumber) as $d |
+  (now - ($d * 86400)) as $cutoff |
+  map(select(.author.login | test("-ricon$"))) |
+  map(select((.createdAt | fromdateiso8601) > $cutoff)) |
+  length
+')
+echo "Active agents: $AGENT_COUNT"
+echo "Total agent PRs (last $DAYS days): $TOTAL_PRS"
