@@ -1,30 +1,48 @@
 #!/usr/bin/env bash
 #MISE description="Trigger an agent workflow manually"
-#MISE usage="trigger <agent> [message]"
+#MISE usage="trigger <agent> <job> [message]"
 
 set -e
 
-AGENT="${1:-quick}"
-MESSAGE="${2:-}"
-REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+if [ $# -lt 2 ]; then
+  echo "Usage: mise run trigger <agent> <job> [message]"
+  echo ""
+  echo "Agents: quick, brownie, junior, johnson"
+  echo ""
+  echo "Example jobs:"
+  echo "  quick:   probe, discuss"
+  echo "  brownie: critic, discuss, run-log, run-review"
+  echo "  junior:  cleanup, readme"
+  echo "  johnson: discuss, pr-followup"
+  echo ""
+  echo "Example: mise run trigger quick probe"
+  exit 1
+fi
 
-# Map agent names to workflow files
+AGENT="$1"
+JOB="$2"
+MESSAGE="${3:-}"
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+WORKFLOW="${AGENT}-${JOB}.yml"
+
+# Validate agent
 case "$AGENT" in
-  quick)
-    WORKFLOW="quick.yml"
-    ;;
-  brownie)
-    WORKFLOW="brownie.yml"
-    ;;
-  junior)
-    WORKFLOW="junior.yml"
-    ;;
+  quick|brownie|junior|johnson) ;;
   *)
     echo "Unknown agent: $AGENT"
-    echo "Available agents: quick, brownie, junior"
+    echo "Available agents: quick, brownie, junior, johnson"
     exit 1
     ;;
 esac
+
+# Validate workflow exists
+if [ ! -f ".github/workflows/$WORKFLOW" ]; then
+  echo "Workflow not found: $WORKFLOW"
+  echo ""
+  echo "Available workflows for $AGENT:"
+  ls .github/workflows/${AGENT}-*.yml 2>/dev/null | xargs -n1 basename | sed 's/^/  /' || echo "  (none)"
+  exit 1
+fi
 
 if [ -n "$MESSAGE" ]; then
   gh workflow run "$WORKFLOW" -f message="$MESSAGE"
@@ -32,5 +50,5 @@ else
   gh workflow run "$WORKFLOW"
 fi
 
-echo "Triggered $AGENT on $REPO"
+echo "Triggered $WORKFLOW on $REPO"
 echo "View at: https://github.com/$REPO/actions"
