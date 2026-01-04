@@ -37,7 +37,7 @@ When an agent runs, available files are concatenated to form the system prompt.
 
 1. Create `priv/prompts/agents/<name>.txt` with agent identity
 2. Optionally create or reuse a job in `priv/prompts/jobs/`
-3. Create a workflow in `.github/workflows/<name>.yml`
+3. Create a workflow in `.github/workflows/<agent>-<job>.yml` (see existing workflows for examples)
 4. Run with `--agent <name> --job <job>`
 
 ## Configuration
