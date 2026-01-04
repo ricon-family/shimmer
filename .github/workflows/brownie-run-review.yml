@@ -2,7 +2,11 @@ name: brownie-run-review
 
 on:
   workflow_run:
-    workflows: ["quick-probe", "junior-readme", "brownie-critic"]
+    workflows:
+      - quick-probe
+      - brownie-critic
+      - junior-readme
+      - johnson-pr-followup
     types:
       - completed
 
