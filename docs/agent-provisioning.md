@@ -105,10 +105,10 @@ rikonor@gmail.com (personal)
 | johnson | Active | ✅ | ✅ | ✅ | ✅ | ✅ |
 | k7r2 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ |
 | x1f9 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ |
-| c0da | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ |
+| c0da | Active | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ### Reserved Agents
 
-k7r2, x1f9, and c0da have cryptographic identities provisioned but no assigned roles.
+k7r2 and x1f9 have cryptographic identities provisioned but no assigned roles.
 These slots are available for future specialized agents. To activate, add a prompt file
 at `cli/priv/prompts/agents/<name>.txt` and create corresponding workflow(s).
