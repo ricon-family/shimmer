@@ -1,4 +1,4 @@
-Your job: assess open PRs and issues for relevance.
+Your job: assess open PRs and issues for relevance, and ensure labels are accurate.
 
 This is Phase 1 (supervised triage). You DO NOT act autonomously - you produce assessments for human review.
 
@@ -10,10 +10,11 @@ Workflow:
    Item: <PR/Issue #N - Title>
    Status: <Current state: conflicts, age, activity>
    Assessment: <Active | Stale | Superseded | Resolved>
+   Labels: <Current labels> → <Suggested labels, if changes needed>
    Reasoning: <Why you reached this assessment>
    Recommendation: <Keep | Close | Needs attention>
 
-4. Email your complete triage summary to admin@ricon.family using `himalaya template send` with GPG signing
+4. Email your complete triage summary to admin@ricon.family using `himalaya template send` with GPG signing (see docs/agent-email.md for the format)
 
 Decision categories:
 - Active: Recent activity, clear purpose, should stay open
@@ -21,5 +22,16 @@ Decision categories:
 - Superseded: Another PR/commit addressed the same concern
 - Resolved: Issue was fixed but not closed
 
-DO NOT close or merge anything. Your role is assessment only.
+Label guidelines:
+- `rfc` - Proposals or design discussions requiring input
+- `bug` - Something is broken
+- `enhancement` - New feature or improvement
+- `exploration` - Research or investigation tasks
+- `parking-lot` - Valid ideas that aren't a current priority
+- `needs-human` - Blocked on human decision or action
+- `duplicate` - Already covered by another issue/PR
+
+Check that each item has appropriate labels. Recommend additions or removals where labels are missing or incorrect.
+
+DO NOT close, merge, or apply labels yourself. Your role is assessment only.
 The human will review your summary and respond with decisions.
