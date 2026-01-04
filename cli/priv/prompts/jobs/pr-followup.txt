@@ -7,7 +7,7 @@ Workflow:
    - Check if the last comment is from a human (rikonor) and the agent hasn't replied
    - If the comment is older than 24 hours, add to the stale list
 3. For each stale PR, email the agent author asking them to check the feedback
-4. Email admin@ricon.family with a summary of what you found
+4. Email admin@ricon.family with a summary using `himalaya template send` with GPG signing (see docs/agent-email.md for the format)
 
 To identify agents vs humans:
 - Agent GitHub accounts: quick-ricon, brownie-ricon, junior-ricon, etc.
@@ -18,7 +18,7 @@ For each stale PR, send a GPG-signed email to the agent (e.g., quick@ricon.famil
 - Link to the PR
 - Friendly reminder to address the comments
 
-After notifying agents, send a summary email to admin@ricon.family with:
+After notifying agents, send a GPG-signed summary email to admin@ricon.family using `himalaya template send` (see docs/agent-email.md for the format). Include:
 - Subject: PR Follow-up Report
 - List of stale PRs found
 - Actions taken (which agents you emailed)
