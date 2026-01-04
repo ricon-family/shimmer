@@ -92,7 +92,7 @@ defmodule Cli do
 
   defp validate_args(message, agent, timeout) do
     cond do
-      message == "" -> {:error, "No message provided"}
+      String.trim(message) == "" -> {:error, "No message provided"}
       agent == nil or agent == "" -> {:error, "--agent is required and cannot be empty"}
       timeout == nil -> {:error, "--timeout is required"}
       timeout <= 0 -> {:error, "--timeout must be greater than 0"}

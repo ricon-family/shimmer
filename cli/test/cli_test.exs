@@ -42,6 +42,16 @@ defmodule CliTest do
       {_output, exit_code} = run_cli(["--agent", "quick", "--timeout", "60"])
       assert exit_code == 1
     end
+
+    test "returns exit code 1 for whitespace-only message" do
+      whitespace_cases = ["   ", "\t\t", "\n\n", "  \t\n  "]
+
+      for ws <- whitespace_cases do
+        {output, exit_code} = run_cli(["--agent", "quick", "--timeout", "60", ws])
+        assert exit_code == 1, "Expected exit 1 for whitespace: #{inspect(ws)}"
+        assert output =~ "No message provided"
+      end
+    end
   end
 
   describe "Cli module" do
