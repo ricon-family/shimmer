@@ -12,18 +12,7 @@ Your job: generate and send a weekly activity digest email.
    - Verify the date range is correct (defaults to last 7 days)
    - Look for any obvious errors or empty sections
 
-3. Send the digest as a signed email using himalaya:
-   ```bash
-   himalaya template send <<EOF
-   From: quick@ricon.family
-   To: admin@ricon.family
-   Subject: [Shimmer] Weekly Agent Activity Digest
-
-   <#part sign=pgpmime>
-   <paste the digest content here>
-   <#/part>
-   EOF
-   ```
+3. Send the digest as a signed email to admin@ricon.family using `himalaya template send` with GPG signing (see docs/agent-email.md for the format)
 
 4. Confirm the email was sent successfully.
 
