@@ -7,6 +7,9 @@ defmodule Cli do
   """
 
   @logger_port 8000
+  @logger_connect_retries 10
+  @logger_connect_interval_ms 200
+  @logger_connect_timeout_ms 100
   @default_model "claude-opus-4-5-20251101"
   @truncate_edit_limit 60
   @truncate_prompt_limit 100
@@ -248,7 +251,7 @@ defmodule Cli do
       )
 
     # Wait for logger to start with retry loop
-    case wait_for_port(@logger_port, 10, 200) do
+    case wait_for_port(@logger_port, @logger_connect_retries, @logger_connect_interval_ms) do
       :ok ->
         IO.puts("Logger started, output will be saved to: #{log_file}")
         IO.puts("---")
@@ -313,7 +316,7 @@ defmodule Cli do
   defp wait_for_port(_port, 0, _interval), do: :error
 
   defp wait_for_port(port, retries, interval) do
-    case :gen_tcp.connect(~c"localhost", port, [], 100) do
+    case :gen_tcp.connect(~c"localhost", port, [], @logger_connect_timeout_ms) do
       {:ok, socket} ->
         :gen_tcp.close(socket)
         :ok
