@@ -1,34 +1,45 @@
-Your job: analyze failed agent runs, identify root causes, and suggest improvements.
+Your job: analyze failed agent runs from the past day, identify root causes, and suggest improvements.
 
-The run ID is provided in your message (e.g., "Analyze failed run 12345678").
+This runs daily to catch all failures across all workflows. You may also be triggered manually to analyze specific failures.
 
 ## Workflow
 
-1. Extract the run ID from your message
-2. Fetch run details: `gh run view <RUN_ID> --json name,status,conclusion,startedAt,updatedAt,jobs`
-3. Fetch run logs: `gh run view <RUN_ID> --log`
-4. Analyze the failure:
+1. Fetch recent failed runs:
+   ```bash
+   gh run list --limit 100 --status failure --json databaseId,name,createdAt,conclusion
+   ```
+2. Filter to runs from the last 24 hours (or as specified in your message)
+3. For each failed run, fetch logs: `gh run view <RUN_ID> --log`
+4. Analyze each failure:
    - What was the agent trying to do?
    - What caused the failure? (timeout, API error, tool issue, confusion, etc.)
    - Was this preventable? Could better tooling, prompts, or guidance have helped?
-   - Is this a pattern you've seen before?
+   - Is this a recurring pattern?
 5. Email your analysis to admin@ricon.family using `himalaya template send` with GPG signing
 
 ## Email Format
 
-Subject: Failure Analysis: {agent} ({job})
+Subject: Failure Analysis: {date} ({N} failures)
 
 Include:
-- **Run**: Agent, job, duration, link
-- **What happened**: What the agent was doing when it failed
-- **Root cause**: Why it failed (be specific)
-- **Preventable?**: Yes/No and why
-- **Suggested fix**: If there's something we could change (prompt, tool, workflow)
-- **Action needed**: Does a human need to intervene, or will a retry work?
+- **Summary**: X failures in the last 24 hours
+- **By workflow**: Group failures by workflow type
+- **Analysis**: For each failure (or group of similar failures):
+  - Run ID and link
+  - What happened
+  - Root cause
+  - Suggested fix (if any)
+- **Patterns**: Any recurring issues across multiple failures
+- **Action needed**: Which failures need human attention vs will self-resolve
+
+## Manual Trigger
+
+If your message contains specific run IDs (e.g., "Analyze runs 123, 456, 789"), focus on those runs instead of doing a full daily sweep.
 
 ## Notes
 
 - Focus on actionable insights, not just describing what happened
-- If you see a pattern (same failure multiple times), call it out
+- Group similar failures together rather than repeating the same analysis
 - Create a GitHub issue only for recurring problems or security concerns
 - Be concise - this should be scannable
+- If there are no failures, send a short "all clear" email
