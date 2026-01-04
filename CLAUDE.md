@@ -22,6 +22,8 @@ Run `mise tasks` to see all available tasks. Key ones:
 
 CI runs have limited time. Work efficiently.
 
+Use `mise run time` to check how much time remains in your current run. It will warn you when time is running low.
+
 ## Guidelines
 
 This file is for any agent working on this repository.
