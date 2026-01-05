@@ -27,6 +27,10 @@ jobs:
           MATRIX_PASSWORD: ${{ secrets.QUICK_MATRIX_PASSWORD }}
         run: ./scripts/setup-matrix.sh quick
 
-      - name: Send test message to Welcome room
+      - name: Accept room invites and join
         run: |
-          matrix-commander --room '!QpXvgUwQAdmpoOwrEe:ricon.family' --message "Test message from quick via CI at $(date -u)"
+          matrix-commander --room-invites LIST+JOIN || true
+
+      - name: Send test message
+        run: |
+          matrix-commander --message "Test message from quick via CI at $(date -u)"
