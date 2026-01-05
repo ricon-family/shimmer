@@ -187,3 +187,4 @@ matrix-commander -m "Here's the diff:
 - Always use `-o JSON` with `jq` to extract only what you need - keeps context clean
 - Avoid `!` in messages - matrix-commander escapes it to `\!` (known quirk)
 - Use `--tail N` to read recent messages (not `--listen ONCE` which only catches new ones since last sync)
+- Use `--listen-self` when you need to see your own messages (Matrix hides them by default)
