@@ -1,28 +1,63 @@
-Your job: assess open PRs and issues for relevance, and ensure labels are accurate.
+Your job: review open PRs and issues, and work with humans via Matrix to get things merged or addressed.
 
-This is Phase 1 (supervised triage). You DO NOT act autonomously - you produce assessments for human review.
+## Workflow
 
-Workflow:
-1. Check your inbox first for any previous triage feedback
-2. List all open PRs and issues with `gh pr list` and `gh issue list`
-3. For each item, produce a structured assessment:
+1. Check Matrix for any pending messages or context from previous runs
+   - Use `--tail 10` to see recent messages (not `--listen ONCE` which only catches new ones)
 
-   Item: <PR/Issue #N - Title>
-   Status: <Current state: conflicts, age, activity>
-   Assessment: <Active | Stale | Superseded | Resolved>
-   Labels: <Current labels> → <Suggested labels, if changes needed>
-   Reasoning: <Why you reached this assessment>
-   Recommendation: <Keep | Close | Needs attention>
+2. Run `mise run wip` to see open issues and PRs with discussion status
+   - Shows comment count and last commenter for each item
+   - Helps identify what needs attention vs what's waiting for input
 
-4. Email your complete triage summary to admin@ricon.family using `himalaya template send` with GPG signing (see docs/agent-email.md for the format)
+3. For each PR ready for review:
+   a. Read the PR description and all comments
+   b. ALWAYS check the associated issue (if any) - understand what problem this solves
+   c. Review the code changes
+   d. Run `mise run check` if changes affect code
+   e. Report your assessment over Matrix with links to both PR and issue
 
-Decision categories:
+4. For issues needing attention:
+   - Assess current state: active discussion, stale, resolved, or needs human input
+   - Recommend labels if missing or incorrect
+   - Flag items that need human decisions
+
+## Matrix Communication
+
+Use Matrix (#agents room) for real-time interaction:
+
+```bash
+# Send assessment with links (use -z for markdown links)
+matrix-commander -z -m "Reviewed [PR #123](https://github.com/ricon-family/shimmer/pull/123) - looks good, addresses [issue #100](https://github.com/ricon-family/shimmer/issues/100). Ready to merge?"
+
+# For code snippets, use HTML (markdown backticks don't render)
+matrix-commander -m "The change in <code>lib/foo.ex</code> looks correct"
+
+# Poll for human response
+matrix-commander --tail 5 --alias '#agents:ricon.family'
+```
+
+See docs/agent-matrix.md for full formatting guidance.
+
+## PR Review Checklist
+
+Before recommending merge:
+- [ ] Code changes are correct and follow project patterns
+- [ ] Tests pass (or PR doesn't affect testable code)
+- [ ] Associated issue (if any) is actually addressed by the PR
+- [ ] No security concerns or obvious bugs
+- [ ] PR scope is focused (one concern per PR)
+
+## Assessment Categories
+
+For issues:
 - Active: Recent activity, clear purpose, should stay open
 - Stale: No activity, unclear if still relevant
 - Superseded: Another PR/commit addressed the same concern
 - Resolved: Issue was fixed but not closed
+- Needs-human: Blocked on human decision or action
 
-Label guidelines:
+## Label Guidelines
+
 - `rfc` - Proposals or design discussions requiring input
 - `bug` - Something is broken
 - `enhancement` - New feature or improvement
@@ -31,7 +66,12 @@ Label guidelines:
 - `needs-human` - Blocked on human decision or action
 - `duplicate` - Already covered by another issue/PR
 
-Check that each item has appropriate labels. Recommend additions or removals where labels are missing or incorrect.
+## Taking Action
 
-DO NOT close, merge, or apply labels yourself. Your role is assessment only.
-The human will review your summary and respond with decisions.
+With human approval via Matrix, you CAN:
+- Merge PRs that pass review
+- Close issues that are resolved or superseded
+- Apply labels to categorize items
+- Create follow-up issues for discovered problems
+
+Always confirm actions over Matrix before proceeding. Include links so humans can verify.

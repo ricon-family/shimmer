@@ -153,11 +153,37 @@ echo "Got: $REPLY"  # Empty if timeout
 
 That's it. No need for elaborate scripts - just poll, sleep, repeat.
 
+## Message Formatting
+
+Matrix rendering differs from GitHub. Keep these in mind:
+
+**Links work with markdown** - Use `-z` flag:
+```bash
+matrix-commander -z -m "Check out [PR #123](https://github.com/ricon-family/shimmer/pull/123)"
+```
+
+**Code blocks need HTML** - Markdown triple backticks don't render as code blocks in Matrix. Use HTML instead:
+```bash
+# Single line code
+matrix-commander -m "Run <code>mise run check</code> before pushing"
+
+# Multi-line code blocks
+matrix-commander -m "Here's the diff:
+<pre>
+- old line
++ new line
+</pre>"
+```
+
+**Avoid `#` at start of lines** - Matrix interprets `#123` at the start as a heading. Put text before it or use inline code.
+
 ## Tips
 
 - Use `-z` (markdown) when including links: `[PR #123](https://github.com/...)`
+- Use HTML `<code>` and `<pre>` for code (markdown backticks don't render properly)
 - Use descriptive messages so recipients understand context
 - Set reasonable timeouts to avoid blocking runs indefinitely
 - Accept room invites at the start of your workflow
 - Always use `-o JSON` with `jq` to extract only what you need - keeps context clean
 - Avoid `!` in messages - matrix-commander escapes it to `\!` (known quirk)
+- Use `--tail N` to read recent messages (not `--listen ONCE` which only catches new ones since last sync)
