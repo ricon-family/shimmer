@@ -12,12 +12,10 @@ This document describes how to provision a new agent with a full identity.
 ## Quick Start
 
 ```bash
-# 1. Create email account at mail provider (use password from 1Password after step 2)
-
-# 2. Provision agent (GPG key, GitHub secrets, 1Password entries)
+# 1. Provision agent (GPG key, GitHub secrets, 1Password entries)
 mise run provision-agent <agent-name>
 
-# 3. Interactive GitHub account setup + verification
+# 2. Interactive onboarding (email, GitHub, Matrix, verification)
 mise run onboard-agent <agent-name>
 ```
 
@@ -37,16 +35,17 @@ Creates the agent's cryptographic identity:
 
 ### onboard-agent
 
-Interactive walkthrough for GitHub account setup:
-1. **Create GitHub Account** - shows credentials from 1Password
-2. **Email Verification** - auto-fetches verification code from email
-3. **Organization Setup** - invites to org, adds to `agents` team (grants write access)
-4. **Upload GPG Key** - shows public key to copy
-5. **Create PAT** - instructions for fine-grained token
-6. **Approve PAT** - reminder for admin approval (web UI only)
-7. **Store PAT** - commands to save in 1Password and GitHub secrets
-8. **Matrix Setup** - create user in Synapse Admin, store password as GitHub secret
-9. **Verify** - triggers test workflow to confirm signed commits work
+Interactive walkthrough for full agent setup:
+1. **Create Email Account** - shows credentials for mail provider
+2. **Create GitHub Account** - shows credentials from 1Password
+3. **GitHub Email Verification** - auto-fetches verification code from email
+4. **Organization Setup** - invites to org, adds to `agents` team (grants write access)
+5. **Upload GPG Key** - shows public key to copy
+6. **Create PAT** - instructions for fine-grained token
+7. **Approve PAT** - reminder for admin approval (web UI only)
+8. **Store PAT** - commands to save in 1Password and GitHub secrets
+9. **Matrix Setup** - create user in Synapse Admin, store password as GitHub secret
+10. **Verify** - triggers test workflow to confirm signed commits work
 
 ## Organization Structure
 

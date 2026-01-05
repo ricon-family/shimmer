@@ -6,15 +6,7 @@ on:
       agent:
         description: 'Agent name to test'
         required: true
-        type: choice
-        options:
-          - quick
-          - brownie
-          - junior
-          - johnson
-          - k7r2
-          - x1f9
-          - c0da
+        type: string
 
 jobs:
   test-signed-commit:
@@ -45,9 +37,7 @@ jobs:
 
       - name: Make test commit
         run: |
-          echo "Test commit by $AGENT at $(date -u)" >> .agent-test-log
-          git add .agent-test-log
-          git commit -m "Test signed commit by $AGENT
+          git commit --allow-empty -m "Test signed commit by $AGENT
 
           🤖 Generated with [Claude Code](https://claude.com/claude-code)
 

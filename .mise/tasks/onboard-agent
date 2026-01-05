@@ -30,6 +30,7 @@ fi
 
 # Get credentials from 1Password
 echo "Fetching credentials from 1Password..."
+EMAIL_PASSWORD=$(op item get "${AGENT} - Email" --vault "$VAULT" --fields password --reveal 2>/dev/null || echo "")
 GITHUB_PASSWORD=$(op item get "${AGENT} - GitHub" --vault "$VAULT" --fields password --reveal 2>/dev/null || echo "")
 GITHUB_EMAIL=$(op item get "${AGENT} - GitHub" --vault "$VAULT" --fields email 2>/dev/null || echo "")
 GITHUB_COUNTRY=$(op item get "${AGENT} - GitHub" --vault "$VAULT" --fields country 2>/dev/null || echo "")
@@ -45,22 +46,33 @@ echo "============================================================"
 echo "  ONBOARDING: $AGENT"
 echo "============================================================"
 
+# STEP 1: Create Email Account
+echo ""
+echo "STEP 1: Create Email Account"
+echo "------------------------------------------------------------"
+echo "[YOU] Create mailbox at your mail provider:"
+echo ""
+echo "      Email:    $EMAIL"
+echo "      Password: $EMAIL_PASSWORD"
+
+wait_for_enter
+
 # Check if GitHub account already exists
 GITHUB_USER_EXISTS=$(gh api "users/$GITHUB_USERNAME" 2>/dev/null && echo "yes" || echo "no")
 
 if [ "$GITHUB_USER_EXISTS" = "yes" ]; then
   echo ""
-  echo "STEP 1: Create GitHub Account"
+  echo "STEP 2: Create GitHub Account"
   echo "------------------------------------------------------------"
   echo "[auto] $GITHUB_USERNAME already exists, skipping account creation"
   echo ""
-  echo "STEP 2: Email Verification"
+  echo "STEP 3: GitHub Email Verification"
   echo "------------------------------------------------------------"
   echo "[auto] Skipping (account already exists)"
 else
-  # STEP 1: Create GitHub Account
+  # STEP 2: Create GitHub Account
   echo ""
-  echo "STEP 1: Create GitHub Account"
+  echo "STEP 2: Create GitHub Account"
   echo "------------------------------------------------------------"
   echo "[YOU] Go to: https://github.com/signup"
   echo ""
@@ -71,8 +83,8 @@ else
 
   wait_for_enter
 
-  # STEP 2: Email Verification
-  echo "STEP 2: Email Verification"
+  # STEP 3: GitHub Email Verification
+  echo "STEP 3: GitHub Email Verification"
   echo "------------------------------------------------------------"
   echo "[auto] Checking for GitHub verification email..."
 
@@ -111,8 +123,8 @@ else
   wait_for_enter
 fi
 
-# STEP 3: Organization Setup
-echo "STEP 3: Organization Setup"
+# STEP 4: Organization Setup
+echo "STEP 4: Organization Setup"
 echo "------------------------------------------------------------"
 
 MEMBERSHIP=$(gh api "orgs/ricon-family/memberships/$GITHUB_USERNAME" 2>&1 || true)
@@ -133,8 +145,8 @@ echo "      https://github.com/orgs/ricon-family/invitation"
 
 wait_for_enter
 
-# STEP 4: Upload GPG Key
-echo "STEP 4: Upload GPG Key"
+# STEP 5: Upload GPG Key
+echo "STEP 5: Upload GPG Key"
 echo "------------------------------------------------------------"
 echo "[YOU] As $GITHUB_USERNAME, go to: https://github.com/settings/keys"
 echo "      Click: New GPG key"
@@ -146,8 +158,8 @@ echo ""
 
 wait_for_enter
 
-# STEP 5: Create Personal Access Token
-echo "STEP 5: Create Personal Access Token"
+# STEP 6: Create Personal Access Token
+echo "STEP 6: Create Personal Access Token"
 echo "------------------------------------------------------------"
 echo "[YOU] As $GITHUB_USERNAME, go to: https://github.com/settings/tokens?type=beta"
 echo "      Click: Generate new token"
@@ -156,14 +168,17 @@ echo "      Token name:         shimmer-agent"
 echo "      Expiration:         90 days"
 echo "      Resource owner:     ricon-family"
 echo "      Repository access:  Only select repositories -> ricon-family/shimmer"
-echo "      Permissions:"
-echo "        - Contents: Read and write"
-echo "        - Workflows: Read and write"
+echo ""
+echo "      Permissions (select based on agent's needs):"
+echo "        - Contents: Read and write    (required - for commits)"
+echo "        - Workflows: Read and write   (required - for editing workflow files and triggering workflows)"
+echo "        - Issues: Read and write      (optional - for creating/managing issues)"
+echo "        - Pull requests: Read and write (optional - for creating/managing PRs)"
 
 wait_for_enter
 
-# STEP 6: Approve PAT
-echo "STEP 6: Approve PAT"
+# STEP 7: Approve PAT
+echo "STEP 7: Approve PAT"
 echo "------------------------------------------------------------"
 echo "[YOU] As YOUR ADMIN account, go to:"
 echo "      https://github.com/organizations/ricon-family/settings/personal-access-token-requests"
@@ -173,12 +188,14 @@ echo "      [ ] Repository access: Only ricon-family/shimmer"
 echo "      [ ] Expiration: ~90 days from now"
 echo "      [ ] Contents: Read and write"
 echo "      [ ] Workflows: Read and write"
-echo "      [ ] No other permissions granted"
+echo "      [ ] Issues: Read and write (if requested)"
+echo "      [ ] Pull requests: Read and write (if requested)"
+echo "      [ ] No unexpected permissions"
 
 wait_for_enter
 
-# STEP 7: Store PAT
-echo "STEP 7: Store PAT"
+# STEP 8: Store PAT
+echo "STEP 8: Store PAT"
 echo "------------------------------------------------------------"
 echo ""
 read -r -p "Paste the PAT token: " PAT_TOKEN
@@ -198,8 +215,8 @@ fi
 
 wait_for_enter
 
-# STEP 8: Matrix Setup
-echo "STEP 8: Matrix Setup"
+# STEP 9: Matrix Setup
+echo "STEP 9: Matrix Setup"
 echo "------------------------------------------------------------"
 
 MATRIX_PASSWORD=$(op item get "${AGENT} - Matrix" --vault "$VAULT" --fields password --reveal 2>/dev/null || echo "")
@@ -223,8 +240,8 @@ fi
 
 wait_for_enter
 
-# STEP 9: Verify
-echo "STEP 9: Verify Setup"
+# STEP 10: Verify
+echo "STEP 10: Verify Setup"
 echo "------------------------------------------------------------"
 echo "[auto] Triggering test workflow..."
 
