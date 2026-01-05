@@ -57,6 +57,10 @@ echo "      Password: $EMAIL_PASSWORD"
 
 wait_for_enter
 
+echo "[auto] Storing email password as GitHub secret ${AGENT_UPPER}_EMAIL_PASSWORD..."
+echo "$EMAIL_PASSWORD" | gh secret set "${AGENT_UPPER}_EMAIL_PASSWORD"
+echo "[auto] Done!"
+
 # Check if GitHub account already exists
 GITHUB_USER_EXISTS=$(gh api "users/$GITHUB_USERNAME" 2>/dev/null && echo "yes" || echo "no")
 
