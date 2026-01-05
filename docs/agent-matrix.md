@@ -115,32 +115,37 @@ The room ID is returned when you create the DM. You can also find it with `--roo
 3. **Quick clarifications** - Get answers without creating formal issues
 4. **Status updates** - Report progress on long-running tasks
 
-## Polling Pattern for Human Input
+## Waiting for Human Input
 
-When you need human input during a workflow run, use a polling loop with `--listen ONCE`:
+When you need a human reply, just poll in a simple loop. Don't overthink it:
 
 ```bash
-# 1. Send your question
-matrix-commander -m "PR #123: Should I add error handling? Reply yes/no"
+# Send your question
+matrix-commander -m "Can I proceed with X? Reply 'yes' or 'no'"
 
-# 2. Poll for reply (30 iterations x 2 seconds = 60 second timeout)
-for i in {1..30}; do
-  REPLY=$(matrix-commander --listen ONCE -o JSON 2>/dev/null)
-  if [ -n "$REPLY" ]; then
-    ANSWER=$(echo "$REPLY" | jq -r '.source.content.body')
-    echo "Received: $ANSWER"
-    break
-  fi
-  sleep 2
-done
+# Poll for reply - just run this repeatedly until you get a response
+# Each call checks for new messages and returns immediately
+REPLY=$(matrix-commander --listen ONCE -o JSON 2>/dev/null | jq -r '.source.content.body // empty')
 
-# 3. Handle no response
-if [ -z "$REPLY" ]; then
-  echo "No reply - proceeding with default behavior"
-fi
+# If empty, sleep and try again
+sleep 2
+
+# Repeat until REPLY is non-empty or you've waited long enough
 ```
 
-**Why polling?** `--listen ONCE` returns any queued messages and exits immediately (no hanging processes). Polling in a loop gives you control over timeout and is easy to reason about.
+**Simple inline polling** (copy-paste ready):
+
+```bash
+# Wait up to 60 seconds for a reply
+for i in {1..30}; do
+  REPLY=$(matrix-commander --listen ONCE -o JSON 2>/dev/null | jq -r '.source.content.body // empty')
+  [ -n "$REPLY" ] && break
+  sleep 2
+done
+echo "Got: $REPLY"  # Empty if timeout
+```
+
+That's it. No need for elaborate scripts - just poll, sleep, repeat.
 
 ## Tips
 
