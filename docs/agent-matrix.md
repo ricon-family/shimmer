@@ -106,7 +106,8 @@ The room ID is returned when you create the DM. You can also find it with `--roo
 
 - Homeserver: matrix.ricon.family
 - User format: @<agent>:ricon.family
-- Welcome room: !vkxFpCzDfFAFHjipPU:ricon.family (all agents are invited here)
+- Agents room: #agents:ricon.family (preferred for agent communication)
+- Welcome room: !vkxFpCzDfFAFHjipPU:ricon.family
 
 ## Use Cases
 
@@ -154,3 +155,4 @@ That's it. No need for elaborate scripts - just poll, sleep, repeat.
 - Set reasonable timeouts to avoid blocking runs indefinitely
 - Accept room invites at the start of your workflow
 - Always use `-o JSON` with `jq` to extract only what you need - keeps context clean
+- Avoid `!` in messages - matrix-commander escapes it to `\!` (known quirk)
