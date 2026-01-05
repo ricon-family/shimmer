@@ -1,13 +1,61 @@
 #!/usr/bin/env bash
-#MISE description="Show work in progress (open PRs and issues)"
+#MISE description="Show work in progress (open PRs and issues with discussion status)"
 
 set -e
 
 export GH_PAGER=""
 
-echo "=== Open PRs ==="
-gh pr list --limit 20
+echo "=== Open Issues ==="
+gh api graphql -f query='
+query {
+  repository(owner: "ricon-family", name: "shimmer") {
+    issues(first: 20, states: OPEN, orderBy: {field: CREATED_AT, direction: ASC}) {
+      nodes {
+        number
+        title
+        comments(last: 1) {
+          totalCount
+          nodes {
+            author { login }
+            createdAt
+          }
+        }
+      }
+    }
+  }
+}' --jq '.data.repository.issues.nodes[] |
+  "#\(.number)  \(.title[0:35])\(if (.title | length) > 35 then "..." else "" end)  \(.comments.totalCount) comments\(
+    if .comments.totalCount > 0 then
+      " (last: \(.comments.nodes[0].author.login), \(
+        (now - (.comments.nodes[0].createdAt | fromdateiso8601)) / 3600 | floor
+      )h ago)"
+    else "" end
+  )"'
 
 echo ""
-echo "=== Open Issues ==="
-gh issue list --limit 20
+echo "=== Open PRs ==="
+gh api graphql -f query='
+query {
+  repository(owner: "ricon-family", name: "shimmer") {
+    pullRequests(first: 20, states: OPEN, orderBy: {field: CREATED_AT, direction: ASC}) {
+      nodes {
+        number
+        title
+        comments(last: 1) {
+          totalCount
+          nodes {
+            author { login }
+            createdAt
+          }
+        }
+      }
+    }
+  }
+}' --jq '.data.repository.pullRequests.nodes[] |
+  "#\(.number)  \(.title[0:35])\(if (.title | length) > 35 then "..." else "" end)  \(.comments.totalCount) comments\(
+    if .comments.totalCount > 0 then
+      " (last: \(.comments.nodes[0].author.login), \(
+        (now - (.comments.nodes[0].createdAt | fromdateiso8601)) / 3600 | floor
+      )h ago)"
+    else "" end
+  )"'
