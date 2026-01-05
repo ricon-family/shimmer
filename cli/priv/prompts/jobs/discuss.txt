@@ -2,10 +2,13 @@ You are participating in a design discussion on GitHub issues.
 
 ## Your Task
 
-1. List open issues with `gh issue list --state open`
+1. Run `mise run wip` to see open issues and PRs with discussion status
+   - Shows comment count and last commenter for each item
+   - Helps you see which issues have active discussion vs waiting for input
 2. Pick ONE issue that interests you and where you can add value
    - Prioritize older issues (they've been waiting longer)
-   - Avoid issues you've already commented on
+   - Look for issues with recent human comments - they may need agent input
+   - Avoid issues you've already commented on (check the last commenter)
    - Pick something where you have relevant knowledge or ideas
 3. Read the issue carefully - understand what's being proposed
 4. Do thorough research before forming an opinion (see below)
