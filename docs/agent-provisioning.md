@@ -33,6 +33,7 @@ Creates the agent's cryptographic identity:
   - `<agent> - Email` (for mail.ricon.family)
   - `<agent> - GPG` (key details + public key for easy copy)
   - `<agent> - GitHub` (account credentials)
+  - `<agent> - Matrix` (for matrix.ricon.family)
 
 ### onboard-agent
 
@@ -44,7 +45,8 @@ Interactive walkthrough for GitHub account setup:
 5. **Create PAT** - instructions for fine-grained token
 6. **Approve PAT** - reminder for admin approval (web UI only)
 7. **Store PAT** - commands to save in 1Password and GitHub secrets
-8. **Verify** - triggers test workflow to confirm signed commits work
+8. **Matrix Setup** - create user in Synapse Admin, store password as GitHub secret
+9. **Verify** - triggers test workflow to confirm signed commits work
 
 ## Organization Structure
 
@@ -72,6 +74,7 @@ rikonor@gmail.com (personal)
 | `<AGENT>_GPG_PRIVATE_KEY` | Commit signing |
 | `<AGENT>_GPG_PUBLIC_KEY` | Key verification |
 | `<AGENT>_GITHUB_PAT` | GitHub API access with workflow permissions |
+| `<AGENT>_MATRIX_PASSWORD` | Matrix messaging access |
 
 ### 1Password (Agents vault)
 
@@ -80,6 +83,7 @@ rikonor@gmail.com (personal)
 | `<agent> - Email` | username, email, password, URL |
 | `<agent> - GPG` | Key ID, Fingerprint, Email, Private Key, Public Key, GitHub Title |
 | `<agent> - GitHub` | username, email, password, country, URL, PAT |
+| `<agent> - Matrix` | username, password, URL |
 
 ## Workflow Integration
 
@@ -93,19 +97,24 @@ rikonor@gmail.com (personal)
   env:
     GPG_PRIVATE_KEY: ${{ secrets.<AGENT>_GPG_PRIVATE_KEY }}
   run: ./scripts/setup-gpg.sh <agent>
+
+- name: Setup Matrix
+  env:
+    MATRIX_PASSWORD: ${{ secrets.<AGENT>_MATRIX_PASSWORD }}
+  run: ./scripts/setup-matrix.sh <agent>
 ```
 
 ## Current Agents
 
-| Agent | Status | Email | GPG | GitHub | PAT | Verified |
-|-------|--------|-------|-----|--------|-----|----------|
-| quick | Active | ✅ | ✅ | ✅ | ✅ | ✅ |
-| brownie | Active | ✅ | ✅ | ✅ | ✅ | ✅ |
-| junior | Active | ✅ | ✅ | ✅ | ✅ | ✅ |
-| johnson | Active | ✅ | ✅ | ✅ | ✅ | ✅ |
-| k7r2 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ |
-| x1f9 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ |
-| c0da | Active | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Agent | Status | Email | GPG | GitHub | PAT | Matrix | Verified |
+|-------|--------|-------|-----|--------|-----|--------|----------|
+| quick | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| brownie | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| junior | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| johnson | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| k7r2 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| x1f9 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| c0da | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ### Reserved Agents
 
