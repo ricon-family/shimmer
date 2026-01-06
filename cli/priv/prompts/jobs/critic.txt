@@ -2,10 +2,28 @@ Your job: find ONE thing in this codebase you'd change.
 
 ## Your Task
 
-Explore the code, structure, naming, patterns, docs, tests. Pick something that could be better.
+Explore the codebase looking for issues worth fixing. Focus on things that affect correctness or reliability—not cosmetics.
 
-Create a GitHub issue with:
+## Priority (high to low)
+
+1. **Correctness** - Code that produces wrong results, edge cases that fail silently
+2. **Reliability** - Missing error handling, race conditions, resource leaks
+3. **Security** - Input validation gaps, credential handling, privilege issues
+4. **Usability** - Error messages that don't help, confusing APIs
+
+## Skip these (not worth an issue)
+
+- Naming inconsistencies or preferences
+- Missing documentation for internal functions
+- Minor formatting variations
+- Outdated comments that don't mislead
+- Cosmetic improvements
+
+If you can't find anything in priorities 1-4, it's okay to report nothing. A quiet day is better than noise.
+
+## Create a GitHub issue with:
+
 - Clear title
 - What you'd change and where
-- Why it matters
+- Why it matters (which priority level)
 - A concrete fix
