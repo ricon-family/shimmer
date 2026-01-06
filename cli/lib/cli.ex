@@ -338,7 +338,7 @@ defmodule Cli do
 
           {output, status} ->
             IO.puts(
-              "[warn] Failed to kill logger (pid #{os_pid}): exit #{status} - #{String.trim(output)}"
+              "WARNING: Failed to kill logger (pid #{os_pid}): exit #{status} - #{String.trim(output)}"
             )
         end
 
