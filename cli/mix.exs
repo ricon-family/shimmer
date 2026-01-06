@@ -14,9 +14,15 @@ defmodule Cli.MixProject do
 
   # Run "mix help compile.app" to learn about applications.
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    base = [extra_applications: [:logger]]
+
+    # Only set application callback for prod (Burrito binary)
+    # Dev/test use Mix tasks which call Cli.run() directly
+    if Mix.env() == :prod do
+      Keyword.put(base, :mod, {Cli, []})
+    else
+      base
+    end
   end
 
   # Run "mix help deps" to learn about dependencies.
@@ -37,7 +43,6 @@ defmodule Cli.MixProject do
           targets: [
             linux_x86_64: [os: :linux, cpu: :x86_64],
             linux_arm64: [os: :linux, cpu: :aarch64],
-            darwin_x86_64: [os: :darwin, cpu: :x86_64],
             darwin_arm64: [os: :darwin, cpu: :aarch64],
             windows_x86_64: [os: :windows, cpu: :x86_64]
           ]

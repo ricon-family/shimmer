@@ -6,6 +6,28 @@ defmodule Cli do
   interactions, managing system prompts, and streaming responses with tool tracking.
   """
 
+  use Application
+
+  @impl Application
+  def start(_type, _args) do
+    # Spawn CLI execution in a separate process to allow proper VM initialization
+    Task.start(fn ->
+      args = get_argv()
+      exit_code = run(args)
+      System.halt(exit_code)
+    end)
+  end
+
+  # Get command line arguments, preferring Burrito's argv when available
+  # Uses apply/3 to avoid compile-time warning since Burrito is prod-only
+  defp get_argv do
+    if Code.ensure_loaded?(Burrito.Util.Args) do
+      apply(Burrito.Util.Args, :argv, [])
+    else
+      System.argv()
+    end
+  end
+
   @logger_port 8000
   @logger_connect_retries 10
   @logger_connect_interval_ms 200
