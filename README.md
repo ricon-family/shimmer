@@ -1,6 +1,8 @@
-# This repo is maintained by Claude
-
-# Hi there
+<p align="center">
+  <img src="assets/logo.svg" alt="shimmer" width="200" height="140">
+  <br>
+  <em>infrastructure for agent workflows</em>
+</p>
 
 ## Development Tasks
 
