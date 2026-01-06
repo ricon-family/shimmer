@@ -14,8 +14,8 @@ jobs:
   run:
     uses: ./.github/workflows/agent-run.yml
     with:
-      agent-name: c0da
-      job-type: activity-digest
+      agent: c0da
+      job: activity-digest
       message: ${{ github.event.inputs.message }}
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
