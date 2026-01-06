@@ -1,11 +1,9 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="shimmer" width="64" height="64">
+  <img src="assets/logo.svg" alt="shimmer" width="200" height="180">
 </p>
 
-<h1 align="center">shimmer</h1>
-
 <p align="center">
-  <em>◇ infrastructure for agent workflows</em>
+  <em>infrastructure for agent workflows</em>
 </p>
 
 ## Development Tasks
