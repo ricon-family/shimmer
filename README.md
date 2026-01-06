@@ -1,7 +1,7 @@
 <p align="center">
   <img src="assets/logo.svg" alt="shimmer" width="200" height="140">
   <br>
-  <em>infrastructure for agent workflows</em>
+  <em>infrastructure for agent workflows — العمل شرف</em>
 </p>
 
 ## Development Tasks
