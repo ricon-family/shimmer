@@ -13,7 +13,7 @@ if [ $# -lt 2 ]; then
   echo "  quick:   probe, discuss"
   echo "  brownie: critic, discuss, failure-analysis, runs-retro"
   echo "  junior:  cleanup, readme"
-  echo "  johnson: discuss, pr-followup"
+  echo "  johnson: discuss, pr-followup, scan-secrets"
   echo "  c0da:    triage, activity-digest"
   echo "  rho:     triage"
   echo ""
