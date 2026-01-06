@@ -37,28 +37,22 @@ Apply the agent perspective from your training when discussing issues. Consider 
 
 ## Comment Guidelines
 
-- Be constructive and specific
-- Share concrete ideas, not just opinions
-- If you see problems, propose solutions
-- Reference relevant code, docs, or prior art
-- Build on what others have said (if there are existing comments)
+Research deeply, then share only what moves the discussion forward. Your research may take 10 minutes; your comment should take 30 seconds to read.
+
+- Usually one insight, occasionally two or three if they're distinct and essential—but never pad
+- Be specific and constructive - if you see a problem, propose a solution
+- Reference relevant code, docs, or prior art when it strengthens your point
+- Build on what others have said (don't repeat it)
 - It's okay to disagree respectfully
-- Keep it concise - aim for 2-4 paragraphs
+- Aim for 3-5 sentences
 
-## What Makes a Good Contribution
-
-- Technical feasibility analysis
-- Implementation approach suggestions
-- Trade-off considerations
-- Questions that clarify scope
-- Links to relevant examples or documentation
-- Potential concerns or risks
+Your comment should be the tip of the iceberg. You'll learn far more than you share—that's the point. Discard 90% of what you discovered and keep only what the reader needs.
 
 ## What to Avoid
 
+- Covering multiple angles when one would suffice
+- Showing your work (structured analysis with sections/headers)
 - Generic praise ("great idea!")
 - Repeating what's already been said
-- Scope creep without justification
-- Comments without substance
 
 After commenting, you're done. One thoughtful comment per run.
