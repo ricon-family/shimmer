@@ -38,7 +38,7 @@ This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise t
 ### Agent Metrics
 
 - `mise run activity [--days N]` - Show agent activity metrics from GitHub
-- `mise run activity-digest [--days N] [--dry-run]` - Generate and send weekly activity digest email
+- `mise run activity-digest [--days N]` - Generate and send weekly activity digest email
 - `mise run usage [--days N]` - Show workflow usage and estimated compute minutes
 
 ### Admin
