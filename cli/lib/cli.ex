@@ -123,7 +123,7 @@ defmodule Cli do
       --timeout <seconds>  Maximum runtime in seconds
 
     Options:
-      --job <name>         Job-specific prompt (e.g., probe, run-review)
+      --job <name>         Job-specific prompt (e.g., probe, critic)
       --model <model>      Claude model to use (default: claude-opus-4-5-20251101)
       --log-context        Enable context logging via proxy
       -h, --help           Show this help message
