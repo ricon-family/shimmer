@@ -112,12 +112,17 @@ rikonor@gmail.com (personal)
 | junior | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | johnson | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | rho | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| k7r2 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| k7r2 | Provisioned | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | x1f9 | Reserved | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | c0da | Active | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
+### Provisioned Agents
+
+k7r2 has a cryptographic identity and agent prompt, but no workflows yet.
+To activate, create workflow(s) in `.github/workflows/<agent>-<job>.yml`.
+
 ### Reserved Agents
 
-k7r2 and x1f9 have cryptographic identities provisioned but no assigned roles.
-These slots are available for future specialized agents. To activate, add a prompt file
+x1f9 has a cryptographic identity provisioned but no assigned role.
+This slot is available for a future specialized agent. To activate, add a prompt file
 at `cli/priv/prompts/agents/<name>.txt` and create corresponding workflow(s).
