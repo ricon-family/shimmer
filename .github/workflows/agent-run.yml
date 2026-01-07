@@ -3,12 +3,12 @@ name: Agent Run
 on:
   workflow_call:
     inputs:
-      agent-name:
-        description: 'Agent name (e.g., quick, brownie)'
+      agent:
+        description: 'Agent to run (e.g., quick, brownie)'
         required: true
         type: string
-      job-type:
-        description: 'Job type (e.g., probe, critic)'
+      job:
+        description: 'Job to run (e.g., probe, critic)'
         required: true
         type: string
       message:
@@ -39,12 +39,12 @@ jobs:
       - name: Setup GPG
         env:
           GPG_PRIVATE_KEY: ${{ secrets.AGENT_GPG_PRIVATE_KEY }}
-        run: ./scripts/setup-gpg.sh ${{ inputs.agent-name }}
+        run: ./scripts/setup-gpg.sh ${{ inputs.agent }}
 
       - name: Setup email
         env:
           EMAIL_PASSWORD: ${{ secrets.AGENT_EMAIL_PASSWORD }}
-        run: ./scripts/setup-email.sh ${{ inputs.agent-name }}
+        run: ./scripts/setup-email.sh ${{ inputs.agent }}
 
       - name: Install libolm for Matrix
         if: env.MATRIX_PASSWORD != ''
@@ -54,13 +54,13 @@ jobs:
 
       - name: Configure git
         run: |
-          git config user.name "${{ inputs.agent-name }}"
-          git config user.email "${{ inputs.agent-name }}@ricon.family"
+          git config user.name "${{ inputs.agent }}"
+          git config user.email "${{ inputs.agent }}@ricon.family"
 
       - name: Create working branch
         id: branch
         run: |
-          BRANCH_NAME="${{ inputs.agent-name }}/run-$(date +%Y%m%d-%H%M%S)"
+          BRANCH_NAME="${{ inputs.agent }}/run-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH_NAME"
           echo "name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
@@ -73,7 +73,7 @@ jobs:
         if: env.MATRIX_PASSWORD != ''
         env:
           MATRIX_PASSWORD: ${{ secrets.AGENT_MATRIX_PASSWORD }}
-        run: ./scripts/setup-matrix.sh ${{ inputs.agent-name }}
+        run: ./scripts/setup-matrix.sh ${{ inputs.agent }}
 
       - name: Accept Matrix room invites
         if: env.MATRIX_PASSWORD != ''
@@ -120,4 +120,4 @@ jobs:
           RUN_TIMEOUT: 540
         run: |
           export RUN_START_TIME=$(date +%s)
-          cd cli && mix shimmer --agent ${{ inputs.agent-name }} --job ${{ inputs.job-type }} --timeout $RUN_TIMEOUT "${{ steps.message.outputs.msg }}"
+          cd cli && mix shimmer --agent ${{ inputs.agent }} --job ${{ inputs.job }} --timeout $RUN_TIMEOUT "${{ steps.message.outputs.msg }}"

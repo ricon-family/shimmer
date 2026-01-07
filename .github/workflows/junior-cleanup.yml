@@ -17,8 +17,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     uses: ./.github/workflows/agent-run.yml
     with:
-      agent-name: junior
-      job-type: cleanup
+      agent: junior
+      job: cleanup
       message: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.message || format('Cleanup PR {0}', github.event.pull_request.number) }}
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
