@@ -33,33 +33,38 @@ CONFIG_FILE="${CONFIG_DIR}/config.toml"
 
 mkdir -p "$CONFIG_DIR"
 
-cat > "$CONFIG_FILE" << EOF
-[accounts.${AGENT_NAME}]
-default = true
-email = "${EMAIL}"
-display-name = "${AGENT_NAME}"
+# Escape password for TOML basic string: backslash first, then quotes
+ESCAPED_PASSWORD=$(printf '%s' "$EMAIL_PASSWORD" | sed 's/\\/\\\\/g; s/"/\\"/g')
 
-backend.type = "imap"
-backend.host = "${MAIL_SERVER}"
-backend.port = 993
-backend.encryption.type = "tls"
-backend.login = "${EMAIL}"
-backend.auth.type = "password"
-backend.auth.raw = "${EMAIL_PASSWORD}"
-
-message.send.backend.type = "smtp"
-message.send.backend.host = "${MAIL_SERVER}"
-message.send.backend.port = 465
-message.send.backend.encryption.type = "tls"
-message.send.backend.login = "${EMAIL}"
-message.send.backend.auth.type = "password"
-message.send.backend.auth.raw = "${EMAIL_PASSWORD}"
-
-pgp.type = "commands"
-pgp.sign-cmd = "gpg --sign --quiet --armor"
-pgp.decrypt-cmd = "gpg --decrypt --quiet"
-pgp.verify-cmd = "gpg --verify --quiet"
-EOF
+# Write config using printf for the password to avoid shell expansion issues
+# (heredocs expand $, `, and \ which are common in generated passwords)
+{
+  printf '[accounts.%s]\n' "$AGENT_NAME"
+  printf 'default = true\n'
+  printf 'email = "%s"\n' "$EMAIL"
+  printf 'display-name = "%s"\n' "$AGENT_NAME"
+  printf '\n'
+  printf 'backend.type = "imap"\n'
+  printf 'backend.host = "%s"\n' "$MAIL_SERVER"
+  printf 'backend.port = 993\n'
+  printf 'backend.encryption.type = "tls"\n'
+  printf 'backend.login = "%s"\n' "$EMAIL"
+  printf 'backend.auth.type = "password"\n'
+  printf 'backend.auth.raw = "%s"\n' "$ESCAPED_PASSWORD"
+  printf '\n'
+  printf 'message.send.backend.type = "smtp"\n'
+  printf 'message.send.backend.host = "%s"\n' "$MAIL_SERVER"
+  printf 'message.send.backend.port = 465\n'
+  printf 'message.send.backend.encryption.type = "tls"\n'
+  printf 'message.send.backend.login = "%s"\n' "$EMAIL"
+  printf 'message.send.backend.auth.type = "password"\n'
+  printf 'message.send.backend.auth.raw = "%s"\n' "$ESCAPED_PASSWORD"
+  printf '\n'
+  printf 'pgp.type = "commands"\n'
+  printf 'pgp.sign-cmd = "gpg --sign --quiet --armor"\n'
+  printf 'pgp.decrypt-cmd = "gpg --decrypt --quiet"\n'
+  printf 'pgp.verify-cmd = "gpg --verify --quiet"\n'
+} > "$CONFIG_FILE"
 
 echo "Email configured for ${EMAIL} (GPG signing enabled)"
 echo "Config written to ${CONFIG_FILE}"
