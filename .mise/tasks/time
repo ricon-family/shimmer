@@ -46,12 +46,11 @@ else
   printf "Remaining: %d:%02d\n" $remaining_min $remaining_sec
 fi
 
-# Warn if less than 2 minutes remaining
-if [ $remaining -lt 120 ]; then
-  echo "⚠️  WARNING: Less than 2 minutes remaining - wrap up!"
-fi
-
-# Critical warning if less than 1 minute
-if [ $remaining -lt 60 ]; then
+# Status message based on remaining time (mutually exclusive)
+if [ $remaining -lt 0 ]; then
+  echo "🚨 EXCEEDED: Time limit has been exceeded!"
+elif [ $remaining -lt 60 ]; then
   echo "🚨 CRITICAL: Less than 1 minute remaining!"
+elif [ $remaining -lt 120 ]; then
+  echo "⚠️  WARNING: Less than 2 minutes remaining - wrap up!"
 fi
