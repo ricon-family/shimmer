@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #MISE description="Show workflow usage and estimated compute minutes"
-#MISE usage="usage [--days N]"
+#USAGE arg "[days]" help="Number of days to look back (default: 1)"
 
 set -e
 
-DAYS="${1:-1}"
+DAYS="${usage_days:-1}"
 
 export GH_PAGER=""
 

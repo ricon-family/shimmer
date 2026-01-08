@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #MISE description="Check the status of the latest workflow run"
-#MISE usage="status [workflow]"
+#USAGE arg "[workflow]" help="Workflow file name (default: pr-check.yml)"
 
 set -e
 
-WORKFLOW="${1:-pr-check.yml}"
+WORKFLOW="${usage_workflow:-pr-check.yml}"
 gh run list --workflow="$WORKFLOW" --limit 1

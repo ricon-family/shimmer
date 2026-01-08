@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Switch to an agent's identity for local work"
-#MISE usage="as <agent>"
+#USAGE arg "<agent>" help="Agent to switch to (e.g., quick, brownie)"
 
 set -e
 
@@ -12,19 +12,7 @@ get_agents() {
     | sort
 }
 
-if [ $# -lt 1 ]; then
-  echo "Usage: mise run as <agent>"
-  echo ""
-  echo "Sets up environment for working as an agent locally."
-  echo "Requires 1Password CLI (op) to be signed in."
-  echo ""
-  echo "Agents: $(get_agents | tr '\n' ' ')"
-  echo ""
-  echo "Example: eval \$(mise run as quick)"
-  exit 1
-fi
-
-AGENT="$1"
+AGENT="$usage_agent"
 EMAIL="${AGENT}@ricon.family"
 VAULT="Agents"
 

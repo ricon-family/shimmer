@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 #MISE description="Generate and send weekly activity digest email"
-#MISE usage="activity-digest [--days N]"
+#USAGE flag "--days <days>" help="Number of days to look back (default: 7)"
 
 set -e
 
-# Parse arguments
-DAYS=7
-
-for arg in "$@"; do
-  if [[ "$arg" =~ ^[0-9]+$ ]]; then
-    DAYS="$arg"
-  fi
-done
+# Use flag value or default
+DAYS="${usage_days:-7}"
 
 export GH_PAGER=""
 
