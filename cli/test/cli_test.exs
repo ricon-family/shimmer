@@ -52,6 +52,40 @@ defmodule CliTest do
         assert output =~ "No message provided"
       end
     end
+
+    test "rejects agent name with path traversal characters" do
+      {output, exit_code} =
+        run_cli(["--agent", "../../../etc/passwd", "--timeout", "60", "hello"])
+
+      assert exit_code == 1
+
+      assert output =~
+               "--agent must contain only alphanumeric characters, hyphens, and underscores"
+    end
+
+    test "rejects agent name with dots" do
+      {output, exit_code} = run_cli(["--agent", "agent.with.dots", "--timeout", "60", "hello"])
+      assert exit_code == 1
+
+      assert output =~
+               "--agent must contain only alphanumeric characters, hyphens, and underscores"
+    end
+
+    test "rejects agent name with slashes" do
+      {output, exit_code} = run_cli(["--agent", "agent/with/slashes", "--timeout", "60", "hello"])
+      assert exit_code == 1
+
+      assert output =~
+               "--agent must contain only alphanumeric characters, hyphens, and underscores"
+    end
+
+    test "rejects job name with path traversal characters" do
+      {output, exit_code} =
+        run_cli(["--agent", "quick", "--job", "../../evil", "--timeout", "60", "hello"])
+
+      assert exit_code == 1
+      assert output =~ "--job must contain only alphanumeric characters, hyphens, and underscores"
+    end
   end
 
   describe "Cli module" do
