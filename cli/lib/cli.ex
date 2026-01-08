@@ -75,7 +75,7 @@ defmodule Cli do
 
     print_header(opts, message, timeout, agent, model)
 
-    case validate_args(message, agent, timeout) do
+    case validate_args(message, agent, opts[:job], timeout) do
       {:error, msg} ->
         IO.puts("ERROR: #{msg}")
         1
@@ -102,15 +102,33 @@ defmodule Cli do
     IO.puts("---")
   end
 
-  defp validate_args(message, agent, timeout) do
+  defp validate_args(message, agent, job, timeout) do
     cond do
-      String.trim(message) == "" -> {:error, "No message provided"}
-      agent == nil or agent == "" -> {:error, "--agent is required and cannot be empty"}
-      timeout == nil -> {:error, "--timeout is required"}
-      timeout <= 0 -> {:error, "--timeout must be greater than 0"}
-      true -> :ok
+      String.trim(message) == "" ->
+        {:error, "No message provided"}
+
+      agent == nil or agent == "" ->
+        {:error, "--agent is required and cannot be empty"}
+
+      not safe_name?(agent) ->
+        {:error, "--agent must contain only alphanumeric characters, hyphens, and underscores"}
+
+      job != nil and not safe_name?(job) ->
+        {:error, "--job must contain only alphanumeric characters, hyphens, and underscores"}
+
+      timeout == nil ->
+        {:error, "--timeout is required"}
+
+      timeout <= 0 ->
+        {:error, "--timeout must be greater than 0"}
+
+      true ->
+        :ok
     end
   end
+
+  # Validates that a name is safe for use in file paths (prevents path traversal)
+  defp safe_name?(name), do: Regex.match?(~r/^[a-zA-Z0-9_-]+$/, name)
 
   defp parse_args(args) do
     {opts, rest, invalid} =
