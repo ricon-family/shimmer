@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #MISE description="Provision a new agent (GPG key, GitHub secrets, 1Password)"
-#MISE usage="provision-agent <agent-name> [--force]"
+#USAGE arg "<agent-name>" help="Name of the agent to provision"
+#USAGE flag "--force" help="Regenerate existing GPG key"
 
 set -e
 
-AGENT="${1:?Usage: mise run provision-agent <agent-name> [--force]}"
-FORCE="${2:-}"
+AGENT="${usage_agent_name:?Usage: mise run provision-agent <agent-name> [--force]}"
+FORCE="${usage_force:-}"
 EMAIL="${AGENT}@ricon.family"
 UPPER=$(echo "$AGENT" | tr '[:lower:]' '[:upper:]')
 VAULT="Agents"
@@ -33,7 +34,7 @@ fi
 echo "--- GPG Key ---"
 if gpg --list-keys "$EMAIL" >/dev/null 2>&1; then
   echo "[auto] Key for $EMAIL already exists"
-  if [ "$FORCE" != "--force" ]; then
+  if [ "$FORCE" != "true" ]; then
     echo "       Use --force to regenerate"
   fi
 else

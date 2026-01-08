@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Show work in progress (open PRs and issues with discussion status)"
-#MISE usage="wip [limit]"
+#USAGE arg "[limit]" help="Maximum items to show (default: 20)"
 
 set -e
 
@@ -11,8 +11,8 @@ REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 OWNER="${REPO%/*}"
 NAME="${REPO#*/}"
 
-# Accept optional limit argument
-LIMIT="${1:-20}"
+# Use limit argument with default
+LIMIT="${usage_limit:-20}"
 
 echo "=== Open Issues ==="
 gh api graphql -f query="
