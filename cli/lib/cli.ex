@@ -348,6 +348,8 @@ defmodule Cli do
           )
 
         stop_logger(logger_port)
+        # Clean up temp log file on success
+        File.rm(log_file)
         status
 
       :error ->
@@ -360,6 +362,9 @@ defmodule Cli do
           {:ok, content} when content != "" -> IO.puts("Logger output: #{content}")
           _ -> :ok
         end
+
+        # Keep log file for post-mortem debugging
+        IO.puts("Log file saved to: #{log_file}")
 
         1
     end
