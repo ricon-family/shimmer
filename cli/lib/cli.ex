@@ -28,7 +28,7 @@ defmodule Cli do
     end
   end
 
-  @logger_port 8000
+  @logger_port_retries 5
   @logger_connect_retries 10
   @logger_connect_interval_ms 200
   @logger_connect_timeout_ms 100
@@ -318,13 +318,26 @@ defmodule Cli do
   end
 
   defp run_with_logger(message, system_prompt, timeout, model) do
+    # Find an available port to avoid collision with other shimmer instances (issue #398)
+    case find_available_port() do
+      {:ok, logger_port_num} ->
+        run_with_logger_on_port(message, system_prompt, timeout, model, logger_port_num)
+
+      {:error, :no_port_available} ->
+        IO.puts("ERROR: Could not find available port for logger")
+        1
+    end
+  end
+
+  defp run_with_logger_on_port(message, system_prompt, timeout, model, logger_port_num) do
     # Use microseconds + random suffix to avoid collision when multiple CLI processes start close together
     random_suffix = :rand.uniform(0xFFFF) |> Integer.to_string(16) |> String.pad_leading(4, "0")
     log_file = "/tmp/claude-context-#{:os.system_time(:microsecond)}-#{random_suffix}.log"
 
     # Start the logger in the background, using mise exec to ensure correct PATH
+    # Pass the dynamically allocated port via --port option
     logger_script =
-      "mise exec -- claude-code-logger start --verbose --log-body > #{log_file} 2>&1"
+      "mise exec -- claude-code-logger start --port #{logger_port_num} --verbose --log-body > #{log_file} 2>&1"
 
     logger_port =
       Port.open(
@@ -333,16 +346,16 @@ defmodule Cli do
       )
 
     # Wait for logger to start with retry loop
-    case wait_for_port(@logger_port, @logger_connect_retries, @logger_connect_interval_ms) do
+    case wait_for_port(logger_port_num, @logger_connect_retries, @logger_connect_interval_ms) do
       :ok ->
-        IO.puts("Logger started, output will be saved to: #{log_file}")
+        IO.puts("Logger started on port #{logger_port_num}, output will be saved to: #{log_file}")
         IO.puts("---")
 
         # Run Claude through the proxy
         status =
           run_claude(
             message,
-            ["ANTHROPIC_BASE_URL=http://localhost:#{@logger_port}"],
+            ["ANTHROPIC_BASE_URL=http://localhost:#{logger_port_num}"],
             system_prompt,
             timeout,
             model
@@ -367,7 +380,7 @@ defmodule Cli do
 
       :error ->
         stop_logger(logger_port)
-        IO.puts("ERROR: Failed to start claude-code-logger")
+        IO.puts("ERROR: Failed to start claude-code-logger on port #{logger_port_num}")
         IO.puts("Check if it's installed: mise exec -- claude-code-logger --version")
 
         # Show what's in the log file for debugging
@@ -416,6 +429,29 @@ defmodule Cli do
       nil ->
         # Port already closed
         :ok
+    end
+  end
+
+  # Find an available port in the ephemeral range (49152-65535)
+  # Uses :gen_tcp.listen to verify port availability before returning
+  defp find_available_port(attempts \\ @logger_port_retries)
+  defp find_available_port(0), do: {:error, :no_port_available}
+
+  defp find_available_port(attempts) do
+    # Random port in IANA dynamic/private range (49152-65535)
+    port = :rand.uniform(16_383) + 49_152
+
+    case :gen_tcp.listen(port, []) do
+      {:ok, socket} ->
+        :gen_tcp.close(socket)
+        {:ok, port}
+
+      {:error, :eaddrinuse} ->
+        find_available_port(attempts - 1)
+
+      {:error, _reason} ->
+        # Other errors (permissions, etc.) - try a different port
+        find_available_port(attempts - 1)
     end
   end
 
