@@ -323,8 +323,9 @@ defmodule Cli do
     log_file = "/tmp/claude-context-#{:os.system_time(:microsecond)}-#{random_suffix}.log"
 
     # Start the logger in the background, using mise exec to ensure correct PATH
+    # Use exec to replace the shell with the logger, avoiding orphan process on cleanup (issue #390)
     logger_script =
-      "mise exec -- claude-code-logger start --verbose --log-body > #{log_file} 2>&1"
+      "exec mise exec -- claude-code-logger start --verbose --log-body > #{log_file} 2>&1"
 
     logger_port =
       Port.open(
@@ -498,8 +499,18 @@ defmodule Cli do
         process_line(buffer, state)
 
       {:error, _} ->
-        flush_partial_buffer(buffer)
-        state
+        extracted = extract_partial_text(buffer)
+        # Only output text beyond what was already flushed (issue #392)
+        new_text = text_beyond_flushed(extracted, state.flushed_text)
+
+        if new_text != "" do
+          IO.write(new_text)
+        end
+
+        # Check for abort signal in extracted text (issues #385, #388)
+        recent_text = String.slice(state.recent_text <> extracted, -20, 20)
+        abort_seen = state.abort_seen || Regex.match?(~r/^\[\[ABORT\]\]$/m, recent_text)
+        %{state | abort_seen: abort_seen, recent_text: recent_text}
     end
   end
 
