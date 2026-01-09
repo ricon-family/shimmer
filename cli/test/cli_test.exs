@@ -613,6 +613,29 @@ defmodule CliTest do
     end
   end
 
+  describe "text_beyond_flushed/2" do
+    test "returns remainder when flushed matches prefix" do
+      assert Cli.text_beyond_flushed("hello world", "hello") == " world"
+    end
+
+    test "returns empty string when fully flushed" do
+      assert Cli.text_beyond_flushed("hello", "hello") == ""
+    end
+
+    test "returns full text when flushed is empty" do
+      assert Cli.text_beyond_flushed("hello", "") == "hello"
+    end
+
+    test "returns full text when flushed does not match prefix" do
+      assert Cli.text_beyond_flushed("different", "hello") == "different"
+    end
+
+    test "handles empty text" do
+      assert Cli.text_beyond_flushed("", "") == ""
+      assert Cli.text_beyond_flushed("", "flushed") == ""
+    end
+  end
+
   describe "load_system_prompt/1" do
     test "returns nil for nil agent" do
       assert Cli.load_system_prompt(nil) == nil

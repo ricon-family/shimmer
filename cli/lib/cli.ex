@@ -463,17 +463,7 @@ defmodule Cli do
             extracted = extract_partial_text(partial)
 
             # Only output the new text beyond what was already flushed
-            new_text =
-              if String.starts_with?(extracted, state.flushed_text) do
-                String.slice(
-                  extracted,
-                  String.length(state.flushed_text),
-                  String.length(extracted)
-                )
-              else
-                # Flushed text doesn't match - shouldn't happen, but output everything
-                extracted
-              end
+            new_text = text_beyond_flushed(extracted, state.flushed_text)
 
             if new_text != "" do
               IO.write(new_text)
@@ -541,7 +531,12 @@ defmodule Cli do
       # Handle streaming text deltas
       {:ok, %{"type" => "stream_event", "event" => %{"delta" => %{"text" => text}}}} ->
         # Write text, skipping any prefix already shown via partial flush (issue #338)
-        write_text_delta(text, state.flushed_text)
+        text_to_write = text_beyond_flushed(text, state.flushed_text)
+
+        if text_to_write != "" do
+          IO.write(text_to_write)
+        end
+
         # Keep a sliding window of recent text to detect [[ABORT]] across chunk boundaries
         # The signal is 11 chars, so we keep 20 to ensure we can always match it
         recent_text = String.slice(state.recent_text <> text, -20, 20)
@@ -592,20 +587,39 @@ defmodule Cli do
     }
   end
 
-  # Write text delta, skipping any prefix that was already flushed (issue #338)
-  defp write_text_delta(text, flushed_text) do
-    text_to_write =
-      if flushed_text != "" && String.starts_with?(text, flushed_text) do
-        String.slice(text, String.length(flushed_text), String.length(text))
-      else
-        text
-      end
+  @doc """
+  Returns the portion of `text` that extends beyond `flushed_text`.
 
-    if text_to_write != "" do
-      IO.write(text_to_write)
+  When text has been partially flushed (shown to the user during timeout),
+  this extracts only the new portion to avoid duplicate output.
+
+  ## Examples
+
+      iex> Cli.text_beyond_flushed("hello world", "hello")
+      " world"
+
+      iex> Cli.text_beyond_flushed("hello", "hello")
+      ""
+
+      iex> Cli.text_beyond_flushed("hello", "")
+      "hello"
+
+      iex> Cli.text_beyond_flushed("different", "hello")
+      "different"
+
+  """
+  @spec text_beyond_flushed(String.t(), String.t()) :: String.t()
+  def text_beyond_flushed(text, "") do
+    text
+  end
+
+  def text_beyond_flushed(text, flushed_text) do
+    if String.starts_with?(text, flushed_text) do
+      String.slice(text, String.length(flushed_text)..-1//1)
+    else
+      # Flushed text doesn't match prefix - shouldn't happen, but return everything
+      text
     end
-
-    :ok
   end
 
   defp print_usage_summary(%{usage: nil}), do: :ok
