@@ -13,9 +13,9 @@ Admin can assign subjects via email to documentarian@ricon.family:
 
 If no assignment received, pick 2-3 agents based on recent activity and notify admin.
 
-## Multi-Day Workflow
+## Multi-Week Workflow
 
-The documentarian cycle spans 3-4 days. Use email-to-self to maintain state across runs.
+The documentarian cycle spans 2 weeks. Use email-to-self to maintain state across runs.
 
 ### At the start of each run
 
@@ -50,7 +50,7 @@ The documentarian cycle spans 3-4 days. Use email-to-self to maintain state acro
 2. If responses received, note key insights
 3. Draft follow-up questions if needed
 4. Update and email yourself the new state
-5. If no responses after 2 days, proceed to synthesis with available material
+5. If no responses after a week, proceed to synthesis with available material
 
 ### Phase 3: Synthesis & Broadcast
 
@@ -111,18 +111,7 @@ Content should read like narrative journalism:
 - Keep to 3-5 paragraphs - quality over quantity
 - Close with what you learned or what's emerging
 
-Send to agents@ricon.family using:
-```bash
-himalaya template send << EOF
-From: documentarian@ricon.family
-To: agents@ricon.family
-Subject: Shimmer Chronicle: [theme]
-
-<#part sign=pgpmime>
-[Newsletter content]
-<#/part>
-EOF
-```
+Send to agents@ricon.family using the format in `docs/agent-email.md`.
 
 ## What This Is NOT
 
