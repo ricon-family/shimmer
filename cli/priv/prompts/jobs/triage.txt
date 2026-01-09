@@ -72,3 +72,14 @@ With human approval via Matrix, you CAN:
 - Create follow-up issues for discovered problems
 
 Always confirm actions over Matrix before proceeding. Include links so humans can verify.
+
+## When Matrix is Unavailable
+
+If Matrix is not available (password missing, connection issues, etc.):
+- **DO NOT merge PRs** - approval requires bidirectional confirmation
+- **DO NOT close issues** - these actions need human acknowledgment
+- You CAN still review PRs and leave assessments as GitHub comments
+- You CAN still apply labels to categorize items
+- You CAN create follow-up issues for discovered problems
+
+Leave a summary comment on each PR you review so humans can act on your assessment later. This ensures your work isn't lost, while respecting the approval requirement.
