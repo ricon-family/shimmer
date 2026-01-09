@@ -306,7 +306,9 @@ defmodule Cli do
         usage: nil,
         abort_seen: false,
         recent_text: "",
-        flushed_text: ""
+        flushed_text: "",
+        # Track if the last char trimmed from recent_text was a newline (for abort detection)
+        had_newline_before_window: true
       })
 
     if status == @timeout_exit_code do
@@ -549,8 +551,39 @@ defmodule Cli do
            usage: map() | nil,
            abort_seen: boolean(),
            recent_text: String.t(),
-           flushed_text: String.t()
+           flushed_text: String.t(),
+           had_newline_before_window: boolean()
          }
+
+  # Detect [[ABORT]] signal on its own line, handling chunk boundaries (#400).
+  # Returns {abort_seen, recent_text, had_newline_before_window}
+  defp check_abort_signal(text, state) do
+    # Use a sliding window to catch signals split across chunks
+    combined = state.recent_text <> text
+    combined_len = String.length(combined)
+    recent_text = String.slice(combined, -20, 20)
+
+    # Check if any text was trimmed and if it contained a newline
+    trimmed_len = max(0, combined_len - 20)
+    trimmed_portion = String.slice(combined, 0, trimmed_len)
+
+    # Track whether there was a newline in the trimmed text
+    had_newline_before_window =
+      if String.contains?(trimmed_portion, "\n"),
+        do: true,
+        else: state.had_newline_before_window
+
+    # Prepend newline if we know there was one before the window
+    text_to_check =
+      if had_newline_before_window, do: "\n" <> recent_text, else: recent_text
+
+    # Match [[ABORT]] after newline or start, followed by newline or end
+    abort_seen =
+      state.abort_seen ||
+        Regex.match?(~r/(?:^|\n)\[\[ABORT\]\](?:\n|$)/, text_to_check)
+
+    {abort_seen, recent_text, had_newline_before_window}
+  end
 
   @doc false
   @spec process_line(String.t(), stream_state()) :: stream_state()
@@ -565,12 +598,16 @@ defmodule Cli do
           IO.write(text_to_write)
         end
 
-        # Keep a sliding window of recent text to detect [[ABORT]] across chunk boundaries
-        # The signal is 11 chars, so we keep 20 to ensure we can always match it
-        recent_text = String.slice(state.recent_text <> text, -20, 20)
-        abort_seen = state.abort_seen || Regex.match?(~r/^\[\[ABORT\]\]$/m, recent_text)
-        # Reset flushed_text since this line is now complete
-        %{state | abort_seen: abort_seen, recent_text: recent_text, flushed_text: ""}
+        # Check for [[ABORT]] signal and update tracking state
+        {abort_seen, recent_text, had_newline} = check_abort_signal(text, state)
+
+        %{
+          state
+          | abort_seen: abort_seen,
+            recent_text: recent_text,
+            flushed_text: "",
+            had_newline_before_window: had_newline
+        }
 
       # Handle tool use start - show which tool is being called
       {:ok,
