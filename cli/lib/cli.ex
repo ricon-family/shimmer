@@ -498,7 +498,10 @@ defmodule Cli do
         process_line(buffer, state)
 
       {:error, _} ->
-        flush_partial_buffer(buffer)
+        # Only flush text beyond what was already shown during timeout (issue #392)
+        extracted = extract_partial_text(buffer)
+        new_text = text_beyond_flushed(extracted, state.flushed_text)
+        if new_text != "", do: IO.write(new_text)
         state
     end
   end
