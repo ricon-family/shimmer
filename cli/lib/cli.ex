@@ -498,8 +498,16 @@ defmodule Cli do
         process_line(buffer, state)
 
       {:error, _} ->
-        flush_partial_buffer(buffer)
-        state
+        extracted = extract_partial_text(buffer)
+
+        if extracted != "" do
+          IO.write(extracted)
+        end
+
+        # Check for abort in partial buffer (issue #385)
+        recent_text = String.slice(state.recent_text <> extracted, -20, 20)
+        abort_seen = state.abort_seen || Regex.match?(~r/^\[\[ABORT\]\]$/m, recent_text)
+        %{state | abort_seen: abort_seen, recent_text: recent_text}
     end
   end
 
