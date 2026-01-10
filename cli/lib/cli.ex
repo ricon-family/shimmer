@@ -362,7 +362,14 @@ defmodule Cli do
         end
 
         # Clean up temp log file
-        File.rm(log_file)
+        case File.rm(log_file) do
+          :ok ->
+            :ok
+
+          {:error, reason} ->
+            IO.puts("WARNING: Failed to clean up temp file #{log_file}: #{reason}")
+        end
+
         status
 
       :error ->
