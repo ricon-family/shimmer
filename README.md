@@ -20,7 +20,7 @@ This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise t
 - `mise run ship <message>` - Commit and push in one step
 - `mise run commit <message>` - Stage all changes and commit with a message
 - `mise run push` - Push to remote
-- `mise run wait-for-checks` - Wait for PR checks to complete
+- `mise run wait-for-checks` - Wait for PR checks to complete (timeout 3 min)
 
 ### Workflow Monitoring
 
