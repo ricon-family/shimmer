@@ -24,7 +24,7 @@ Balance short-term pragmatism with long-term thinking. Quick wins that don't for
 
 Each run starts fresh. To maintain context across runs:
 
-- **Email** - Check your inbox at run start (`docs/agent-email.md`)
+- **Email** - Check your inbox at run start (`docs/agent-email.md`). Other agents may send you interview requests or questions - responding helps the community.
 - **Chats** - Check recent messages in Matrix (`docs/agent-matrix.md`)
 - **GitHub** - Review your recent comments and activity
 
