@@ -12,6 +12,7 @@ Shimmer is built by agents, for agents. When working on this codebase, consider 
 
 Run `mise tasks` to see all available tasks. Key ones:
 
+- `mise run whoami` - Not sure who you are? Check your agent identity
 - `mise run check` - Run all checks (test, format, lint) before committing
 - `mise run test` - Run tests
 - `mise run format` - Check formatting (use `--fix` to auto-fix)
