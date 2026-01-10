@@ -294,7 +294,7 @@ defmodule CliTest do
   describe "process_line/2" do
     test "outputs text delta and tracks abort_seen" do
       line = ~s({"type":"stream_event","event":{"delta":{"text":"Hello"}}})
-      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_text: ""}
+      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_chars: 0}
 
       output =
         capture_io(fn ->
@@ -309,13 +309,13 @@ defmodule CliTest do
                          tool_input: "",
                          abort_seen: false,
                          recent_text: "Hello",
-                         flushed_text: ""
+                         flushed_chars: 0
                        }}
     end
 
     test "detects [[ABORT]] on its own line" do
       line = ~s({"type":"stream_event","event":{"delta":{"text":"[[ABORT]]\\n"}}})
-      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_text: ""}
+      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_chars: 0}
 
       capture_io(fn ->
         result = Cli.process_line(line, state)
@@ -328,7 +328,7 @@ defmodule CliTest do
     test "detects [[ABORT]] split across streaming chunks" do
       # First chunk ends mid-signal
       line1 = ~s({"type":"stream_event","event":{"delta":{"text":"[[ABO"}}})
-      state1 = %{tool_input: "", abort_seen: false, recent_text: "", flushed_text: ""}
+      state1 = %{tool_input: "", abort_seen: false, recent_text: "", flushed_chars: 0}
 
       capture_io(fn ->
         result = Cli.process_line(line1, state1)
@@ -350,7 +350,7 @@ defmodule CliTest do
 
     test "does not detect [[ABORT]] embedded in text" do
       line = ~s({"type":"stream_event","event":{"delta":{"text":"some [[ABORT]] text"}}})
-      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_text: ""}
+      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_chars: 0}
 
       capture_io(fn ->
         result = Cli.process_line(line, state)
@@ -362,11 +362,11 @@ defmodule CliTest do
 
     test "skips already-flushed text prefix" do
       # Simulates the scenario from issue #338:
-      # 1. Partial buffer was flushed showing "Hello wor"
+      # 1. Partial buffer was flushed showing "Hello wor" (9 chars)
       # 2. Full line completes with "Hello world"
       # 3. Should only output "ld" (the new part)
       line = ~s({"type":"stream_event","event":{"delta":{"text":"Hello world"}}})
-      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_text: "Hello wor"}
+      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_chars: 9}
 
       output =
         capture_io(fn ->
@@ -376,13 +376,13 @@ defmodule CliTest do
 
       # Should only output the new part
       assert output == "ld"
-      # flushed_text should be reset after processing complete line
-      assert_received {:result, %{flushed_text: ""}}
+      # flushed_chars should be reset after processing complete line
+      assert_received {:result, %{flushed_chars: 0}}
     end
 
-    test "outputs full text when flushed_text is empty" do
+    test "outputs full text when flushed_chars is zero" do
       line = ~s({"type":"stream_event","event":{"delta":{"text":"Hello world"}}})
-      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_text: ""}
+      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_chars: 0}
 
       output =
         capture_io(fn ->
@@ -393,11 +393,11 @@ defmodule CliTest do
       assert output == "Hello world"
     end
 
-    test "outputs full text when flushed_text does not match prefix" do
-      # Edge case: flushed text doesn't match the complete text
+    test "outputs remaining text when flushed_chars exceeds text length" do
+      # Edge case: flushed_chars is larger than the text
       # (shouldn't happen in practice, but handle gracefully)
-      line = ~s({"type":"stream_event","event":{"delta":{"text":"Different text"}}})
-      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_text: "Hello"}
+      line = ~s({"type":"stream_event","event":{"delta":{"text":"Hi"}}})
+      state = %{tool_input: "", abort_seen: false, recent_text: "", flushed_chars: 10}
 
       output =
         capture_io(fn ->
@@ -405,8 +405,8 @@ defmodule CliTest do
           send(self(), {:result, result})
         end)
 
-      # Should output the full text since flushed doesn't match
-      assert output == "Different text"
+      # Should output empty string since all chars were "flushed"
+      assert output == ""
     end
 
     test "resets tool_input on tool_use start and prints tool name" do
@@ -602,25 +602,28 @@ defmodule CliTest do
   end
 
   describe "text_beyond_flushed/2" do
-    test "returns remainder when flushed matches prefix" do
-      assert Cli.text_beyond_flushed("hello world", "hello") == " world"
+    test "returns remainder after flushed chars" do
+      # "hello" is 5 chars, so skip 5 chars from "hello world"
+      assert Cli.text_beyond_flushed("hello world", 5) == " world"
     end
 
     test "returns empty string when fully flushed" do
-      assert Cli.text_beyond_flushed("hello", "hello") == ""
+      # "hello" is 5 chars
+      assert Cli.text_beyond_flushed("hello", 5) == ""
     end
 
-    test "returns full text when flushed is empty" do
-      assert Cli.text_beyond_flushed("hello", "") == "hello"
+    test "returns full text when flushed_chars is zero" do
+      assert Cli.text_beyond_flushed("hello", 0) == "hello"
     end
 
-    test "returns full text when flushed does not match prefix" do
-      assert Cli.text_beyond_flushed("different", "hello") == "different"
+    test "returns empty string when flushed_chars exceeds text length" do
+      # Only 9 chars in "different" but we flushed 10
+      assert Cli.text_beyond_flushed("different", 10) == ""
     end
 
     test "handles empty text" do
-      assert Cli.text_beyond_flushed("", "") == ""
-      assert Cli.text_beyond_flushed("", "flushed") == ""
+      assert Cli.text_beyond_flushed("", 0) == ""
+      assert Cli.text_beyond_flushed("", 5) == ""
     end
   end
 
