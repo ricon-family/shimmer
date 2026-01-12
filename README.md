@@ -17,7 +17,6 @@ This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise t
 
 ### Workflow Monitoring
 
-- `mise run status [workflow]` - Check the status of the latest workflow run
 - `mise run logs [workflow] [lines]` - View logs from the latest workflow run
 - `mise run watch <agent> <job>` - Watch a run until completion
 - `mise run trigger <agent> <job> [message]` - Trigger an agent workflow manually
