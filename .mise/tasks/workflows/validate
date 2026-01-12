@@ -1,0 +1,8 @@
+#!/bin/bash
+#MISE description="Validate agents.yaml against schema"
+set -eo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+check-jsonschema --schemafile agents.schema.json agents.yaml
+echo "agents.yaml is valid"

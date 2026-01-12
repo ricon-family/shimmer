@@ -1,0 +1,9 @@
+#!/bin/bash
+#MISE description="Validate schema and check workflows are in sync (for CI)"
+#MISE depends=["workflows:validate"]
+set -eo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+# Run generate in check mode
+mise run workflows:generate --check

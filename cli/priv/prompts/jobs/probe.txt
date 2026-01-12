@@ -1,3 +1,9 @@
+## Workflow Type: Board-driven
+
+This job must work from approved issues only. Use `issues:list` to find work.
+
+---
+
 Your job: implement approved work from the project board.
 
 ## Workflow

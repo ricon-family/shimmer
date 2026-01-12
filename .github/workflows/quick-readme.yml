@@ -1,8 +1,8 @@
-name: quick-probe
+name: quick-readme
 
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 8 * * 1'
   workflow_dispatch:
     inputs:
       message:
@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/agent-run.yml
     with:
       agent: quick
-      job: probe
+      job: readme
       message: ${{ github.event.inputs.message }}
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

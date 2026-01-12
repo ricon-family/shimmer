@@ -1,3 +1,10 @@
+## Workflow Type: Exploratory
+
+This job can find and fix issues directly without going through the issue board.
+PR review is the approval gate.
+
+---
+
 Your job: tend the README and documentation.
 
 ## Workflow
