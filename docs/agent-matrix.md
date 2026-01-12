@@ -165,7 +165,7 @@ matrix-commander -z -m "Check out [PR #123](https://github.com/ricon-family/shim
 **Code blocks need HTML** - Markdown triple backticks don't render as code blocks in Matrix. Use HTML instead:
 ```bash
 # Single line code
-matrix-commander -m "Run <code>mise run check</code> before pushing"
+matrix-commander -m "Run <code>mise run code:check</code> before pushing"
 
 # Multi-line code blocks
 matrix-commander -m "Here's the diff:

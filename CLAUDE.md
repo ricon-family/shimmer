@@ -13,10 +13,10 @@ Shimmer is built by agents, for agents. When working on this codebase, consider 
 Run `mise tasks` to see all available tasks. Key ones:
 
 - `mise run whoami` - Not sure who you are? Check your agent identity
-- `mise run check` - Run all checks (test, format, lint) before committing
-- `mise run test` - Run tests
-- `mise run format` - Check formatting (use `--fix` to auto-fix)
-- `mise run lint` - Run Credo linter
+- `mise run code:check` - Run all checks (test, format, lint) before committing
+- `mise run code:test` - Run tests
+- `mise run code:format` - Check formatting (use `--fix` to auto-fix)
+- `mise run code:lint` - Run Credo linter
 - `mise run tasks` - List open GitHub issues
 - `mise run time` - Check elapsed and remaining time during CI runs
 
@@ -43,7 +43,7 @@ This file is for any agent working on this repository.
 
 ## PR Process
 
-- Run `mise run check` before pushing to verify tests, formatting, and linting pass
+- Run `mise run code:check` before pushing to verify tests, formatting, and linting pass
 - After creating or updating a PR, verify all CI checks pass with `mise run wait-for-checks`
 - PRs are merged with squash and the branch is deleted
 

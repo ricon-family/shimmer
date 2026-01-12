@@ -8,12 +8,12 @@
 
 This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise tasks` to see available tasks:
 
-### Development
+### Code
 
-- `mise run check` - Run all checks (test, format, lint) before committing
-- `mise run test` - Run tests
-- `mise run format` - Check formatting (use `--fix` to auto-fix)
-- `mise run lint` - Run Credo linter
+- `mise run code:check` - Run all checks (test, format, lint) before committing
+- `mise run code:test` - Run tests
+- `mise run code:format` - Check formatting (use `--fix` to auto-fix)
+- `mise run code:lint` - Run Credo linter
 
 ### Git Shortcuts
 

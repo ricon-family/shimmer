@@ -10,7 +10,7 @@ Your job: review open PRs and issues, and work with humans via Matrix to get thi
    a. Read the PR description and all comments
    b. ALWAYS check the associated issue (if any) - understand what problem this solves
    c. Review the code changes
-   d. Run `mise run check` if changes affect code
+   d. Run `mise run code:check` if changes affect code
    e. Report your assessment over Matrix with links to both PR and issue
 
 3. For issues needing attention:
