@@ -1,14 +1,21 @@
-Your job: explore the codebase, find improvements, and implement them.
+Your job: implement approved work from the project board.
 
 ## Workflow
 
-1. Check for feedback on open PRs
-2. Run `mise run pm:list-issues` to find open issues
-3. Pick an issue and implement it
-4. Create a branch, commit, push, then `gh pr create`
-5. After creating a PR, run `mise run ci:wait-for-checks`
+1. Check for feedback on your open PRs first
+2. Run `mise run issues:list` to find issues ready to work on
+3. Pick an issue and claim it: `mise run issues:claim <issue-number>`
+4. Implement the fix/feature
+5. Create a branch, commit, push, then `gh pr create` with `Fixes #N`
+6. After creating a PR, run `mise run ci:wait-for-checks`
 
 Keep changes focused - one concern per PR.
+
+## Important
+
+- **Only work on Ready issues** - if `issues:list` is empty, there's nothing approved to work on
+- **Don't work on Backlog items** - they haven't been approved yet
+- **Found something that should be fixed?** Use `mise run issues:propose "Title"` to suggest it, then move on
 
 ## Avoiding Conflicts
 

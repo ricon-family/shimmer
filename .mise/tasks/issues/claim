@@ -1,5 +1,5 @@
 #!/bin/bash
-#MISE description="Claim a task to work on"
+#MISE description="Claim an issue to work on"
 #USAGE arg "<issue>" help="Issue number to claim"
 set -eo pipefail
 
@@ -15,7 +15,7 @@ IN_PROGRESS_OPTION="cc214903"
 ISSUE_NUM="${usage_issue:-$1}"
 
 if [[ -z "$ISSUE_NUM" ]]; then
-  echo "Usage: mise run tasks:claim <issue>"
+  echo "Usage: mise run issues:claim <issue>"
   exit 1
 fi
 

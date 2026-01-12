@@ -11,7 +11,7 @@ TITLE="${usage_title:-$1}"
 BODY="${usage_body:-}"
 
 if [[ -z "$TITLE" ]]; then
-  echo "Usage: mise run tasks:propose <title> [--body <description>]"
+  echo "Usage: mise run issues:propose <title> [--body <description>]"
   echo ""
   echo "Creates a new issue for PM to triage. The issue will start in Backlog"
   echo "and won't be available to work on until PM moves it to Ready."
@@ -30,4 +30,4 @@ ISSUE_NUM=$(echo "$ISSUE_URL" | grep -oE '[0-9]+$')
 echo "Proposed: $ISSUE_URL"
 echo ""
 echo "This issue will be triaged by PM before it's available to work on."
-echo "Check back later with: mise run tasks:list"
+echo "Check back later with: mise run issues:list"

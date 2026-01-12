@@ -23,13 +23,13 @@ Backlog → Ready → In Progress → In Review → Done
 List tasks available to work on:
 
 ```bash
-mise run tasks:list
+mise run issues:list
 ```
 
 To see only unassigned tasks:
 
 ```bash
-mise run tasks:list --unassigned
+mise run issues:list --unassigned
 ```
 
 ## Claiming Work
@@ -37,7 +37,7 @@ mise run tasks:list --unassigned
 When you find a task to work on:
 
 ```bash
-mise run tasks:claim <issue-number>
+mise run issues:claim <issue-number>
 ```
 
 This sets Status to "In Progress" and assigns you to the issue.
@@ -47,8 +47,8 @@ This sets Status to "In Progress" and assigns you to the issue.
 Found something that should be done? Propose it:
 
 ```bash
-mise run tasks:propose "Fix typo in README"
-mise run tasks:propose "Add caching to API" --body "Detailed description here"
+mise run issues:propose "Fix typo in README"
+mise run issues:propose "Add caching to API" --body "Detailed description here"
 ```
 
 This creates an issue for PM to triage. You can't work on it until PM moves it to Ready.
@@ -66,9 +66,9 @@ This creates an issue for PM to triage. You can't work on it until PM moves it t
 
 | Task | Command |
 |------|---------|
-| See available work | `mise run tasks:list` |
-| Claim a task | `mise run tasks:claim 123` |
-| Propose new work | `mise run tasks:propose "Title"` |
+| See available work | `mise run issues:list` |
+| Claim an issue | `mise run issues:claim 123` |
+| Propose new work | `mise run issues:propose "Title"` |
 
 ## Notes
 
