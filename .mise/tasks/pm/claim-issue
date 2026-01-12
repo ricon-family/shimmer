@@ -1,0 +1,43 @@
+#!/bin/bash
+#MISE description="Claim an issue (set In Progress + assign to self)"
+#MISE usage="claim-issue <issue-number>"
+set -eo pipefail
+
+# Static IDs
+PROJECT_ID="PVT_kwDODumhvM4BMSWk"
+PROJECT_NUM="4"
+OWNER="ricon-family"
+REPO="ricon-family/shimmer"
+STATUS_FIELD="PVTSSF_lADODumhvM4BMSWkzg7nRgc"
+IN_PROGRESS_OPTION="cc214903"
+
+ISSUE_NUM="$1"
+
+if [[ -z "$ISSUE_NUM" ]]; then
+  echo "Usage: mise run pm:claim-issue <issue-number>"
+  exit 1
+fi
+
+# Get item ID
+ITEM_ID=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 100 | \
+  jq -r --arg num "$ISSUE_NUM" '.items[] | select(.content.number == ($num | tonumber)) | .id')
+
+if [[ -z "$ITEM_ID" ]]; then
+  echo "Error: Issue #${ISSUE_NUM} not found in project"
+  echo "Add it first with: mise run pm:edit-issue $ISSUE_NUM --status Ready"
+  exit 1
+fi
+
+# Set Status to In Progress
+gh project item-edit \
+  --project-id "$PROJECT_ID" \
+  --id "$ITEM_ID" \
+  --field-id "$STATUS_FIELD" \
+  --single-select-option-id "$IN_PROGRESS_OPTION"
+
+# Assign to self (use gh issue edit, not project API)
+gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-assignee "@me"
+
+echo "Claimed issue #${ISSUE_NUM}"
+echo "  Status: In Progress"
+echo "  Assigned to: @me"

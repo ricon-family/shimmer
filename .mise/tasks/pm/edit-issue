@@ -1,0 +1,131 @@
+#!/bin/bash
+#MISE description="Edit project fields for an issue"
+#MISE usage="edit <issue-number> [--status STATUS] [--priority PRIORITY]"
+set -eo pipefail
+
+# Static IDs (these don't change)
+PROJECT_ID="PVT_kwDODumhvM4BMSWk"
+PROJECT_NUM="4"
+OWNER="ricon-family"
+REPO="ricon-family/shimmer"
+
+# Field IDs
+STATUS_FIELD="PVTSSF_lADODumhvM4BMSWkzg7nRgc"
+PRIORITY_FIELD="PVTSSF_lADODumhvM4BMSWkzg7p3iw"
+
+get_status_option_id() {
+  case "$1" in
+    Backlog)     echo "f689c639" ;;
+    Ready)       echo "bacc6451" ;;
+    "In Progress") echo "cc214903" ;;
+    "In Review")   echo "116df680" ;;
+    Done)        echo "5912f70c" ;;
+    *) echo "" ;;
+  esac
+}
+
+get_priority_option_id() {
+  case "$1" in
+    High)   echo "bf4ecd45" ;;
+    Medium) echo "e8d4bc16" ;;
+    Low)    echo "6c353f5c" ;;
+    *) echo "" ;;
+  esac
+}
+
+# Parse arguments
+ISSUE_NUM=""
+STATUS=""
+PRIORITY=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --status)
+      STATUS="$2"
+      shift 2
+      ;;
+    --priority)
+      PRIORITY="$2"
+      shift 2
+      ;;
+    *)
+      if [[ -z "$ISSUE_NUM" ]]; then
+        ISSUE_NUM="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$ISSUE_NUM" ]]; then
+  echo "Usage: mise run pm:edit <issue-number> [--status STATUS] [--priority PRIORITY]"
+  echo ""
+  echo "Status options: Backlog, Ready, \"In Progress\", \"In Review\", Done"
+  echo "Priority options: High, Medium, Low"
+  exit 1
+fi
+
+# Get issue URL
+ISSUE_URL="https://github.com/${REPO}/issues/${ISSUE_NUM}"
+
+# Check if item is already in project, add if not
+ITEM_ID=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 100 | \
+  jq -r --arg num "$ISSUE_NUM" '.items[] | select(.content.number == ($num | tonumber)) | .id')
+
+if [[ -z "$ITEM_ID" ]]; then
+  echo "Adding issue #${ISSUE_NUM} to project..."
+  gh project item-add "$PROJECT_NUM" --owner "$OWNER" --url "$ISSUE_URL"
+
+  # Retry loop to find the item (GitHub can be slow to propagate)
+  for i in {1..5}; do
+    sleep 1
+    ITEM_ID=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 100 | \
+      jq -r --arg num "$ISSUE_NUM" '.items[] | select(.content.number == ($num | tonumber)) | .id')
+    if [[ -n "$ITEM_ID" ]]; then
+      break
+    fi
+  done
+fi
+
+if [[ -z "$ITEM_ID" ]]; then
+  echo "Error: Could not find or add issue #${ISSUE_NUM} to project"
+  exit 1
+fi
+
+echo "Issue #${ISSUE_NUM} (item: ${ITEM_ID:0:12}...)"
+
+# Set Status if provided
+if [[ -n "$STATUS" ]]; then
+  OPTION_ID=$(get_status_option_id "$STATUS")
+  if [[ -z "$OPTION_ID" ]]; then
+    echo "Error: Invalid status '$STATUS'"
+    echo "Options: Backlog, Ready, \"In Progress\", \"In Review\", Done"
+    exit 1
+  fi
+  gh project item-edit \
+    --project-id "$PROJECT_ID" \
+    --id "$ITEM_ID" \
+    --field-id "$STATUS_FIELD" \
+    --single-select-option-id "$OPTION_ID"
+  echo "  Status: $STATUS"
+fi
+
+# Set Priority if provided
+if [[ -n "$PRIORITY" ]]; then
+  OPTION_ID=$(get_priority_option_id "$PRIORITY")
+  if [[ -z "$OPTION_ID" ]]; then
+    echo "Error: Invalid priority '$PRIORITY'"
+    echo "Options: High, Medium, Low"
+    exit 1
+  fi
+  gh project item-edit \
+    --project-id "$PROJECT_ID" \
+    --id "$ITEM_ID" \
+    --field-id "$PRIORITY_FIELD" \
+    --single-select-option-id "$OPTION_ID"
+  echo "  Priority: $PRIORITY"
+fi
+
+if [[ -z "$STATUS" && -z "$PRIORITY" ]]; then
+  echo "  (no fields updated - use --status or --priority)"
+fi

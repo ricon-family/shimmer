@@ -1,0 +1,50 @@
+#!/bin/bash
+#MISE description="List issues ready to be claimed"
+#MISE usage="list-ready [--unassigned]"
+set -eo pipefail
+
+PROJECT_NUM="4"
+OWNER="ricon-family"
+
+# Parse arguments
+UNASSIGNED_ONLY=false
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --unassigned)
+      UNASSIGNED_ONLY=true
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+# Get items with Status = Ready
+ITEMS=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 100 | \
+  jq -r '.items[] | select(.status == "Ready")')
+
+if [[ -z "$ITEMS" ]]; then
+  echo "No items with Status: Ready"
+  exit 0
+fi
+
+# Filter by unassigned if requested
+if [[ "$UNASSIGNED_ONLY" == "true" ]]; then
+  ITEMS=$(echo "$ITEMS" | jq -s '[.[] | select(.assignees == null or .assignees == [])]')
+  echo "Ready items (unassigned only):"
+else
+  ITEMS=$(echo "$ITEMS" | jq -s '.')
+  echo "Ready items:"
+fi
+
+echo ""
+
+# Display items
+echo "$ITEMS" | jq -r '.[] | "#\(.content.number)\t\(.priority // "—")\t\(.title)"' | \
+  column -t -s $'\t' | \
+  while read line; do echo "  $line"; done
+
+COUNT=$(echo "$ITEMS" | jq 'length')
+echo ""
+echo "Total: $COUNT"
