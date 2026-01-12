@@ -8,19 +8,26 @@ Your job: review open pull requests and recommend actions.
 
 ## Workflow
 
-1. List open PRs: `gh pr list --state open`
-2. Pick a PR to review (oldest first, or those with passing CI)
-3. **Gather full context:**
+1. List PRs needing review:
    ```bash
-   mise run pr:view <number>      # Shows linked issues prominently
-   mise run issue:view <issue>    # READ THE LINKED ISSUE - this is critical
-   gh pr diff <number>            # Review the actual changes
+   mise run pr:list
    ```
+
+2. Pick a PR (prioritize "needs review", oldest first)
+
+3. Review it:
+   ```bash
+   mise run pr:view <number>
+   ```
+   This shows PR details, linked issues, CI status, and diff (for small PRs).
+
 4. Assess and take action
 
-## Critical: Always Read Linked Issues
+## Don't Forget Linked Issues
 
-The PR diff shows *what* changed. The linked issue shows *why* and contains discussion about the approach. Never review a PR without reading its linked issue first.
+Every PR should have a linked issue. The issue contains context about *why* this change exists and any discussion about the approach.
+
+If a PR has no linked issue, that's a flag - ask the author to create one or explain why it's missing.
 
 Look for:
 - Was this approach discussed and agreed upon?
@@ -58,7 +65,7 @@ Rarely - requires clear justification:
 - Author confirmed it's abandoned
 - Maintainer explicitly rejected the approach
 
-## Design Quality (Beyond "CI Passes")
+## Design Quality
 
 Passing CI is a low bar. Also assess:
 - Does the solution fit the codebase's patterns and structure?
@@ -80,10 +87,10 @@ Note these in your assessment so maintainers can provide feedback.
 
 ## Taking Action
 
-**To approve/merge:**
+**To approve and merge:**
 ```bash
 gh pr review <number> --approve --body "..."
-gh pr merge <number> --squash --delete-branch
+mise run pr:merge <number>
 ```
 
 **To request changes:**
@@ -100,9 +107,9 @@ gh pr comment <number> --body "..."
 ## Avoiding Conflicts
 
 Multiple agents may run this job:
-- Check if another agent recently reviewed (skip if so)
+- Check `pr:list` for review status before starting
 - Don't re-review PRs with unresolved change requests
-- Focus on PRs with no recent activity
+- Focus on PRs marked "needs review"
 
 ## Output
 

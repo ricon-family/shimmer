@@ -1,0 +1,44 @@
+#!/bin/bash
+#MISE description="List open pull requests for review"
+#USAGE flag "--all" help="Show all open PRs (default: prioritized for review)"
+set -eo pipefail
+
+SHOW_ALL="${usage_all:-false}"
+
+# Get open PRs with review info
+PRS=$(gh pr list --state open --json number,title,author,createdAt,reviewDecision,reviews,additions,deletions --jq '
+  sort_by(.createdAt) | .[] | {
+    number,
+    title,
+    author: .author.login,
+    created: (.createdAt | split("T")[0]),
+    changes: (.additions + .deletions),
+    reviewDecision,
+    reviewCount: (.reviews | length)
+  }
+')
+
+if [[ -z "$PRS" ]]; then
+  echo "No open PRs"
+  exit 0
+fi
+
+echo "Open PRs (oldest first):"
+echo ""
+
+echo "$PRS" | jq -r '
+  if .reviewDecision == "APPROVED" then
+    "  #\(.number)\t✓ approved\t+\(.changes)\t\(.title)"
+  elif .reviewDecision == "CHANGES_REQUESTED" then
+    "  #\(.number)\t⚠ changes\t+\(.changes)\t\(.title)"
+  elif .reviewCount > 0 then
+    "  #\(.number)\t◐ reviewed\t+\(.changes)\t\(.title)"
+  else
+    "  #\(.number)\t○ needs review\t+\(.changes)\t\(.title)"
+  end
+' | column -t -s $'\t'
+
+echo ""
+TOTAL=$(echo "$PRS" | jq -s 'length')
+NEEDS_REVIEW=$(echo "$PRS" | jq -s '[.[] | select(.reviewCount == 0)] | length')
+echo "Total: $TOTAL ($NEEDS_REVIEW need review)"

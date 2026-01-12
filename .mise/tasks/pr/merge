@@ -1,0 +1,37 @@
+#!/bin/bash
+#MISE description="Merge a pull request"
+#USAGE arg "<number>" help="PR number"
+#USAGE flag "--body <body>" help="Merge commit body"
+set -eo pipefail
+
+PR="${usage_number:-$1}"
+BODY="${usage_body:-}"
+
+if [[ -z "$PR" ]]; then
+  echo "Usage: mise run pr:merge <number> [--body <message>]"
+  exit 1
+fi
+
+# Check PR state first
+STATE=$(gh pr view "$PR" --json state --jq '.state')
+if [[ "$STATE" == "MERGED" ]]; then
+  echo "PR #$PR is already merged"
+  exit 0
+fi
+
+if [[ "$STATE" != "OPEN" ]]; then
+  echo "PR #$PR is not open (state: $STATE)"
+  exit 1
+fi
+
+# Merge with squash
+if [[ -n "$BODY" ]]; then
+  gh pr merge "$PR" --squash --delete-branch --body "$BODY"
+else
+  gh pr merge "$PR" --squash --delete-branch
+fi
+
+# Confirm merge
+RESULT=$(gh pr view "$PR" --json state,mergedAt --jq '"\(.state) at \(.mergedAt)"')
+echo ""
+echo "PR #$PR: $RESULT"
