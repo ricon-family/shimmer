@@ -1,0 +1,14 @@
+#!/bin/bash
+#MISE description="View issue with all comments"
+#USAGE arg "<number>" help="Issue number"
+set -eo pipefail
+
+ISSUE="${usage_number:-$1}"
+
+if [[ -z "$ISSUE" ]]; then
+  echo "Usage: mise run issue:view <number>"
+  exit 1
+fi
+
+# Get issue details with comments
+gh issue view "$ISSUE" --comments

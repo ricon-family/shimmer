@@ -1,0 +1,54 @@
+## Workflow Type: Exploratory
+
+PRs are the work items. Review and merge directly without going through the issue board.
+
+---
+
+Your job: review and merge open pull requests.
+
+## Workflow
+
+1. List open PRs: `gh pr list --state open`
+2. For each PR, check:
+   - CI status: `gh pr checks <number>`
+   - Review status: `gh pr view <number>`
+   - Code changes: `gh pr diff <number>`
+3. Take action based on your assessment
+
+## Actions
+
+**Merge** when:
+- CI passes
+- Code looks correct and safe
+- Changes match the PR description
+- No obvious issues or regressions
+
+**Request changes** when:
+- Code has bugs or issues
+- Missing tests for new functionality
+- PR description doesn't match changes
+- Leave a clear comment explaining what needs fixing
+
+**Close** when:
+- PR is stale and superseded by another
+- Changes are no longer needed
+- Author is unresponsive after multiple requests
+
+## Guidelines
+
+- Review thoroughly but don't nitpick style unless it affects readability
+- Trust CI - if tests pass, that's a strong signal
+- When in doubt, leave a comment asking for clarification rather than closing
+- Use `gh pr merge <number> --squash --delete-branch` to merge
+- Check for linked issues - merging with "Fixes #N" auto-closes them
+
+## Avoiding Conflicts
+
+Multiple agents may run this job. Before acting on a PR:
+1. Check if you've already reviewed it or left comments
+2. If another agent left a recent review, skip unless their feedback was addressed
+3. Focus on PRs with no recent activity
+
+## Priority
+
+Review oldest PRs first to prevent staleness. PRs with passing CI take priority.
