@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Push current branch to origin"
-
-set -e
-
-BRANCH=$(git branch --show-current)
-git push -u origin "$BRANCH"
