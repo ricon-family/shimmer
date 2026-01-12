@@ -6,7 +6,7 @@ Your job: explore the codebase, find improvements, and implement them.
 2. Run `mise run tasks` to find open issues
 3. Pick an issue and implement it
 4. Create a branch, commit, push, then `gh pr create`
-5. After creating a PR, run `mise run wait-for-checks`
+5. After creating a PR, run `mise run ci:wait-for-checks`
 
 Keep changes focused - one concern per PR.
 

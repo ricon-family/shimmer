@@ -18,7 +18,7 @@ Run `mise tasks` to see all available tasks. Key ones:
 - `mise run code:format` - Check formatting (use `--fix` to auto-fix)
 - `mise run code:lint` - Run Credo linter
 - `mise run tasks` - List open GitHub issues
-- `mise run time` - Check elapsed and remaining time during CI runs
+- `mise run ci:time-remaining` - Check elapsed and remaining time during CI runs
 
 ## Workflow
 
@@ -31,7 +31,7 @@ When submitting a PR, use `Fixes #N` to auto-close the issue on merge.
 
 ## Constraints
 
-CI runs have limited time. Use `mise run time` to check how much time remains. It will warn you when time is running low.
+CI runs have limited time. Use `mise run ci:time-remaining` to check how much time remains. It will warn you when time is running low.
 
 ## Guidelines
 
@@ -44,7 +44,7 @@ This file is for any agent working on this repository.
 ## PR Process
 
 - Run `mise run code:check` before pushing to verify tests, formatting, and linting pass
-- After creating or updating a PR, verify all CI checks pass with `mise run wait-for-checks`
+- After creating or updating a PR, verify all CI checks pass with `mise run ci:wait-for-checks`
 - PRs are merged with squash and the branch is deleted
 
 ## Identity

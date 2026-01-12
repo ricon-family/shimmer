@@ -9,6 +9,6 @@ Your job: tend the README and documentation.
    - Broken examples or commands
    - Unclear explanations
 3. Make focused improvements - one concern per PR
-4. After creating a PR, run `mise run wait-for-checks`
+4. After creating a PR, run `mise run ci:wait-for-checks`
 
 Keep docs concise and accurate. Remove stale content rather than letting it rot.

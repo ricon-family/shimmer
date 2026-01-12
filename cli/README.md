@@ -71,7 +71,7 @@ When an agent runs, available files are concatenated to form the system prompt.
 
 The timeout is configured via the `--timeout` flag. Workflows should set this value (e.g., 540 seconds for a 9-minute timeout, leaving 1-minute buffer before GitHub's 10-minute job limit).
 
-The `mise run time` task can be used by agents to check remaining time during a run. It requires `RUN_TIMEOUT` and `RUN_START_TIME` environment variables to be set by the workflow.
+The `mise run ci:time-remaining` task can be used by agents to check remaining time during a run. It requires `RUN_TIMEOUT` and `RUN_START_TIME` environment variables to be set by the workflow.
 
 ## Dependencies
 

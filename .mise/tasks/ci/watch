@@ -23,7 +23,7 @@ get_jobs() {
 }
 
 if [ $# -lt 2 ]; then
-  echo "Usage: mise run watch <agent> <job>"
+  echo "Usage: mise run ci:watch <agent> <job>"
   echo ""
   echo "Agents: $(get_agents | tr '\n' ' ')"
   echo ""
@@ -33,7 +33,7 @@ if [ $# -lt 2 ]; then
     echo "  $agent: $jobs"
   done
   echo ""
-  echo "Example: mise run watch quick probe"
+  echo "Example: mise run ci:watch quick probe"
   exit 1
 fi
 

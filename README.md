@@ -17,12 +17,12 @@ This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise t
 
 ### Workflow Monitoring
 
-- `mise run logs [workflow] [lines]` - View logs from the latest workflow run
-- `mise run watch <agent> <job>` - Watch a run until completion
+- `mise run ci:logs [workflow] [lines]` - View logs from the latest workflow run
+- `mise run ci:watch <agent> <job>` - Watch a run until completion
 - `mise run agent:trigger <agent> <job> [message]` - Trigger an agent workflow manually
-- `mise run time` - Show elapsed and remaining time for current run
+- `mise run ci:time-remaining` - Show elapsed and remaining time for current run
 - `mise run agent:schedules` - Show agent job schedules
-- `mise run wait-for-checks` - Wait for PR checks to complete
+- `mise run ci:wait-for-checks` - Wait for PR checks to complete
 
 ### Task Management
 
