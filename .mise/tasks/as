@@ -40,7 +40,7 @@ PAT=$(op item get "$ITEM" --vault "$VAULT" --fields PAT --reveal 2>/dev/null || 
 
 if [ -z "$PAT" ]; then
   echo "ERROR: Could not find PAT in 1Password item '$ITEM'" >&2
-  echo "Make sure the agent has been fully onboarded with mise run onboard-agent $AGENT" >&2
+  echo "Make sure the agent has been fully onboarded with mise run agent:onboard $AGENT" >&2
   exit 1
 fi
 

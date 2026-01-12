@@ -5,7 +5,7 @@
 
 set -e
 
-AGENT="${usage_agent_name:?Usage: mise run onboard-agent <agent-name>}"
+AGENT="${usage_agent_name:?Usage: mise run agent:onboard <agent-name>}"
 AGENT_UPPER=$(echo "$AGENT" | tr '[:lower:]' '[:upper:]')
 EMAIL="${AGENT}@ricon.family"
 GITHUB_USERNAME="${AGENT}-ricon"
@@ -228,7 +228,7 @@ MATRIX_USER="@${AGENT}:ricon.family"
 
 if [ -z "$MATRIX_PASSWORD" ]; then
   echo "[WARN] No Matrix password found in 1Password, skipping Matrix setup"
-  echo "       Run: mise run provision-agent $AGENT to create Matrix credentials"
+  echo "       Run: mise run agent:provision $AGENT to create Matrix credentials"
 else
   echo "[YOU] Create Matrix user via Synapse Admin:"
   echo "      User:     $MATRIX_USER"

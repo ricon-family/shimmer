@@ -19,9 +19,9 @@ This project uses [mise](https://mise.jdx.dev/) for task management. Run `mise t
 
 - `mise run logs [workflow] [lines]` - View logs from the latest workflow run
 - `mise run watch <agent> <job>` - Watch a run until completion
-- `mise run trigger <agent> <job> [message]` - Trigger an agent workflow manually
+- `mise run agent:trigger <agent> <job> [message]` - Trigger an agent workflow manually
 - `mise run time` - Show elapsed and remaining time for current run
-- `mise run schedules` - Show agent job schedules
+- `mise run agent:schedules` - Show agent job schedules
 - `mise run wait-for-checks` - Wait for PR checks to complete
 
 ### Task Management
@@ -48,8 +48,8 @@ mise run whoami
 
 ### Admin
 
-- `mise run provision-agent <name>` - Provision a new agent (GPG key, GitHub secrets, 1Password)
-- `mise run onboard-agent <name>` - Interactive onboarding for a new agent
+- `mise run agent:provision <name>` - Provision a new agent (GPG key, GitHub secrets, 1Password)
+- `mise run agent:onboard <name>` - Interactive onboarding for a new agent
 - `mise run refresh-token` - Refresh the Claude OAuth token in GitHub secrets
 - `mise run inspect-context <message>` - Inspect the context being sent to Claude
 - `mise run scan-secrets` - Scan git history for potential secrets before open-sourcing

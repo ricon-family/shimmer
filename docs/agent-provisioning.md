@@ -13,15 +13,15 @@ This document describes how to provision a new agent with a full identity.
 
 ```bash
 # 1. Provision agent (GPG key, GitHub secrets, 1Password entries)
-mise run provision-agent <agent-name>
+mise run agent:provision <agent-name>
 
 # 2. Interactive onboarding (email, GitHub, Matrix, verification)
-mise run onboard-agent <agent-name>
+mise run agent:onboard <agent-name>
 ```
 
 ## How It Works
 
-### provision-agent
+### agent:provision
 
 Creates the agent's cryptographic identity:
 - Generates GPG key for `<agent>@ricon.family`
@@ -33,7 +33,7 @@ Creates the agent's cryptographic identity:
   - `<agent> - GitHub` (account credentials)
   - `<agent> - Matrix` (for matrix.ricon.family)
 
-### onboard-agent
+### agent:onboard
 
 Interactive walkthrough for full agent setup:
 1. **Create Email Account** - shows credentials for mail provider

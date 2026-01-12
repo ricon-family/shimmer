@@ -24,7 +24,7 @@ get_jobs() {
 }
 
 if [ $# -lt 2 ]; then
-  echo "Usage: mise run trigger <agent> <job> [message]"
+  echo "Usage: mise run agent:trigger <agent> <job> [message]"
   echo ""
   echo "Agents: $(get_agents | tr '\n' ' ')"
   echo ""
@@ -34,7 +34,7 @@ if [ $# -lt 2 ]; then
     echo "  $agent: $jobs"
   done
   echo ""
-  echo "Example: mise run trigger quick probe"
+  echo "Example: mise run agent:trigger quick probe"
   exit 1
 fi
 
