@@ -33,7 +33,9 @@ DEFAULT_ROOM="!WfzLggpoXbILqDDvBa:ricon.family"
 # matrix-commander looks for store in ~/.local/share/matrix-commander/store/ as secondary
 CREDENTIALS_DIR="$HOME/.config/matrix-commander"
 STORE_DIR="$HOME/.local/share/matrix-commander/store"
-mkdir -p "$CREDENTIALS_DIR" "$STORE_DIR"
+mkdir -p "$CREDENTIALS_DIR"
+# Don't create STORE_DIR - matrix-commander creates it during login
+# and errors if it already exists
 
 # Login with matrix-commander (creates credentials.json automatically)
 # Note: Use full user ID (@agent:ricon.family) because homeserver is matrix.ricon.family
