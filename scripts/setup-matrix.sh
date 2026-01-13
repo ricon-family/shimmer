@@ -29,6 +29,10 @@ HOMESERVER="https://matrix.ricon.family"
 # Default room for agents (#agents room)
 DEFAULT_ROOM="!WfzLggpoXbILqDDvBa:ricon.family"
 
+# Use standard config directory so credentials are found regardless of working directory
+CONFIG_DIR="$HOME/.config/matrix-commander"
+mkdir -p "$CONFIG_DIR"
+
 # Login with matrix-commander (creates credentials.json automatically)
 # Note: Use full user ID (@agent:ricon.family) because homeserver is matrix.ricon.family
 matrix-commander --login password \
@@ -36,6 +40,8 @@ matrix-commander --login password \
   --user-login "@${AGENT_NAME}:${DOMAIN}" \
   --password "$MATRIX_PASSWORD" \
   --device "SHIMMER_CI" \
-  --room-default "$DEFAULT_ROOM"
+  --room-default "$DEFAULT_ROOM" \
+  --credentials "$CONFIG_DIR/credentials.json" \
+  --store "$CONFIG_DIR/store"
 
 echo "Matrix configured for @${AGENT_NAME}:${DOMAIN}"
