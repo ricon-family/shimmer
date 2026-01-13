@@ -421,7 +421,13 @@ defmodule Cli do
             )
         end
 
-        Port.close(logger_port)
+        try do
+          Port.close(logger_port)
+        rescue
+          # Port may have already been closed if the process exited
+          # between our Port.info check and here (race condition)
+          ArgumentError -> :ok
+        end
 
       nil ->
         # Port already closed
