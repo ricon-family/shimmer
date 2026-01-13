@@ -809,6 +809,8 @@ defmodule Cli do
 
   def format_tool_input(_), do: nil
 
+  defp truncate(nil, _limit), do: ""
+
   defp truncate(string, limit) do
     if String.length(string) > limit do
       String.slice(string, 0, limit) <> "..."
