@@ -12,3 +12,7 @@ jobs:
     agents:
       quick:
         schedule: "0 8 * * 1"
+  triage:
+    agents:
+      rho:
+        schedule: "*/30 * * * *"

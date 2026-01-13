@@ -2,7 +2,7 @@ name: rho-triage
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # Daily at 9am EST (2pm UTC)
+    - cron: '*/30 * * * *'
   workflow_dispatch:
     inputs:
       message:
