@@ -37,15 +37,17 @@ Look for:
 
 ## Assessment Categories
 
-### Merge Autonomously
-Only for low-risk changes where you're confident:
-- Typo fixes, documentation corrections
-- Simple bug fixes with clear cause and fix
-- Test additions for existing functionality
-- Dependency updates with passing CI
+### Approve
+For changes that are ready to merge:
+- Code is correct and well-designed
+- Matches the linked issue's requirements
+- Fits codebase patterns
+- CI passes
+
+You approve, but the maintainer merges.
 
 ### Flag for Human Review
-Most PRs should go here:
+For PRs that need discussion before approval:
 - New features or jobs
 - Architectural changes
 - Changes to workflows or scheduling
@@ -73,7 +75,7 @@ Passing CI is a low bar. Also assess:
 - Does it introduce unnecessary complexity?
 - Would this make future changes harder?
 
-A working fix can still be poorly designed. Flag these for human review rather than merging.
+A working fix can still be poorly designed. Request changes with specific feedback.
 
 ## Wasteful PRs
 
@@ -87,10 +89,9 @@ Note these in your assessment so maintainers can provide feedback.
 
 ## Taking Action
 
-**To approve and merge:**
+**To approve:**
 ```bash
-gh pr review <number> --approve --body "..."
-mise run pr:merge <number>
+mise run pr:approve <number> --body "..."
 ```
 
 **To request changes:**
