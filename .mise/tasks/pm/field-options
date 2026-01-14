@@ -21,24 +21,10 @@ if [[ -z "$FIELD_NAME" ]] || [[ -z "$OPTIONS" ]]; then
   exit 1
 fi
 
-# Determine target directory
+# Determine target directory and repo
 TARGET_DIR="${PROJECT_DIR:-.}"
-
-# Get repo from .project.toml or git remote
-REPO=""
-PROJECT_FILE="$TARGET_DIR/.project.toml"
-if [[ -f "$PROJECT_FILE" ]]; then
-  REPO=$(yq -p toml '.repo' "$PROJECT_FILE" 2>/dev/null || true)
-fi
-
-if [[ -z "$REPO" ]]; then
-  REPO=$(git -C "$TARGET_DIR" remote get-url origin 2>/dev/null | sed 's/.*github.com[:/]\(.*\)\.git/\1/' | sed 's/.*github.com[:/]\(.*\)/\1/' || true)
-fi
-
-if [[ -z "$REPO" ]]; then
-  echo "Error: Could not determine repo"
-  exit 1
-fi
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/_get-repo" "$TARGET_DIR")
 
 OWNER=$(echo "$REPO" | cut -d'/' -f1)
 PROJECT_NAME=$(echo "$REPO" | cut -d'/' -f2)

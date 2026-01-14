@@ -4,15 +4,10 @@ set -eo pipefail
 
 export GH_PAGER=""
 
-# Determine target directory (PROJECT_DIR env var or current dir)
+# Determine target directory and repo
 TARGET_DIR="${PROJECT_DIR:-.}"
-
-# Read repo from .project.toml if it exists
-REPO=""
-PROJECT_FILE="$TARGET_DIR/.project.toml"
-if [[ -f "$PROJECT_FILE" ]]; then
-  REPO=$(yq -p toml '.repo' "$PROJECT_FILE" 2>/dev/null || true)
-fi
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/_get-repo" "$TARGET_DIR" 2>/dev/null || true)
 
 echo "=== Open Tasks ==="
 if [[ -n "$REPO" ]]; then
