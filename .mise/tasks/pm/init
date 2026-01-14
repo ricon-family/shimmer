@@ -41,11 +41,18 @@ fi
 
 # Create project
 echo "Creating project..."
-PROJECT_URL=$(gh project create --owner "$OWNER" --title "$PROJECT_NAME" --format json | jq -r '.url')
+PROJECT_JSON=$(gh project create --owner "$OWNER" --title "$PROJECT_NAME" --format json)
+PROJECT_URL=$(echo "$PROJECT_JSON" | jq -r '.url')
+PROJECT_NUM=$(echo "$PROJECT_JSON" | jq -r '.number')
 
 echo ""
 echo "Project created: $PROJECT_URL"
 echo ""
-echo "Next steps:"
-echo "  1. Add Status field with values: Backlog, Ready, In Progress, In Review, Done"
-echo "  2. Link project to repo: gh project link <number> --owner $OWNER --repo $REPO"
+
+# Configure Status field with standard options
+echo "Configuring Status field..."
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_DIR="$TARGET_DIR" "$SCRIPT_DIR/setup-status" "$PROJECT_NUM"
+
+echo ""
+echo "Project ready! View at: $PROJECT_URL"
