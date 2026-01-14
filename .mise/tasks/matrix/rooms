@@ -21,4 +21,4 @@ docker run --rm -t \
   matrixcommander/matrix-commander \
   --credentials /data/credentials.json \
   --store /store-parent/store \
-  --room-list
+  --joined-rooms
