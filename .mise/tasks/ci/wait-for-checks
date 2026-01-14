@@ -3,15 +3,20 @@
 
 set -e
 
-PR_NUMBER="${1:-$(gh pr view --json number -q .number 2>/dev/null)}"
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+
+PR_NUMBER="${1:-$(gh pr view --repo "$REPO" --json number -q .number 2>/dev/null)}"
 
 if [ -z "$PR_NUMBER" ]; then
   echo "No PR number provided and not on a PR branch"
   exit 1
 fi
 
-echo "Waiting for checks on PR #$PR_NUMBER (timeout 3 min)..."
-if timeout 180 gh pr checks "$PR_NUMBER" --watch; then
+echo "Waiting for checks on PR #$PR_NUMBER ($REPO) - timeout 3 min..."
+if timeout 180 gh pr checks "$PR_NUMBER" --repo "$REPO" --watch; then
   echo "All checks passed!"
 else
   EXIT_CODE=$?

@@ -5,9 +5,15 @@
 
 set -e
 
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+
 WORKFLOW="${1:-pr-check.yml}"
 LINES="${2:-100}"
-RUN_ID=$(gh run list --workflow="$WORKFLOW" --limit 1 --json databaseId -q '.[0].databaseId')
-JOB_ID=$(gh run view "$RUN_ID" --json jobs -q '.jobs[0].databaseId')
+RUN_ID=$(gh run list --repo "$REPO" --workflow="$WORKFLOW" --limit 1 --json databaseId -q '.[0].databaseId')
+JOB_ID=$(gh run view "$RUN_ID" --repo "$REPO" --json jobs -q '.jobs[0].databaseId')
 
-gh run view --job="$JOB_ID" --log 2>&1 | tail -"$LINES"
+echo "=== $REPO - $WORKFLOW (last $LINES lines) ==="
+gh run view --repo "$REPO" --job="$JOB_ID" --log 2>&1 | tail -"$LINES"
