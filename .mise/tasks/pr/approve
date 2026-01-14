@@ -12,14 +12,19 @@ if [[ -z "$PR" ]]; then
   exit 1
 fi
 
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+
 # Check PR state first
-STATE=$(gh pr view "$PR" --json state --jq '.state')
+STATE=$(gh pr view "$PR" --repo "$REPO" --json state --jq '.state')
 if [[ "$STATE" != "OPEN" ]]; then
   echo "PR #$PR is not open (state: $STATE)"
   exit 1
 fi
 
-gh pr review "$PR" --approve --body "$BODY"
+gh pr review "$PR" --repo "$REPO" --approve --body "$BODY"
 
 echo ""
-echo "PR #$PR approved"
+echo "PR #$PR approved ($REPO)"

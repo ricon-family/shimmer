@@ -3,11 +3,16 @@
 #USAGE flag "--all" help="Show all open PRs (default: prioritized for review)"
 set -eo pipefail
 
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+
 SHOW_ALL="${usage_all:-false}"
 NOW=$(date +%s)
 
 # Get open PRs with review info
-PRS=$(gh pr list --state open --json number,title,author,createdAt,updatedAt,reviewDecision,reviews,additions,deletions --jq '
+PRS=$(gh pr list --repo "$REPO" --state open --json number,title,author,createdAt,updatedAt,reviewDecision,reviews,additions,deletions --jq '
   sort_by(.createdAt) | .[] | {
     number,
     title,
@@ -22,11 +27,11 @@ PRS=$(gh pr list --state open --json number,title,author,createdAt,updatedAt,rev
 ')
 
 if [[ -z "$PRS" ]]; then
-  echo "No open PRs"
+  echo "No open PRs - $REPO"
   exit 0
 fi
 
-echo "Open PRs (oldest first):"
+echo "Open PRs (oldest first) - $REPO:"
 echo ""
 
 echo "$PRS" | while read -r pr; do

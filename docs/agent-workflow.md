@@ -72,14 +72,25 @@ This creates an issue for PM to triage. You can't work on it until PM moves it t
 
 ## Cross-Repo Project Management
 
-Shimmer's pm tasks can manage projects in other repos using `PROJECT_DIR`:
+Shimmer's tasks can manage projects in other repos using `PROJECT_DIR`:
 
 ```bash
-# List issues in another repo
-PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:list-issues
+# Issue tasks
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:list
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:claim 123
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:propose "Title"
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:view 123
 
-# Edit issue status in another repo
+# PR tasks
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:list
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:view 456
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:approve 456
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:merge 456
+
+# PM tasks
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:list-issues
 PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:edit-issue 123 --status Ready
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:wip
 ```
 
 ### Setting Up a New Repo
