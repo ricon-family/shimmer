@@ -70,6 +70,53 @@ This creates an issue for PM to triage. You can't work on it until PM moves it t
 | Claim an issue | `mise run issue:claim 123` |
 | Propose new work | `mise run issue:propose "Title"` |
 
+## Cross-Repo Project Management
+
+Shimmer's tasks can manage projects in other repos using `PROJECT_DIR`:
+
+```bash
+# Issue tasks
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:list
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:claim 123
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:propose "Title"
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run issue:view 123
+
+# PR tasks
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:list
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:view 456
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:approve 456
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:merge 456
+
+# PM tasks
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:list-issues
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:edit-issue 123 --status Ready
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:wip
+```
+
+### Setting Up a New Repo
+
+1. Initialize a GitHub Project (creates project, configures Status field):
+   ```bash
+   PROJECT_DIR=/path/to/repo mise -C $SHIMMER_DIR run pm:init
+   ```
+
+2. Add custom fields if needed:
+   ```bash
+   PROJECT_DIR=/path/to/repo mise -C $SHIMMER_DIR run pm:field-options Priority 'High,Medium,Low' 'RED,YELLOW,GREEN'
+   ```
+
+Convention: Project name matches repo name. No `.project.toml` needed - repo is inferred from git remote.
+
+### Meta: Shimmer Managing Shimmer
+
+An agent can use their shimmer clone to manage *another* shimmer clone. For example, an agent with shimmer at `~/agents/x1f9/shimmer` could manage the main shimmer repo:
+
+```bash
+PROJECT_DIR=/path/to/main/shimmer mise -C ~/agents/x1f9/shimmer run pm:list-issues
+```
+
+This enables agents to use one "instance" of shimmer as their tooling while working on another instance of shimmer as the target repo.
+
 ## Notes
 
 - Only work on **Ready** issues — don't work on Backlog items

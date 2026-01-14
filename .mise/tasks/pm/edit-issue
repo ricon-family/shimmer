@@ -5,36 +5,6 @@
 #USAGE flag "--priority <priority>" help="Priority: High, Medium, Low"
 set -eo pipefail
 
-# Static IDs (these don't change)
-PROJECT_ID="PVT_kwDODumhvM4BMSWk"
-PROJECT_NUM="4"
-OWNER="ricon-family"
-REPO="ricon-family/shimmer"
-
-# Field IDs
-STATUS_FIELD="PVTSSF_lADODumhvM4BMSWkzg7nRgc"
-PRIORITY_FIELD="PVTSSF_lADODumhvM4BMSWkzg7p3iw"
-
-get_status_option_id() {
-  case "$1" in
-    Backlog)     echo "f689c639" ;;
-    Ready)       echo "bacc6451" ;;
-    "In Progress") echo "cc214903" ;;
-    "In Review")   echo "116df680" ;;
-    Done)        echo "5912f70c" ;;
-    *) echo "" ;;
-  esac
-}
-
-get_priority_option_id() {
-  case "$1" in
-    High)   echo "bf4ecd45" ;;
-    Medium) echo "e8d4bc16" ;;
-    Low)    echo "6c353f5c" ;;
-    *) echo "" ;;
-  esac
-}
-
 # Get arguments from mise usage parser
 ISSUE_NUM="${usage_issue:-$1}"
 STATUS="${usage_status:-}"
@@ -47,6 +17,37 @@ if [[ -z "$ISSUE_NUM" ]]; then
   echo "Priority options: High, Medium, Low"
   exit 1
 fi
+
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/_get-repo" "$TARGET_DIR")
+OWNER="${REPO%/*}"
+PROJECT_NAME="${REPO#*/}"
+
+# Find project by name
+PROJECT_JSON=$(gh project list --owner "$OWNER" --format json | jq -r --arg name "$PROJECT_NAME" '.projects[] | select(.title == $name)')
+if [[ -z "$PROJECT_JSON" ]]; then
+  echo "Error: Could not find project for $REPO"
+  exit 1
+fi
+
+PROJECT_ID=$(echo "$PROJECT_JSON" | jq -r '.id')
+PROJECT_NUM=$(echo "$PROJECT_JSON" | jq -r '.number')
+
+# Get field info
+FIELDS_JSON=$(gh project field-list "$PROJECT_NUM" --owner "$OWNER" --format json)
+
+get_field_id() {
+  echo "$FIELDS_JSON" | jq -r --arg name "$1" '.fields[] | select(.name == $name) | .id'
+}
+
+get_option_id() {
+  local field_name="$1"
+  local option_name="$2"
+  echo "$FIELDS_JSON" | jq -r --arg field "$field_name" --arg opt "$option_name" \
+    '.fields[] | select(.name == $field) | .options[]? | select(.name == $opt) | .id'
+}
 
 # Get issue URL
 ISSUE_URL="https://github.com/${REPO}/issues/${ISSUE_NUM}"
@@ -79,7 +80,8 @@ echo "Issue #${ISSUE_NUM} (item: ${ITEM_ID:0:12}...)"
 
 # Set Status if provided
 if [[ -n "$STATUS" ]]; then
-  OPTION_ID=$(get_status_option_id "$STATUS")
+  FIELD_ID=$(get_field_id "Status")
+  OPTION_ID=$(get_option_id "Status" "$STATUS")
   if [[ -z "$OPTION_ID" ]]; then
     echo "Error: Invalid status '$STATUS'"
     echo "Options: Backlog, Ready, \"In Progress\", \"In Review\", Done"
@@ -88,14 +90,15 @@ if [[ -n "$STATUS" ]]; then
   gh project item-edit \
     --project-id "$PROJECT_ID" \
     --id "$ITEM_ID" \
-    --field-id "$STATUS_FIELD" \
+    --field-id "$FIELD_ID" \
     --single-select-option-id "$OPTION_ID"
   echo "  Status: $STATUS"
 fi
 
 # Set Priority if provided
 if [[ -n "$PRIORITY" ]]; then
-  OPTION_ID=$(get_priority_option_id "$PRIORITY")
+  FIELD_ID=$(get_field_id "Priority")
+  OPTION_ID=$(get_option_id "Priority" "$PRIORITY")
   if [[ -z "$OPTION_ID" ]]; then
     echo "Error: Invalid priority '$PRIORITY'"
     echo "Options: High, Medium, Low"
@@ -104,7 +107,7 @@ if [[ -n "$PRIORITY" ]]; then
   gh project item-edit \
     --project-id "$PROJECT_ID" \
     --id "$ITEM_ID" \
-    --field-id "$PRIORITY_FIELD" \
+    --field-id "$FIELD_ID" \
     --single-select-option-id "$OPTION_ID"
   echo "  Priority: $PRIORITY"
 fi

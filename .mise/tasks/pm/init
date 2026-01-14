@@ -1,0 +1,42 @@
+#!/bin/bash
+#MISE description="Initialize a GitHub Project for the target repo"
+set -eo pipefail
+
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/_get-repo" "$TARGET_DIR")
+
+# Parse owner and project name
+OWNER=$(echo "$REPO" | cut -d'/' -f1)
+PROJECT_NAME=$(echo "$REPO" | cut -d'/' -f2)
+
+echo "Initializing project for: $REPO"
+echo "  Owner: $OWNER"
+echo "  Project name: $PROJECT_NAME"
+echo ""
+
+# Check if project already exists
+EXISTING=$(gh project list --owner "$OWNER" --format json | jq -r --arg name "$PROJECT_NAME" '.projects[] | select(.title == $name) | .url')
+
+if [[ -n "$EXISTING" ]]; then
+  echo "Project already exists: $EXISTING"
+  exit 0
+fi
+
+# Create project
+echo "Creating project..."
+PROJECT_JSON=$(gh project create --owner "$OWNER" --title "$PROJECT_NAME" --format json)
+PROJECT_URL=$(echo "$PROJECT_JSON" | jq -r '.url')
+PROJECT_NUM=$(echo "$PROJECT_JSON" | jq -r '.number')
+
+echo ""
+echo "Project created: $PROJECT_URL"
+echo ""
+
+# Configure Status field with standard options
+echo "Configuring Status field..."
+PROJECT_DIR="$TARGET_DIR" "$SCRIPT_DIR/field-options" "Status" "Backlog,Ready,In Progress,In Review,Done" "GRAY,GREEN,YELLOW,PURPLE,BLUE"
+
+echo ""
+echo "Project ready! View at: $PROJECT_URL"

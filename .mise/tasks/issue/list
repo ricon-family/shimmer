@@ -3,8 +3,19 @@
 #USAGE flag "--unassigned" help="Only show unassigned issues"
 set -eo pipefail
 
-PROJECT_NUM="4"
-OWNER="ricon-family"
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+OWNER="${REPO%/*}"
+PROJECT_NAME="${REPO#*/}"
+
+# Find project by name
+PROJECT_NUM=$(gh project list --owner "$OWNER" --format json | jq -r --arg name "$PROJECT_NAME" '.projects[] | select(.title == $name) | .number')
+if [[ -z "$PROJECT_NUM" ]]; then
+  echo "Error: Could not find project for $REPO"
+  exit 1
+fi
 
 # Get flag from mise usage parser
 UNASSIGNED_ONLY="${usage_unassigned:-false}"
@@ -21,10 +32,10 @@ fi
 # Filter by unassigned if requested
 if [[ "$UNASSIGNED_ONLY" == "true" ]]; then
   ITEMS=$(echo "$ITEMS" | jq -s '[.[] | select(.assignees == null or .assignees == [])]')
-  echo "Ready items (unassigned only):"
+  echo "Ready items (unassigned only) - $REPO:"
 else
   ITEMS=$(echo "$ITEMS" | jq -s '.')
-  echo "Ready items:"
+  echo "Ready items - $REPO:"
 fi
 
 echo ""

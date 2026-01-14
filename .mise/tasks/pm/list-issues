@@ -1,12 +1,22 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #MISE description="List open tasks (GitHub issues)"
-
-set -e
+set -eo pipefail
 
 export GH_PAGER=""
 
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/_get-repo" "$TARGET_DIR" 2>/dev/null || true)
+
 echo "=== Open Tasks ==="
-gh issue list --state open --limit 30
+if [[ -n "$REPO" ]]; then
+  echo "(repo: $REPO)"
+  echo ""
+  gh issue list --repo "$REPO" --state open --limit 30
+else
+  gh issue list --state open --limit 30
+fi
 
 echo ""
 echo "Filter by label: gh issue list --label <label>"

@@ -12,10 +12,15 @@ if [[ -z "$PR" ]]; then
   exit 1
 fi
 
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+
 # Check PR state first
-STATE=$(gh pr view "$PR" --json state --jq '.state')
+STATE=$(gh pr view "$PR" --repo "$REPO" --json state --jq '.state')
 if [[ "$STATE" == "MERGED" ]]; then
-  echo "PR #$PR is already merged"
+  echo "PR #$PR is already merged ($REPO)"
   exit 0
 fi
 
@@ -26,12 +31,12 @@ fi
 
 # Merge with squash
 if [[ -n "$BODY" ]]; then
-  gh pr merge "$PR" --squash --delete-branch --body "$BODY"
+  gh pr merge "$PR" --repo "$REPO" --squash --delete-branch --body "$BODY"
 else
-  gh pr merge "$PR" --squash --delete-branch
+  gh pr merge "$PR" --repo "$REPO" --squash --delete-branch
 fi
 
 # Confirm merge
-RESULT=$(gh pr view "$PR" --json state,mergedAt --jq '"\(.state) at \(.mergedAt)"')
+RESULT=$(gh pr view "$PR" --repo "$REPO" --json state,mergedAt --jq '"\(.state) at \(.mergedAt)"')
 echo ""
-echo "PR #$PR: $RESULT"
+echo "PR #$PR: $RESULT ($REPO)"

@@ -10,5 +10,10 @@ if [[ -z "$ISSUE" ]]; then
   exit 1
 fi
 
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+
 # Get issue details with comments
-gh issue view "$ISSUE" --comments
+gh issue view "$ISSUE" --repo "$REPO" --comments

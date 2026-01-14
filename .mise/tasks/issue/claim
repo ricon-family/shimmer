@@ -3,29 +3,61 @@
 #USAGE arg "<issue>" help="Issue number to claim"
 set -eo pipefail
 
-# Static IDs
-PROJECT_ID="PVT_kwDODumhvM4BMSWk"
-PROJECT_NUM="4"
-OWNER="ricon-family"
-REPO="ricon-family/shimmer"
-STATUS_FIELD="PVTSSF_lADODumhvM4BMSWkzg7nRgc"
-IN_PROGRESS_OPTION="cc214903"
-
 # Get argument from mise usage parser
 ISSUE_NUM="${usage_issue:-$1}"
 
 if [[ -z "$ISSUE_NUM" ]]; then
-  echo "Usage: mise run issues:claim <issue>"
+  echo "Usage: mise run issue:claim <issue>"
   exit 1
 fi
 
-# Get item ID
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+OWNER="${REPO%/*}"
+PROJECT_NAME="${REPO#*/}"
+
+# Find project by name
+PROJECT_JSON=$(gh project list --owner "$OWNER" --format json | jq -r --arg name "$PROJECT_NAME" '.projects[] | select(.title == $name)')
+if [[ -z "$PROJECT_JSON" ]]; then
+  echo "Error: Could not find project for $REPO"
+  exit 1
+fi
+
+PROJECT_ID=$(echo "$PROJECT_JSON" | jq -r '.id')
+PROJECT_NUM=$(echo "$PROJECT_JSON" | jq -r '.number')
+
+# Get field info
+FIELDS_JSON=$(gh project field-list "$PROJECT_NUM" --owner "$OWNER" --format json)
+
+get_field_id() {
+  echo "$FIELDS_JSON" | jq -r --arg name "$1" '.fields[] | select(.name == $name) | .id'
+}
+
+get_option_id() {
+  local field_name="$1"
+  local option_name="$2"
+  echo "$FIELDS_JSON" | jq -r --arg field "$field_name" --arg opt "$option_name" \
+    '.fields[] | select(.name == $field) | .options[]? | select(.name == $opt) | .id'
+}
+
+# Get item ID from project
 ITEM_ID=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 100 | \
   jq -r --arg num "$ISSUE_NUM" '.items[] | select(.content.number == ($num | tonumber)) | .id')
 
 if [[ -z "$ITEM_ID" ]]; then
   echo "Error: Issue #${ISSUE_NUM} not found in project"
   echo "This issue isn't Ready yet. Ask PM to triage it first."
+  exit 1
+fi
+
+# Get Status field and "In Progress" option IDs
+STATUS_FIELD=$(get_field_id "Status")
+IN_PROGRESS_OPTION=$(get_option_id "Status" "In Progress")
+
+if [[ -z "$IN_PROGRESS_OPTION" ]]; then
+  echo "Error: Could not find 'In Progress' status option"
   exit 1
 fi
 
@@ -39,6 +71,6 @@ gh project item-edit \
 # Assign to self (use gh issue edit, not project API)
 gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-assignee "@me"
 
-echo "Claimed issue #${ISSUE_NUM}"
+echo "Claimed issue #${ISSUE_NUM} ($REPO)"
 echo "  Status: In Progress"
 echo "  Assigned to: @me"

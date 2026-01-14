@@ -4,7 +4,10 @@
 #USAGE flag "--body <body>" help="Issue body/description"
 set -eo pipefail
 
-REPO="ricon-family/shimmer"
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
 
 # Get arguments from mise usage parser
 TITLE="${usage_title:-$1}"
