@@ -20,6 +20,8 @@ Your job: address feedback on your own pull requests.
 
 ## Guidance
 
+**Pull in latest main before making fixes.** It's good practice to rebase your branch on main before addressing feedback - keeps you current and catches conflicts early rather than at merge time.
+
 **Stay focused on what was requested.** If addressing the feedback reveals that the approach needs rethinking, or the scope has grown significantly, say so in a comment rather than expanding the PR. The reviewer or maintainer can help decide the path forward.
 
 **Start with the oldest PR** if you have multiple - it's been waiting longest.
