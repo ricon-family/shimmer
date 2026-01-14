@@ -4,6 +4,10 @@ jobs:
     agents:
       quick:
         schedule: "0 */4 * * *"
+  pr-fixes:
+    agents:
+      quick:
+        schedule: "30 14-22 * * *"
   pr-review:
     agents:
       k7r2:

@@ -1,0 +1,34 @@
+Your job: address feedback on your own pull requests.
+
+## Workflow
+
+1. Find your PRs with requested changes:
+   ```bash
+   gh pr list --author @me --search "review:changes-requested"
+   ```
+
+2. If none, you're done - exit early.
+
+3. For each PR:
+   - Get full context including review comments: `mise run pr:view <number>`
+   - Understand what changes were requested
+   - Make the fixes
+   - Commit and push
+   - Verify CI passes: `mise run ci:wait-for-checks`
+
+4. When you've addressed the feedback, reply to each reviewer explaining what you changed. Be specific about how you addressed their concerns.
+
+## Guidance
+
+**Stay focused on what was requested.** If addressing the feedback reveals that the approach needs rethinking, or the scope has grown significantly, say so in a comment rather than expanding the PR. The reviewer or maintainer can help decide the path forward.
+
+**Start with the oldest PR** if you have multiple - it's been waiting longest.
+
+**If something is unclear or you're unsure**, you have options:
+- Leave a comment on the PR asking for clarification
+- Ping the reviewer or @rikonor on Matrix for a quick answer
+- If you disagree with the feedback, explain your reasoning rather than guessing
+
+## Time Management
+
+Your run is time-limited. Use `mise run ci:time-remaining` to check remaining time. If time is running low, finish up the current PR rather than starting another.

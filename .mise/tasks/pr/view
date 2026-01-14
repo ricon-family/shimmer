@@ -33,11 +33,17 @@ echo "Created: $CREATED"
 echo "Changes: +$ADDITIONS -$DELETIONS"
 echo ""
 
-# Reviews
+# Pending review requests
 REVIEWERS=$(echo "$PR_JSON" | jq -r '.reviewRequests[]?.login // empty' | tr '\n' ' ')
-REVIEWS=$(echo "$PR_JSON" | jq -r '.reviews[]? | "\(.author.login)(\(.state))"' | tr '\n' ' ')
 [[ -n "$REVIEWERS" ]] && echo "Reviewers requested: $REVIEWERS"
-[[ -n "$REVIEWS" ]] && echo "Reviews: $REVIEWS"
+
+# Reviews with full comments
+REVIEW_COUNT=$(echo "$PR_JSON" | jq '.reviews | length')
+if [[ $REVIEW_COUNT -gt 0 ]]; then
+  echo ""
+  echo "=== Reviews ==="
+  echo "$PR_JSON" | jq -r '.reviews[] | "--- \(.author.login) (\(.state)) ---\n\(.body)\n"'
+fi
 
 # Linked issues with summary or full content
 ISSUES=$(echo "$PR_JSON" | jq -r '.closingIssuesReferences[]?.number // empty')
