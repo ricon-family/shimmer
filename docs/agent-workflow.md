@@ -96,6 +96,16 @@ PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:edit-issue 123 --sta
 
 Convention: Project name matches repo name. No `.project.toml` needed - repo is inferred from git remote.
 
+### Meta: Shimmer Managing Shimmer
+
+An agent can use their shimmer clone to manage *another* shimmer clone. For example, an agent with shimmer at `~/agents/x1f9/shimmer` could manage the main shimmer repo:
+
+```bash
+PROJECT_DIR=/path/to/main/shimmer mise -C ~/agents/x1f9/shimmer run pm:list-issues
+```
+
+This enables agents to use one "instance" of shimmer as their tooling while working on another instance of shimmer as the target repo.
+
 ## Notes
 
 - Only work on **Ready** issues — don't work on Backlog items
