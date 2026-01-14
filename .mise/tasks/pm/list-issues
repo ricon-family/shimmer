@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #MISE description="List open tasks (GitHub issues)"
-
-set -e
+set -eo pipefail
 
 export GH_PAGER=""
 
@@ -11,12 +10,12 @@ TARGET_DIR="${PROJECT_DIR:-.}"
 # Read repo from .project.toml if it exists
 REPO=""
 PROJECT_FILE="$TARGET_DIR/.project.toml"
-if [ -f "$PROJECT_FILE" ]; then
+if [[ -f "$PROJECT_FILE" ]]; then
   REPO=$(yq -p toml '.repo' "$PROJECT_FILE" 2>/dev/null || true)
 fi
 
 echo "=== Open Tasks ==="
-if [ -n "$REPO" ]; then
+if [[ -n "$REPO" ]]; then
   echo "(repo: $REPO)"
   echo ""
   gh issue list --repo "$REPO" --state open --limit 30
