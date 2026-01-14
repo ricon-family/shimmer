@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux_x86_64
+          - os: ubuntu-24.04-arm
+            target: linux_arm64
+          - os: macos-latest
+            target: darwin_arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+
+      - name: Cache Elixir build
+        uses: actions/cache@v4
+        with:
+          path: |
+            cli/_build
+            cli/deps
+          key: ${{ runner.os }}-${{ matrix.target }}-elixir-${{ hashFiles('cli/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-elixir-
+
+      - name: Install dependencies
+        run: |
+          cd cli
+          mix local.hex --force
+          mix deps.get
+
+      - name: Build release
+        run: |
+          cd cli
+          MIX_ENV=prod mix release shimmer
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shimmer-${{ matrix.target }}
+          path: cli/burrito_out/shimmer_${{ matrix.target }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          for dir in artifacts/shimmer-*/; do
+            target=$(basename "$dir" | sed 's/shimmer-//')
+            cp "$dir"shimmer_* "release/shimmer-${GITHUB_REF_NAME}-${target}"
+          done
+          cd release
+          sha256sum shimmer-* > checksums.txt
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/shimmer-*
+            release/checksums.txt
+          generate_release_notes: true
