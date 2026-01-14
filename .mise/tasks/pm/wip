@@ -1,13 +1,14 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #MISE description="Show work in progress (open PRs and issues with discussion status)"
 #USAGE arg "[limit]" help="Maximum items to show (default: 20)"
-
-set -e
+set -eo pipefail
 
 export GH_PAGER=""
 
-# Get repo dynamically
-REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+# Determine target directory and repo
+TARGET_DIR="${PROJECT_DIR:-.}"
+SCRIPT_DIR="$(dirname "$0")"
+REPO=$("$SCRIPT_DIR/_get-repo" "$TARGET_DIR")
 OWNER="${REPO%/*}"
 NAME="${REPO#*/}"
 
