@@ -5,8 +5,24 @@ set -e
 
 export GH_PAGER=""
 
+# Determine target directory (PROJECT_DIR env var or current dir)
+TARGET_DIR="${PROJECT_DIR:-.}"
+
+# Read repo from .project.toml if it exists
+REPO=""
+PROJECT_FILE="$TARGET_DIR/.project.toml"
+if [ -f "$PROJECT_FILE" ]; then
+  REPO=$(yq -p toml '.repo' "$PROJECT_FILE" 2>/dev/null || true)
+fi
+
 echo "=== Open Tasks ==="
-gh issue list --state open --limit 30
+if [ -n "$REPO" ]; then
+  echo "(repo: $REPO)"
+  echo ""
+  gh issue list --repo "$REPO" --state open --limit 30
+else
+  gh issue list --state open --limit 30
+fi
 
 echo ""
 echo "Filter by label: gh issue list --label <label>"
