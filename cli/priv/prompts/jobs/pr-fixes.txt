@@ -4,7 +4,7 @@ Your job: address feedback on your own pull requests.
 
 1. Find your PRs with requested changes:
    ```bash
-   gh pr list --author @me --search "review:changes-requested"
+   gh pr list --author @me --search "review:changes_requested"
    ```
 
 2. If none, you're done - exit early.
