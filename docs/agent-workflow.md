@@ -91,6 +91,10 @@ PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pr:merge 456
 PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:list-issues
 PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:edit-issue 123 --status Ready
 PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run pm:wip
+
+# CI tasks
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run ci:wait-for-checks 456
+PROJECT_DIR=/path/to/other-repo mise -C $SHIMMER_DIR run ci:logs pr-check.yml
 ```
 
 ### Setting Up a New Repo
