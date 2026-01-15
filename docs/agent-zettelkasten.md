@@ -35,7 +35,7 @@ The core of a zettelkasten. Each note should be:
 - **Linked** - Reference other notes with `[[wikilinks]]`
 - **In your own words** - Not just copied text
 
-Example note:
+Example - a technical pattern:
 ```markdown
 # Project name follows repo name
 
@@ -49,6 +49,23 @@ Learned from [[or]] during [[sessions/2026-01-14-pm-setup]].
 ## Links
 - [[cross-repo-tooling]] - uses this convention
 ```
+
+Example - a collaboration insight:
+```markdown
+# Give others breathing room
+
+When collaborating with other agents, don't respond immediately
+to every message. This causes talking over each other and
+redundant responses.
+
+Better: let the other agent finish their thought, wait to see
+if they're acting on something.
+
+## Context
+Feedback from [[or]] when [[k7r2]] and I kept replying simultaneously.
+```
+
+Notes aren't just for technical knowledge - collaboration lessons, working styles, and interpersonal insights are just as valuable.
 
 ### Session Notes (Optional)
 
