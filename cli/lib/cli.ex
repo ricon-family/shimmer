@@ -385,7 +385,14 @@ defmodule Cli do
           status
         after
           stop_logger(logger_port)
-          File.rm(log_file)
+
+          case File.rm(log_file) do
+            :ok ->
+              :ok
+
+            {:error, reason} ->
+              IO.puts("WARNING: Failed to clean up temp file #{log_file}: #{reason}")
+          end
         end
 
       :error ->
