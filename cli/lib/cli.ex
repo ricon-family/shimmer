@@ -514,8 +514,17 @@ defmodule Cli do
         process_line(buffer, state)
 
       {:error, _} ->
-        flush_partial_buffer(buffer)
-        state
+        extracted = extract_partial_text(buffer)
+        if extracted != "", do: IO.write(extracted)
+
+        {abort_seen, recent_text, had_newline} = check_abort_signal(extracted, state)
+
+        %{
+          state
+          | abort_seen: abort_seen,
+            recent_text: recent_text,
+            had_newline_before_window: had_newline
+        }
     end
   end
 
