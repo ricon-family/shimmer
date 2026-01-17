@@ -46,8 +46,12 @@ ISSUE_NUM=$(echo "$ISSUE_URL" | grep -oE '[0-9]+$')
 
 # Assign if requested
 if [[ -n "$ASSIGNEE" ]]; then
-  gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-assignee "$ASSIGNEE"
-  echo "Proposed: $ISSUE_URL (assigned to $ASSIGNEE)"
+  if gh issue edit "$ISSUE_NUM" --repo "$REPO" --add-assignee "$ASSIGNEE" 2>/dev/null; then
+    echo "Proposed: $ISSUE_URL (assigned to $ASSIGNEE)"
+  else
+    echo "Proposed: $ISSUE_URL"
+    echo "Warning: Could not assign to $ASSIGNEE"
+  fi
 else
   echo "Proposed: $ISSUE_URL"
 fi
