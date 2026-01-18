@@ -89,11 +89,21 @@ if [ -n "$AGENT" ]; then
   else
     echo "  GitHub:    ✗ no token (run: eval \$(shimmer as $AGENT))"
   fi
+
+  # Zettelkasten check
+  ZETTEL_DIR="$HOME/agents/$AGENT/zettelkasten"
+  if [ -d "$ZETTEL_DIR" ]; then
+    NOTE_COUNT=$(find "$ZETTEL_DIR" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    echo "  Zettel:    ✓ $NOTE_COUNT notes      → docs/agent-zettelkasten.md"
+  else
+    echo "  Zettel:    ✗ none yet   → docs/agent-zettelkasten.md"
+  fi
 else
   echo "  GPG:       ? (set identity first)"
   echo "  Email:     ? (set identity first)"
   echo "  Matrix:    ? (set identity first)"
   echo "  GitHub:    ? (set identity first)"
+  echo "  Zettel:    ? (set identity first)"
 fi
 
 echo ""
