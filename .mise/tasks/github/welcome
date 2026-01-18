@@ -43,7 +43,7 @@ echo ""
 if [ -z "$USERNAME" ]; then
   echo "Status: ✗ token invalid or expired"
   echo ""
-  echo "Create a new token: shimmer token:new-personal $AGENT"
+  echo "Create a new token: shimmer github:token:new-personal $AGENT"
   exit 0
 fi
 
@@ -77,7 +77,7 @@ if [ -n "$PENDING" ]; then
   echo "Pending invitations:"
   echo "$PENDING" | sed 's/^/  /'
   echo ""
-  echo "  Accept with: shimmer org:accept <org>"
+  echo "  Accept with: shimmer github:org:accept <org>"
   echo ""
 fi
 
@@ -85,10 +85,10 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "Commands:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "  shimmer org:memberships       List your organizations"
-echo "  shimmer org:invitations       Check pending invitations"
-echo "  shimmer org:accept <org>      Accept an invitation"
+echo "  shimmer github:org:memberships       List your organizations"
+echo "  shimmer github:org:invitations       Check pending invitations"
+echo "  shimmer github:org:accept <org>      Accept an invitation"
 echo ""
-echo "  shimmer token:scopes          Check current token scopes"
-echo "  shimmer token:new-personal $AGENT   Create new personal token"
+echo "  shimmer github:token:scopes          Check current token scopes"
+echo "  shimmer github:token:new-personal $AGENT   Create new personal token"
 echo ""

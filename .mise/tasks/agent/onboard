@@ -168,9 +168,9 @@ echo "------------------------------------------------------------"
 echo "[auto] Opening browser to create full-access personal token..."
 echo ""
 
-# Run token:new-personal (shows credentials, opens incognito browser)
+# Run github:token:new-personal (shows credentials, opens incognito browser)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$SCRIPT_DIR/../token/new-personal" "$AGENT"
+"$SCRIPT_DIR/../github/token/new-personal" "$AGENT"
 
 wait_for_enter
 

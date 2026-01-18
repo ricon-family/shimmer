@@ -84,7 +84,7 @@ if [ -n "$AGENT" ]; then
     if [ -n "$GH_USER" ]; then
       echo "  GitHub:    ✓ $GH_USER        → shimmer github:welcome"
     else
-      echo "  GitHub:    ✗ token invalid (run: shimmer token:new-personal $AGENT)"
+      echo "  GitHub:    ✗ token invalid (run: shimmer github:token:new-personal $AGENT)"
     fi
   else
     echo "  GitHub:    ✗ no token (run: eval \$(shimmer as $AGENT))"

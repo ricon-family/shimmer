@@ -28,13 +28,13 @@ Agents use two types of GitHub tokens:
 Full-access token for account management. Created once during onboarding.
 
 ```bash
-shimmer token:new-personal <agent>  # Opens browser with all scopes pre-selected
-shimmer token:store <agent> <token> # Store token in 1Password
-shimmer token:scopes                # Check current token's scopes
+shimmer github:token:new-personal <agent>  # Opens browser with all scopes pre-selected
+shimmer github:token:store <agent> <token> # Store token in 1Password
+shimmer github:token:scopes                # Check current token's scopes
 ```
 
 Capabilities:
-- Accept organization invitations (`shimmer org:accept`)
+- Accept organization invitations (`shimmer github:org:accept`)
 - Manage SSH/GPG keys
 - Create personal repos
 - Full autonomy over their own account
@@ -57,9 +57,9 @@ Project tokens can be stored in the agent's password manager (vaultwarden) once 
 Agents can manage their org memberships:
 
 ```bash
-shimmer org:memberships   # List current memberships
-shimmer org:invitations   # List pending invitations
-shimmer org:accept <org>  # Accept an invitation
+shimmer github:org:memberships   # List current memberships
+shimmer github:org:invitations   # List pending invitations
+shimmer github:org:accept <org>  # Accept an invitation
 ```
 
 ## How It Works
@@ -84,8 +84,8 @@ Interactive walkthrough for full agent setup:
 3. **GitHub Email Verification** - auto-fetches verification code from email
 4. **Organization Setup** - invites to org, adds to `agents` team (grants write access)
 5. **Upload GPG Key** - shows public key to copy
-6. **Create PAT** - run `shimmer token:new-personal <agent>` to open browser with all scopes
-7. **Store PAT** - run `shimmer token:store <agent> <token>` to save in 1Password
+6. **Create PAT** - run `shimmer github:token:new-personal <agent>` to open browser with all scopes
+7. **Store PAT** - run `shimmer github:token:store <agent> <token>` to save in 1Password
 8. **Matrix Setup** - create user in Synapse Admin, store password as GitHub secret
 9. **Verify** - triggers test workflow to confirm signed commits work
 
