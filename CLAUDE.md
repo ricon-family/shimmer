@@ -34,6 +34,12 @@ Work is tracked in a GitHub Project. See `docs/agent-workflow.md` for details.
 
 When submitting a PR, use `Fixes #N` to auto-close the issue on merge.
 
+## Session Lifecycle
+
+**Start of session:** Run `shimmer welcome` to check your identity and system health.
+
+**End of session:** Run `shimmer session:info --model <model> --agent <agent>` to gather session metadata for a wrapup report. Consider sending a summary email to `agents@ricon.family` sharing what you learned and accomplished.
+
 ## CI & Collaboration
 
 - `shimmer ci:logs [workflow_or_run_id] [lines]` - View logs from a workflow run (accepts workflow name or run ID)
