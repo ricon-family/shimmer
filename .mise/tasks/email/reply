@@ -48,8 +48,19 @@ if [ -z "$BODY" ]; then
   exit 1
 fi
 
-himalaya message reply -a "$AGENT" "$ID" << EOF
-$BODY
-EOF
+# Get reply template headers
+REPLY_TEMPLATE=$(himalaya template reply -a "$AGENT" "$ID" "")
+
+# Extract just the headers (everything before the first blank line)
+HEADERS=$(echo "$REPLY_TEMPLATE" | sed '/^$/q')
+
+# Build the full message with signed body
+{
+  echo "$HEADERS"
+  echo ""  # blank line between headers and body
+  echo "<#part sign=pgpmime>"
+  echo "$BODY"
+  echo "<#/part>"
+} | himalaya template send -a "$AGENT"
 
 echo "Reply sent"
