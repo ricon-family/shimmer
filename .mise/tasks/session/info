@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#MISE description="Show session metadata for wrapup reports"
+#USAGE flag "-m --model <model>" help="Model used (e.g., opus, sonnet)"
+#USAGE flag "-a --agent <agent>" help="Agent identity (defaults to AGENT env var)"
+#USAGE flag "--json" help="Output as JSON"
+
+set -e
+
+# Get agent identity
+AGENT="${usage_agent:-${AGENT:-$(whoami)}}"
+MODEL="${usage_model:-unknown}"
+
+# Get recent commits (last 2 hours as proxy for "this session")
+SINCE="2 hours ago"
+COMMITS=$(git log --oneline --since="$SINCE" 2>/dev/null | head -20)
+COMMIT_COUNT=$(echo "$COMMITS" | grep -c . 2>/dev/null || echo "0")
+
+# Get PRs merged today by this session's work
+TODAY=$(date +%Y-%m-%d)
+MERGED_PRS=$(gh pr list --state merged --search "merged:>=$TODAY" --json number,title --jq '.[] | "#\(.number): \(.title)"' 2>/dev/null || echo "")
+
+# Get issues closed today
+CLOSED_ISSUES=$(gh issue list --state closed --search "closed:>=$TODAY" --json number,title --jq '.[] | "#\(.number): \(.title)"' 2>/dev/null || echo "")
+
+# Get issues created today
+CREATED_ISSUES=$(gh issue list --search "created:>=$TODAY" --json number,title --jq '.[] | "#\(.number): \(.title)"' 2>/dev/null || echo "")
+
+# Get current branch
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+
+# Get repo
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "unknown")
+
+if [ -n "$usage_json" ]; then
+  jq -n \
+    --arg agent "$AGENT" \
+    --arg model "$MODEL" \
+    --arg branch "$BRANCH" \
+    --arg repo "$REPO" \
+    --arg commit_count "$COMMIT_COUNT" \
+    --arg commits "$COMMITS" \
+    --arg merged_prs "$MERGED_PRS" \
+    --arg closed_issues "$CLOSED_ISSUES" \
+    --arg created_issues "$CREATED_ISSUES" \
+    '{agent: $agent, model: $model, branch: $branch, repo: $repo, commit_count: ($commit_count | tonumber), commits: $commits, merged_prs: $merged_prs, closed_issues: $closed_issues, created_issues: $created_issues}'
+else
+  echo "=== Session Info ==="
+  echo ""
+  echo "Agent: $AGENT"
+  echo "Model: $MODEL"
+  echo "Repo: $REPO"
+  echo "Branch: $BRANCH"
+  echo ""
+  echo "=== Recent Commits ($COMMIT_COUNT) ==="
+  if [ -n "$COMMITS" ]; then
+    echo "$COMMITS"
+  else
+    echo "(none)"
+  fi
+  echo ""
+  echo "=== PRs Merged Today ==="
+  if [ -n "$MERGED_PRS" ]; then
+    echo "$MERGED_PRS"
+  else
+    echo "(none)"
+  fi
+  echo ""
+  echo "=== Issues Closed Today ==="
+  if [ -n "$CLOSED_ISSUES" ]; then
+    echo "$CLOSED_ISSUES"
+  else
+    echo "(none)"
+  fi
+  echo ""
+  echo "=== Issues Created Today ==="
+  if [ -n "$CREATED_ISSUES" ]; then
+    echo "$CREATED_ISSUES"
+  else
+    echo "(none)"
+  fi
+fi
