@@ -26,8 +26,8 @@ if [ -z "$AGENT" ]; then
   exit 0
 fi
 
-if [ -z "$GH_TOKEN" ]; then
-  echo "⚠ GH_TOKEN not set. Run: eval \$(shimmer as $AGENT)"
+if [ -z "$GH_TOKEN" ] && ! gh auth status &>/dev/null; then
+  echo "⚠ Not authenticated with GitHub. Run: eval \$(shimmer as $AGENT)"
   echo ""
   exit 0
 fi

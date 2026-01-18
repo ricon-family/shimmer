@@ -6,8 +6,8 @@ set -e
 
 ORG="${usage_org:?Usage: shimmer github:org:accept <org>}"
 
-if [ -z "$GH_TOKEN" ]; then
-  echo "ERROR: GH_TOKEN not set" >&2
+if [ -z "$GH_TOKEN" ] && ! gh auth status &>/dev/null; then
+  echo "ERROR: Not authenticated with GitHub" >&2
   echo "Run: eval \$(shimmer as <agent>)" >&2
   exit 1
 fi
