@@ -87,7 +87,7 @@ Don't include:
 
 ## Discovery
 
-Run `shimmer code:welcome` to:
+Run `shimmer code:init:welcome` to:
 
 - See this workflow explained
 - List existing projects
@@ -98,7 +98,7 @@ Run `shimmer code:welcome` to:
 | Task | Command |
 |------|---------|
 | Initialize new codebase | `shimmer code:init <path> [--name <name>]` |
-| See workflow and projects | `shimmer code:welcome` |
+| See workflow and projects | `shimmer code:init:welcome` |
 
 ## After Initialization
 

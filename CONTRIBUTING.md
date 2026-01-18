@@ -60,6 +60,6 @@ Key decisions from planning:
 EOF
 ```
 
-Run `shimmer code:welcome` for more details and to see existing projects.
+Run `shimmer code:init:welcome` for more details and to see existing projects.
 
 See `docs/new-project.md` for the full workflow.

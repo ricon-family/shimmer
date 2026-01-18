@@ -1,76 +1,68 @@
 #!/usr/bin/env bash
-#MISE description="Learn about starting new projects and see existing codebases"
+#MISE description="Show information about the current codebase"
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SHIMMER_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# Use caller's directory if available, otherwise pwd
+CURRENT_DIR="${SHIMMER_CALLER_PWD:-$(pwd)}"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Starting New Projects"
+echo "Current Codebase"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "Use shimmer to bootstrap new codebases with context:"
-echo ""
-echo "  1. Plan together  - Discuss the project with Claude"
-echo "  2. Initialize     - Run: shimmer code:init <path> --name \"Name\""
-echo "  3. Continue       - Start a fresh session in the new directory"
-echo ""
-echo "The seed you provide becomes CLAUDE.md, so the next session"
-echo "picks up where you left off."
-echo ""
-echo "Example:"
-echo ""
-echo "  shimmer code:init ~/projects/my-thing --name \"My Thing\" <<'EOF'"
-echo "  # My Thing"
-echo "  "
-echo "  A project that does X."
-echo "  "
-echo "  ## Decisions"
-echo "  - We chose Y because Z"
-echo "  EOF"
-echo ""
+echo "  Directory: $CURRENT_DIR"
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Existing Projects"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
+# Check if it's a git repo
+if git -C "$CURRENT_DIR" rev-parse --git-dir &>/dev/null; then
+  REPO_ROOT=$(git -C "$CURRENT_DIR" rev-parse --show-toplevel)
+  BRANCH=$(git -C "$CURRENT_DIR" branch --show-current 2>/dev/null || echo "(detached)")
 
-# List repos from ricon-family org
-if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
-  REPOS=$(gh repo list ricon-family --limit 20 --json name,description --jq '.[] | "  \(.name)\t\(.description // "-")"' 2>/dev/null || true)
-  if [ -n "$REPOS" ]; then
-    echo "$REPOS" | column -t -s $'\t'
+  # Get remote URL if available
+  REMOTE_URL=$(git -C "$CURRENT_DIR" remote get-url origin 2>/dev/null || echo "")
+  if [ -n "$REMOTE_URL" ]; then
+    # Extract repo name from URL
+    REPO_NAME=$(echo "$REMOTE_URL" | sed 's/.*[:/]\([^/]*\/[^/]*\)\.git$/\1/' | sed 's/.*[:/]\([^/]*\/[^/]*\)$/\1/')
+    echo "  Repository: $REPO_NAME"
+  fi
+
+  echo "  Branch: $BRANCH"
+
+  # Check for CLAUDE.md
+  if [ -f "$REPO_ROOT/CLAUDE.md" ]; then
+    echo "  CLAUDE.md: present"
   else
-    echo "  (couldn't fetch repos - check gh auth)"
+    echo "  CLAUDE.md: missing"
+  fi
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "Recent Activity"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  # Recent commits
+  echo "  Recent commits:"
+  git -C "$CURRENT_DIR" log --oneline -5 2>/dev/null | sed 's/^/    /'
+
+  # Open PRs (if gh is available and authenticated)
+  if [ -n "$REMOTE_URL" ] && command -v gh &>/dev/null; then
+    echo ""
+    echo "  Open PRs:"
+    PR_COUNT=$(gh pr list --repo "$REPO_NAME" --limit 5 --json number,title --jq 'length' 2>/dev/null || echo "0")
+    if [ "$PR_COUNT" -gt 0 ]; then
+      gh pr list --repo "$REPO_NAME" --limit 5 --json number,title --jq '.[] | "    #\(.number) \(.title)"' 2>/dev/null || echo "    (couldn't fetch)"
+    else
+      echo "    (none)"
+    fi
   fi
 else
-  echo "  (gh CLI not authenticated - run: gh auth login)"
-fi
-
-echo ""
-
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Available Agents"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-# List agents from prompts directory
-AGENTS_DIR="$SHIMMER_DIR/cli/priv/prompts/agents"
-if [ -d "$AGENTS_DIR" ]; then
-  for agent_file in "$AGENTS_DIR"/*.txt; do
-    if [ -f "$agent_file" ]; then
-      agent_name=$(basename "$agent_file" .txt)
-      echo "  $agent_name"
-    fi
-  done
-else
-  echo "  (no agents found)"
+  echo ""
+  echo "  Not a git repository."
 fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "Full documentation: $SHIMMER_DIR/docs/new-project.md"
+echo "To start a new project: shimmer code:init:welcome"
 echo ""
