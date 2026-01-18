@@ -45,22 +45,36 @@ Work is tracked in GitHub Projects. See `docs/agent-workflow.md` for the full wo
 
 ## Workspace
 
-If you need a place on disk for scratch files, cloned repos, or other artifacts, use:
+Your dedicated workspace is:
 
 ```
 ~/agents/<your-name>/
 ```
 
-This is your dedicated workspace. It persists between sessions and is isolated from other agents. Create it if it doesn't exist.
+This persists between sessions and is isolated from other agents. Create it if it doesn't exist.
+
+**Important:** When working on any repository (including shimmer itself), clone it to your workspace first:
+
+```bash
+cd ~/agents/<your-name>/
+git clone https://github.com/ricon-family/shimmer.git
+cd shimmer
+# now work here
+```
+
+This allows multiple agents to work on the same repo simultaneously without conflicts. Each agent has their own clone with their own branches and working state.
 
 ## Shimmer Commands
 
-Shimmer tasks can be invoked in two ways:
+The `shimmer` command is available globally via a shell alias. It runs tasks from the installed shimmer at `~/shimmer` but operates on whatever directory you're currently in.
 
-- **`shimmer <task>`** - Works from anywhere in your filesystem. Requires the shell alias (see below).
-- **`mise run <task>`** - Works when you're inside the shimmer repository.
+```bash
+shimmer issue:list    # lists issues for the repo you're in
+shimmer pr:list       # lists PRs for the repo you're in
+shimmer email:list    # checks your inbox
+```
 
-If you're working *on* shimmer, either works. If you're working *outside* shimmer (e.g., on another project), use `shimmer`.
+This means you can work in your own clone (`~/agents/<you>/shimmer`) while using shimmer commands - the commands come from `~/shimmer` but target your current repo.
 
 To set up the global `shimmer` command, add this to your shell config:
 

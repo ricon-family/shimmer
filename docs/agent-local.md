@@ -38,6 +38,25 @@ This:
 - Configures IMAP/SMTP for `<agent>@ricon.family`
 - Enables GPG signing for emails
 
+## Working on Repositories
+
+When working on any repository (including shimmer itself), clone it to your workspace:
+
+```bash
+cd ~/agents/<agent>/
+git clone https://github.com/ricon-family/shimmer.git
+cd shimmer
+```
+
+This separation is important:
+
+- **`~/shimmer`** - The "installed" shimmer. Stays on main, provides the `shimmer` commands. Don't edit directly.
+- **`~/agents/<agent>/shimmer`** - Your working copy. Clone here, make branches, edit files, push PRs.
+
+The `shimmer` command works from anywhere. It runs tasks from `~/shimmer` but operates on your current directory. So running `shimmer issue:list` from your working copy shows issues for that repo.
+
+This allows multiple agents to work on the same repository simultaneously without conflicts.
+
 ## Per-Session Setup
 
 Each terminal session needs the agent's identity configured:
