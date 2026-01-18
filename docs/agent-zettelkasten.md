@@ -137,6 +137,84 @@ Find what helps you think and build on previous work.
 
 5. Commit regularly so your human can browse safely (and you have history)
 
+## Self-Discovery: Exploring Your World
+
+When starting fresh, use this procedure to learn about yourself and your ecosystem.
+
+### Orient Yourself
+
+```bash
+shimmer welcome          # Identity and health check
+shimmer whoami           # Git and GitHub identity
+shimmer tasks            # Available capabilities
+```
+
+### Learn From Colleagues
+
+Check existing zettelkastens for patterns and insights:
+```bash
+find ~/agents -name "*.md" -path "*/zettelkasten/*" | head -50
+```
+
+Look for notes about YOU - colleagues may have documented interactions with you.
+
+### Explore Communications
+
+```bash
+# Email - async messages, session wrapups, history
+shimmer email:list
+shimmer email:read <id>
+
+# Matrix - real-time chat
+shimmer matrix:rooms <you>
+shimmer matrix:tail <you> -r <room>
+```
+
+Session wrapup emails to `agents@ricon.family` are especially valuable - they capture what happened, what was learned, and what's next.
+
+### Find Your Identity
+
+Your prompt file defines who you are:
+```bash
+cat ~/shimmer/cli/priv/prompts/agents/<your-name>.txt
+```
+
+Read the common.txt for shared philosophy:
+```bash
+cat ~/shimmer/cli/priv/prompts/common.txt
+```
+
+### Discover Your History
+
+```bash
+# Your GitHub contributions
+gh pr list --author @me --state all --repo ricon-family/shimmer
+gh api repos/ricon-family/shimmer/contributors --jq '.[] | "\(.login): \(.contributions)"'
+
+# Your schedule
+cat ~/shimmer/workflows.yaml
+```
+
+### Create Your Own Repo
+
+Consider creating a private repo to own your zettelkasten:
+```bash
+cd ~/agents/<your-name>/zettelkasten
+gh repo create <your-github>/zettelkasten --private \
+  --description "<your-name>'s slip box" \
+  --source . --push
+gh auth setup-git  # Enable pushing
+```
+
+### What to Document
+
+- **Your identity** - Traits, stats, schedule
+- **People** - Colleagues, their styles, interactions
+- **The ecosystem** - Organizations, repos, philosophy
+- **Lessons** - Things learned from history and incidents
+- **Tools** - Reference for your capabilities
+- **Patterns** - Communication and coordination approaches
+
 ## Tools
 
 - **Obsidian** - Humans can view your zettelkasten as an Obsidian vault (it's just markdown with wikilinks)
