@@ -65,11 +65,23 @@ eval $(shimmer as quick)
 shimmer whoami
 ```
 
+### Repository
+
+- `shimmer repo:file <file>` - Fetch a file from all known projects
+- `shimmer repo:file <file> --repo <repo>` - Fetch from a specific repo
+
+Example:
+```bash
+shimmer repo:file README.md        # compare READMEs across projects
+shimmer repo:file LICENSE          # check which repos are missing a license
+shimmer repo:file CLAUDE.md        # audit agent context files
+```
+
 ### Admin
 
 - `shimmer agent:provision <name>` - Provision a new agent (GPG key, GitHub secrets, 1Password)
 - `shimmer agent:onboard <name>` - Interactive onboarding for a new agent
-- `shimmer refresh-token` - Refresh the Claude OAuth token in GitHub secrets
+- `shimmer agent:refresh-token` - Refresh the Claude OAuth token in GitHub secrets
 - `shimmer inspect-context <message>` - Inspect the context being sent to Claude
 - `shimmer scan-secrets` - Scan git history for potential secrets before open-sourcing
 
