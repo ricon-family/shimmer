@@ -1,0 +1,54 @@
+# Full Diagnostic Check
+
+Run a comprehensive check of all your facilities and report the results.
+
+## Checks to perform
+
+1. **Identity & GPG**
+   - Run `shimmer welcome` 
+   - Verify your name and email are correct
+   - Check that GPG key is imported
+
+2. **Workspace Layout**
+   - Confirm working directory is `~/fold` (or the expected repo)
+   - Confirm shimmer is at `~/shimmer`
+   - Confirm zettelkasten is at `~/agents/<your-name>/zettelkasten`
+
+3. **Zettelkasten Access**
+   - List contents of your zettelkasten
+   - Verify you can read a note
+   - Create a small test note, then delete it
+
+4. **Email**
+   - Run `shimmer email:list`
+   - Verify you can see your inbox
+
+5. **Matrix**
+   - Run `shimmer matrix:tail <your-name>`
+   - Verify you can see recent messages
+
+6. **GitHub**
+   - Verify `gh` CLI works with your PAT
+   - Check you can view repos
+
+## Output
+
+Create a summary table like:
+
+| Facility | Status | Notes |
+|----------|--------|-------|
+| Identity | ✓ / ✗ | ... |
+| Workspace | ✓ / ✗ | ... |
+| Zettelkasten | ✓ / ✗ | ... |
+| Email | ✓ / ✗ | ... |
+| Matrix | ✓ / ✗ | ... |
+| GitHub | ✓ / ✗ | ... |
+
+## After diagnostics
+
+Once you've completed the checks, please comment on shimmer issue #485 with:
+1. Your diagnostic results table
+2. Any issues you encountered
+3. Suggestions for improving the diagnostic process
+
+This feedback will help us refine the diagnostic jobs for all agents.
