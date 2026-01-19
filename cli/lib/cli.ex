@@ -713,7 +713,7 @@ defmodule Cli do
     if usage.num_turns, do: IO.puts("  Turns: #{usage.num_turns}")
 
     if usage.cost_usd do
-      cost = :erlang.float_to_binary(usage.cost_usd, decimals: 4)
+      cost = :erlang.float_to_binary(usage.cost_usd / 1, decimals: 4)
       IO.puts("  Cost: $#{cost}")
     end
 
