@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-#MISE description="Initialize a new codebase with CLAUDE.md seed"
+#MISE description="Initialize a new codebase with standard structure"
 #MISE alias="code:init"
-#MISE usage="code:init <path> [--name <name>]"
 set -eo pipefail
 
 # Find shimmer directory (for template)
@@ -9,14 +8,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHIMMER_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 TEMPLATE_FILE="$SHIMMER_DIR/templates/CLAUDE.md"
 
+# Known orgs
+ORGS=("ricon-family" "KnickKnackLabs")
+
 # Parse arguments
+REPO_ARG=""
+COMMAND_ARG=""
 PATH_ARG=""
-NAME_ARG=""
+DESC_ARG=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --name)
-      NAME_ARG="$2"
+    --command)
+      COMMAND_ARG="$2"
+      shift 2
+      ;;
+    --path)
+      PATH_ARG="$2"
+      shift 2
+      ;;
+    --description)
+      DESC_ARG="$2"
       shift 2
       ;;
     -*)
@@ -24,8 +36,8 @@ while [[ $# -gt 0 ]]; do
       exit 1
       ;;
     *)
-      if [[ -z "$PATH_ARG" ]]; then
-        PATH_ARG="$1"
+      if [[ -z "$REPO_ARG" ]]; then
+        REPO_ARG="$1"
       else
         echo "Unexpected argument: $1" >&2
         exit 1
@@ -35,117 +47,218 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$PATH_ARG" ]]; then
-  echo "Usage: shimmer code:init <path> [--name <name>]" >&2
+# Show usage if no repo
+if [[ -z "$REPO_ARG" ]]; then
+  echo "Usage: shimmer code:init <org>/<name> [--command <cmd>] [--path <path>] [--description <desc>]" >&2
   echo "" >&2
-  echo "Initialize a new codebase with a CLAUDE.md seed." >&2
-  echo "Reads seed content from stdin." >&2
+  echo "Initialize a new codebase with standard structure." >&2
   echo "" >&2
-  echo "Example:" >&2
-  echo "  shimmer code:init ~/projects/my-thing --name \"My Thing\" <<'EOF'" >&2
-  echo "  # My Thing" >&2
-  echo "  " >&2
-  echo "  A project that does something cool." >&2
-  echo "  EOF" >&2
+  echo "Arguments:" >&2
+  echo "  <org>/<name>   GitHub repo identifier (e.g., ricon-family/monkeys)" >&2
+  echo "" >&2
+  echo "Options:" >&2
+  echo "  --command      CLI command name (default: repo name)" >&2
+  echo "  --path         Install path (default: ~/<name>)" >&2
+  echo "  --description  One-line project description" >&2
+  echo "" >&2
+  echo "Examples:" >&2
+  echo "  shimmer code:init ricon-family/monkeys --description \"A tool for monkey business\"" >&2
+  echo "  shimmer code:init ricon-family/zettelkasten --command zettel" >&2
   exit 1
 fi
 
-# Resolve path - relative paths use caller's directory (not shimmer's)
-if [[ "$PATH_ARG" == /* ]] || [[ "$PATH_ARG" == ~* ]]; then
-  # Absolute or home-relative path
-  TARGET_PATH="${PATH_ARG/#\~/$HOME}"
+# Parse org/name from repo arg
+if [[ "$REPO_ARG" == */* ]]; then
+  ORG_ARG="${REPO_ARG%%/*}"
+  NAME_ARG="${REPO_ARG#*/}"
 else
-  # Relative path - resolve against caller's directory
-  CALLER_DIR="${SHIMMER_CALLER_PWD:-.}"
-  TARGET_PATH="$CALLER_DIR/$PATH_ARG"
+  echo "Error: Invalid repo format. Expected <org>/<name>, got: $REPO_ARG" >&2
+  exit 1
 fi
 
-# Derive name from path if not provided
-if [[ -z "$NAME_ARG" ]]; then
-  NAME_ARG="$(basename "$TARGET_PATH")"
+# Validate org
+VALID_ORG=false
+for org in "${ORGS[@]}"; do
+  if [[ "$org" == "$ORG_ARG" ]]; then
+    VALID_ORG=true
+    break
+  fi
+done
+
+if [[ "$VALID_ORG" != "true" ]]; then
+  echo "Error: Unknown org '$ORG_ARG'. Known orgs: ${ORGS[*]}" >&2
+  exit 1
+fi
+
+# Command defaults to name
+if [[ -z "$COMMAND_ARG" ]]; then
+  COMMAND_ARG="$NAME_ARG"
+fi
+
+# Path defaults to ~/<name>
+if [[ -z "$PATH_ARG" ]]; then
+  PATH_ARG="$HOME/$NAME_ARG"
+else
+  # Resolve path
+  if [[ "$PATH_ARG" == /* ]] || [[ "$PATH_ARG" == ~* ]]; then
+    PATH_ARG="${PATH_ARG/#\~/$HOME}"
+  else
+    CALLER_DIR="${SHIMMER_CALLER_PWD:-.}"
+    PATH_ARG="$CALLER_DIR/$PATH_ARG"
+  fi
 fi
 
 # Check if directory already exists
-if [[ -d "$TARGET_PATH" ]]; then
-  echo "Error: Directory already exists: $TARGET_PATH" >&2
+if [[ -d "$PATH_ARG" ]]; then
+  echo "Error: Directory already exists: $PATH_ARG" >&2
   exit 1
 fi
 
-# Read seed content from stdin
-SEED_CONTENT=""
-if [[ ! -t 0 ]]; then
-  SEED_CONTENT="$(cat)"
+# Interactive mode: prompt for description if not provided
+if [[ -z "$DESC_ARG" ]]; then
+  if [[ -t 0 ]] && [[ -t 1 ]]; then
+    DESC_ARG=$(gum input --placeholder "One-line description..." --header "Project description:")
+  else
+    DESC_ARG="A new project"
+  fi
 fi
 
-if [[ -z "$SEED_CONTENT" ]]; then
-  echo "Error: No seed content provided. Pipe content to stdin." >&2
-  echo "" >&2
-  echo "Example:" >&2
-  echo "  shimmer code:init ~/projects/my-thing <<'EOF'" >&2
-  echo "  # My Thing" >&2
-  echo "  " >&2
-  echo "  A project that does something cool." >&2
-  echo "  EOF" >&2
-  exit 1
-fi
-
-echo "Initializing codebase: $NAME_ARG"
-echo "  Path: $TARGET_PATH"
+echo ""
+echo "Initializing codebase:"
+echo "  Repo:        $ORG_ARG/$NAME_ARG"
+echo "  Command:     $COMMAND_ARG"
+echo "  Path:        $PATH_ARG"
+echo "  Description: $DESC_ARG"
 echo ""
 
-# Create directory
-mkdir -p "$TARGET_PATH"
+# Create directory structure
+mkdir -p "$PATH_ARG/.mise/tasks"
 
 # Initialize git
-git -C "$TARGET_PATH" init --quiet
+git -C "$PATH_ARG" init --quiet
 
-# Write CLAUDE.md using template
+# Write CLAUDE.md
 if [[ -f "$TEMPLATE_FILE" ]]; then
   export PROJECT_NAME="$NAME_ARG"
-  export PROJECT_DESCRIPTION="$SEED_CONTENT"
-  envsubst '${PROJECT_NAME} ${PROJECT_DESCRIPTION}' < "$TEMPLATE_FILE" > "$TARGET_PATH/CLAUDE.md"
+  export PROJECT_DESCRIPTION="$DESC_ARG"
+  envsubst '${PROJECT_NAME} ${PROJECT_DESCRIPTION}' < "$TEMPLATE_FILE" > "$PATH_ARG/CLAUDE.md"
 else
-  # Fallback: just use seed content directly
-  printf '%s\n' "$SEED_CONTENT" > "$TARGET_PATH/CLAUDE.md"
-fi
+  cat > "$PATH_ARG/CLAUDE.md" << EOF
+# $NAME_ARG
 
+$DESC_ARG
+
+## Shimmer
+
+This project uses [shimmer](https://github.com/ricon-family/shimmer) for agent workflows.
+
+Run \`$COMMAND_ARG welcome\` to get started.
+EOF
+fi
 echo "  Created: CLAUDE.md"
 
 # Write README.md
-cat > "$TARGET_PATH/README.md" << EOF
+cat > "$PATH_ARG/README.md" << EOF
 # $NAME_ARG
+
+$DESC_ARG
+
+## Install
+
+\`\`\`bash
+git clone https://github.com/$ORG_ARG/$NAME_ARG.git ~/$NAME_ARG
+cd ~/$NAME_ARG && mise trust && mise install
+
+# Add to your shell config (~/.zshrc or ~/.bashrc)
+eval "\$(mise -C ~/$NAME_ARG run -q shell)"
+
+# Reload and verify
+source ~/.zshrc
+$COMMAND_ARG welcome
+\`\`\`
+
+## Usage
+
+\`\`\`bash
+$COMMAND_ARG          # Show available commands
+$COMMAND_ARG welcome  # Verify setup
+\`\`\`
 
 ## Development
 
 This project uses [shimmer](https://github.com/ricon-family/shimmer) for agent workflows.
-
-To set up shimmer:
-
-1. Clone shimmer to your workspace:
-   \`\`\`bash
-   git clone https://github.com/ricon-family/shimmer.git ~/shimmer
-   cd ~/shimmer && mise trust && mise install
-   \`\`\`
-
-2. Add to your shell config (\`~/.zshrc\` or \`~/.bashrc\`):
-   \`\`\`bash
-   eval "\$(mise -C ~/shimmer run -q shell)"
-   \`\`\`
-
-3. Reload your shell and run \`shimmer welcome\` to verify.
 EOF
-
 echo "  Created: README.md"
 
-# Initial commit
-git -C "$TARGET_PATH" add -A
-git -C "$TARGET_PATH" commit --quiet -m "Initial commit
+# Write mise.toml
+cat > "$PATH_ARG/mise.toml" << EOF
+[tools]
+# Add your dependencies here
+# node = "22"
+# python = "3.12"
+EOF
+echo "  Created: mise.toml"
 
-Seeded with shimmer code:init"
+# Write shell task
+cat > "$PATH_ARG/.mise/tasks/shell" << EOF
+#!/usr/bin/env bash
+#MISE description="Output shell configuration for global $COMMAND_ARG command (use with eval)"
+REPO_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")/../.." && pwd)"
+echo "alias $COMMAND_ARG='SHIMMER_CALLER_PWD=\"\\\$PWD\" mise -C \"\$REPO_DIR\" run'"
+EOF
+chmod +x "$PATH_ARG/.mise/tasks/shell"
+echo "  Created: .mise/tasks/shell"
+
+# Write welcome task
+cat > "$PATH_ARG/.mise/tasks/welcome" << EOF
+#!/usr/bin/env bash
+#MISE description="Welcome message and setup verification"
+
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="\$(cd "\$SCRIPT_DIR/../.." && pwd)"
 
 echo ""
-echo "Done! Codebase initialized at: $TARGET_PATH"
+echo "Welcome to $NAME_ARG!"
+echo ""
+echo "$DESC_ARG"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Commands:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "  $COMMAND_ARG welcome    This message"
+echo "  $COMMAND_ARG tasks      List all available tasks"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Location: \$REPO_DIR"
+echo ""
+EOF
+chmod +x "$PATH_ARG/.mise/tasks/welcome"
+echo "  Created: .mise/tasks/welcome"
+
+# Write .gitignore
+cat > "$PATH_ARG/.gitignore" << EOF
+# mise
+.mise.local.toml
+
+# OS
+.DS_Store
+EOF
+echo "  Created: .gitignore"
+
+# Initial commit
+git -C "$PATH_ARG" add -A
+git -C "$PATH_ARG" commit --quiet -m "Initial commit
+
+Initialized with shimmer code:init"
+
+echo ""
+echo "Done! Codebase initialized at: $PATH_ARG"
 echo ""
 echo "Next steps:"
-echo "  cd $TARGET_PATH"
-echo "  # Start a new Claude Code session"
+echo "  cd $PATH_ARG"
+echo "  mise trust && mise install"
+echo "  eval \"\$(mise run -q shell)\""
+echo "  $COMMAND_ARG welcome"
+echo ""
