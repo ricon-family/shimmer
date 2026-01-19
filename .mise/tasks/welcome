@@ -68,7 +68,13 @@ if [ -n "$AGENT" ]; then
   # Email check
   CONFIG_FILE="${HOME}/.config/himalaya/config.toml"
   if [ -f "$CONFIG_FILE" ] && grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/null; then
-    echo "  Email:     ✓ configured       → shimmer email:welcome"
+    # Count unread emails using email:list task
+    UNREAD_COUNT=$(mise run -q email:list --unread --count 2>/dev/null || echo "0")
+    if [ -n "$UNREAD_COUNT" ] && [ "$UNREAD_COUNT" -gt 0 ]; then
+      echo "  Email:     ✓ configured ($UNREAD_COUNT unread) → shimmer email:welcome"
+    else
+      echo "  Email:     ✓ configured       → shimmer email:welcome"
+    fi
   else
     echo "  Email:     ✗ not configured (run: shimmer email:setup $AGENT)"
   fi
