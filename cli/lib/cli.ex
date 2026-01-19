@@ -39,10 +39,6 @@ defmodule Cli do
   # Exit code returned by the `timeout` command when the process exceeds the time limit
   @timeout_exit_code 124
 
-  defp prompts_dir do
-    :code.priv_dir(:cli) |> List.to_string() |> Path.join("prompts")
-  end
-
   @doc """
   CLI entry point. Parses args, runs the CLI, and exits with the returned status.
   """
@@ -75,13 +71,13 @@ defmodule Cli do
 
     print_header(opts, message, timeout, agent, model)
 
-    case validate_args(message, agent, opts[:job], timeout) do
+    case validate_args(message, opts[:system_prompt_file], timeout) do
       {:error, msg} ->
         IO.puts("ERROR: #{msg}")
         1
 
       :ok ->
-        system_prompt = load_system_prompt(agent, opts[:job])
+        system_prompt = load_system_prompt_file(opts[:system_prompt_file])
 
         if opts[:log_context] do
           run_with_logger(message, system_prompt, timeout, model)
@@ -96,25 +92,22 @@ defmodule Cli do
     IO.puts("Message: #{message}")
     if timeout, do: IO.puts("Timeout: #{timeout}s")
     if agent, do: IO.puts("Agent: #{agent}")
-    if opts[:job], do: IO.puts("Job: #{opts[:job]}")
+    if opts[:system_prompt_file], do: IO.puts("System prompt: #{opts[:system_prompt_file]}")
     IO.puts("Model: #{model}")
     if opts[:log_context], do: IO.puts("Context logging: enabled")
     IO.puts("---")
   end
 
-  defp validate_args(message, agent, job, timeout) do
+  defp validate_args(message, system_prompt_file, timeout) do
     cond do
       String.trim(message) == "" ->
         {:error, "No message provided"}
 
-      agent == nil or agent == "" ->
-        {:error, "--agent is required and cannot be empty"}
+      system_prompt_file == nil or system_prompt_file == "" ->
+        {:error, "--system-prompt-file is required"}
 
-      not safe_name?(agent) ->
-        {:error, "--agent must contain only alphanumeric characters, hyphens, and underscores"}
-
-      job != nil and not safe_name?(job) ->
-        {:error, "--job must contain only alphanumeric characters, hyphens, and underscores"}
+      not File.exists?(system_prompt_file) ->
+        {:error, "System prompt file not found: #{system_prompt_file}"}
 
       timeout == nil ->
         {:error, "--timeout is required"}
@@ -127,8 +120,16 @@ defmodule Cli do
     end
   end
 
-  # Validates that a name is safe for use in file paths (prevents path traversal)
-  defp safe_name?(name), do: Regex.match?(~r/^[a-zA-Z0-9_-]+$/, name)
+  defp load_system_prompt_file(path) do
+    case File.read(path) do
+      {:ok, content} ->
+        String.trim(content)
+
+      {:error, reason} ->
+        IO.puts("WARNING: Failed to read system prompt file: #{reason}")
+        nil
+    end
+  end
 
   defp parse_args(args) do
     {opts, rest, invalid} =
@@ -136,7 +137,7 @@ defmodule Cli do
         strict: [
           log_context: :boolean,
           agent: :string,
-          job: :string,
+          system_prompt_file: :string,
           timeout: :integer,
           model: :string,
           help: :boolean
@@ -160,115 +161,24 @@ defmodule Cli do
 
   defp print_help do
     IO.puts("""
-    Usage: shimmer --agent <name> --timeout <seconds> [options] <message>
+    Usage: shimmer --system-prompt-file <path> --timeout <seconds> [options] <message>
 
-    Run Claude Code with a specific agent persona and streaming output.
+    Run Claude Code with a system prompt and streaming output.
 
     Required:
-      --agent <name>       Agent persona (e.g., quick, junior, brownie)
-      --timeout <seconds>  Maximum runtime in seconds
+      --system-prompt-file <path>  Path to the system prompt file
+      --timeout <seconds>          Maximum runtime in seconds
 
     Options:
-      --job <name>         Job-specific prompt (e.g., probe, critic)
+      --agent <name>       Agent name for logging (optional, display only)
       --model <model>      Claude model to use (default: claude-opus-4-5-20251101)
       --log-context        Enable context logging via proxy
       -h, --help           Show this help message
 
     Examples:
-      shimmer --agent quick --timeout 300 "Fix the bug in cli.ex"
-      shimmer --agent brownie --timeout 600 --job probe "Explore the codebase"
+      shimmer --system-prompt-file /tmp/prompt.txt --timeout 300 "Fix the bug"
+      shimmer --system-prompt-file ./agent.txt --agent quick --timeout 600 "Explore"
     """)
-  end
-
-  @doc """
-  Loads the system prompt for a given agent and optional job.
-
-  Combines prompts in this order:
-  1. Agent identity from `priv/prompts/agents/{agent_name}.txt`
-  2. Job description from `priv/prompts/jobs/{job_name}.txt` (if provided)
-
-  Common instructions are now in the repo's CLAUDE.md, which Claude Code
-  reads automatically.
-
-  Returns `nil` if `agent_name` is `nil` or empty. Returns the combined
-  prompt content if at least one file exists, or `nil` if all are missing.
-
-  ## Examples
-
-      iex> Cli.load_system_prompt(nil, nil)
-      nil
-
-  """
-  @spec load_system_prompt(String.t() | nil, String.t() | nil) :: String.t() | nil
-  def load_system_prompt(nil, _job), do: nil
-  def load_system_prompt("", _job), do: nil
-
-  def load_system_prompt(agent_name, job_name) do
-    dir = prompts_dir()
-
-    agent_path = Path.join([dir, "agents", "#{agent_name}.txt"])
-    warn_if_missing(agent_path, :agent, agent_name, dir)
-
-    job_path = if job_name, do: Path.join([dir, "jobs", "#{job_name}.txt"]), else: nil
-    if job_path, do: warn_if_missing(job_path, :job, job_name, dir)
-
-    parts =
-      [
-        read_prompt_file(agent_path),
-        if(job_path, do: read_prompt_file(job_path), else: "")
-      ]
-      |> Enum.reject(&(&1 == ""))
-
-    case parts do
-      [] -> nil
-      parts -> Enum.join(parts, "\n\n")
-    end
-  end
-
-  # Keep backward-compatible 1-arity version for tests
-  @spec load_system_prompt(String.t() | nil) :: String.t() | nil
-  def load_system_prompt(agent_name), do: load_system_prompt(agent_name, nil)
-
-  defp read_prompt_file(path) do
-    case File.read(path) do
-      {:ok, content} ->
-        content
-
-      {:error, :enoent} ->
-        ""
-
-      {:error, reason} ->
-        IO.puts("WARNING: Failed to read #{path}: #{reason}")
-        ""
-    end
-  end
-
-  defp warn_if_missing(path, type, name, prompts_dir) do
-    unless File.exists?(path) do
-      type_name = if type == :agent, do: "Agent", else: "Job"
-      subdir = if type == :agent, do: "agents", else: "jobs"
-      available = list_available(prompts_dir, subdir)
-
-      available_hint =
-        if available != [], do: " Available: #{Enum.join(available, ", ")}", else: ""
-
-      IO.puts("WARNING: #{type_name} prompt not found: #{name}.txt#{available_hint}")
-    end
-  end
-
-  defp list_available(prompts_dir, subdir) do
-    dir = Path.join(prompts_dir, subdir)
-
-    case File.ls(dir) do
-      {:ok, files} ->
-        files
-        |> Enum.filter(&String.ends_with?(&1, ".txt"))
-        |> Enum.map(&String.replace_suffix(&1, ".txt", ""))
-        |> Enum.sort()
-
-      {:error, _} ->
-        []
-    end
   end
 
   defp run_claude(message, env_extras, system_prompt, timeout, model) do

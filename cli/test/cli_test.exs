@@ -57,38 +57,18 @@ defmodule CliTest do
       end
     end
 
-    test "rejects agent name with path traversal characters" do
+    test "requires system-prompt-file" do
+      {output, exit_code} = run_cli(["--timeout", "60", "hello"])
+      assert exit_code == 1
+      assert output =~ "--system-prompt-file is required"
+    end
+
+    test "rejects non-existent system-prompt-file" do
       {output, exit_code} =
-        run_cli(["--agent", "../../../etc/passwd", "--timeout", "60", "hello"])
+        run_cli(["--system-prompt-file", "/nonexistent/path.txt", "--timeout", "60", "hello"])
 
       assert exit_code == 1
-
-      assert output =~
-               "--agent must contain only alphanumeric characters, hyphens, and underscores"
-    end
-
-    test "rejects agent name with dots" do
-      {output, exit_code} = run_cli(["--agent", "agent.with.dots", "--timeout", "60", "hello"])
-      assert exit_code == 1
-
-      assert output =~
-               "--agent must contain only alphanumeric characters, hyphens, and underscores"
-    end
-
-    test "rejects agent name with slashes" do
-      {output, exit_code} = run_cli(["--agent", "agent/with/slashes", "--timeout", "60", "hello"])
-      assert exit_code == 1
-
-      assert output =~
-               "--agent must contain only alphanumeric characters, hyphens, and underscores"
-    end
-
-    test "rejects job name with path traversal characters" do
-      {output, exit_code} =
-        run_cli(["--agent", "quick", "--job", "../../evil", "--timeout", "60", "hello"])
-
-      assert exit_code == 1
-      assert output =~ "--job must contain only alphanumeric characters, hyphens, and underscores"
+      assert output =~ "System prompt file not found"
     end
   end
 
@@ -750,98 +730,6 @@ defmodule CliTest do
       # Passing nil should fail loudly, not silently drop content.
       assert_raise FunctionClauseError, fn ->
         Cli.text_beyond_flushed("hello world", nil)
-      end
-    end
-  end
-
-  describe "load_system_prompt/1" do
-    test "returns nil for nil agent" do
-      assert Cli.load_system_prompt(nil) == nil
-    end
-
-    test "returns nil for empty string agent" do
-      assert Cli.load_system_prompt("") == nil
-    end
-
-    test "loads brownie agent prompt" do
-      result = Cli.load_system_prompt("brownie")
-
-      # Should contain agent-specific prompt
-      assert result =~ "You are brownie"
-      assert result =~ "brownie@ricon.family"
-    end
-
-    test "loads agent prompt with job" do
-      result = Cli.load_system_prompt("quick", "probe")
-
-      # Should contain agent identity
-      assert result =~ "You are quick"
-      assert result =~ "quick@ricon.family"
-
-      # Should contain job description
-      assert result =~ "implement approved work"
-      assert result =~ "mise run issue:list"
-    end
-
-    test "loads agent prompt with critic job" do
-      result = Cli.load_system_prompt("brownie", "critic")
-
-      # Should contain agent identity
-      assert result =~ "You are brownie"
-
-      # Should contain job description
-      assert result =~ "find ONE thing"
-      assert result =~ "GitHub issue"
-    end
-
-    test "returns nil for non-existent agent with warning" do
-      import ExUnit.CaptureIO
-
-      {result, output} =
-        with_io(fn ->
-          Cli.load_system_prompt("non-existent-agent")
-        end)
-
-      # Should return nil when agent doesn't exist (no common.txt fallback)
-      assert result == nil
-
-      # Should warn about missing agent prompt with available agents listed
-      assert output =~ "WARNING: Agent prompt not found: non-existent-agent.txt"
-      assert output =~ "Available: brownie"
-    end
-
-    test "warns on non-existent job prompt" do
-      import ExUnit.CaptureIO
-
-      output =
-        capture_io(fn ->
-          Cli.load_system_prompt("brownie", "non-existent-job")
-        end)
-
-      # Should warn about missing job prompt with available jobs listed
-      assert output =~ "WARNING: Job prompt not found: non-existent-job.txt"
-      assert output =~ "Available:"
-    end
-
-    test "warns on file read errors other than enoent" do
-      # Create a directory where a file is expected - reading it will fail with :eisdir
-      # prompts_dir() falls back to priv/prompts relative to cli/lib
-      bad_agent_path = Path.join([__DIR__, "..", "priv", "prompts", "agents", "bad-agent.txt"])
-
-      # Create a directory instead of a file to trigger :eisdir error
-      File.mkdir_p!(bad_agent_path)
-
-      try do
-        # Capture the warning output
-        output =
-          ExUnit.CaptureIO.capture_io(fn ->
-            Cli.load_system_prompt("bad-agent")
-          end)
-
-        assert output =~ "WARNING: Failed to read"
-        assert output =~ "bad-agent.txt"
-      after
-        File.rm_rf!(bad_agent_path)
       end
     end
   end
