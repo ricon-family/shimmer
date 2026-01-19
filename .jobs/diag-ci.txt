@@ -1,0 +1,26 @@
+# CI Diagnostic Check
+
+Verify CI-specific facilities are working. These are distinct from general GitHub access.
+
+## Checks to perform
+
+1. **CI Time**
+   - Run `shimmer ci:time-remaining` and confirm it reports remaining time
+
+2. **Workflow Access**
+   - Run `gh run list --limit 3` and confirm you can see recent workflow runs
+
+3. **Branch Operations**
+   - Confirm you can create and push branches
+   - Check `git config user.name` and `git config user.email` are set
+   - Verify commits are GPG signed (`git config commit.gpgsign`)
+
+## Output
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| CI Time | ✓ / ✗ | ... |
+| Workflow Access | ✓ / ✗ | ... |
+| Branch Operations | ✓ / ✗ | ... |
+
+If anything fails, include the error message.

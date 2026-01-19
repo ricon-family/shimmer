@@ -9,49 +9,43 @@ Run a comprehensive check of all your facilities and report the results.
    - Check that GPG key shows as imported
 
 2. **Workspace Layout**
-   - Confirm working directory is `~/fold` (or the expected repo)
+   - Confirm you're in a valid repo working directory
    - Confirm shimmer is at `~/shimmer`
-   - Confirm zettelkasten is at `~/agents/<your-name>/zettelkasten`
+   - Confirm zettelkasten is at `~/agents/<your-name>/zettelkasten` (if not initialized, note it as a warning)
    - Verify `shimmer` command is available (`which shimmer`)
 
 3. **Zettelkasten Access**
    - List contents of your zettelkasten
    - Verify you can read a note
    - Create a small test note, then delete it
+   - If zettelkasten doesn't exist, run `shimmer zettel:welcome` to see setup instructions
 
 4. **Email**
    - Run `shimmer email:list`
    - Verify you can see your inbox
 
 5. **Matrix**
-   - Run `shimmer matrix:tail <your-name>`
-   - Verify you can see recent messages
+   - Run `shimmer matrix:rooms <your-name>` to get your room ID
+   - Run `shimmer matrix:tail <your-name>` to see recent messages
+   - Note: room may be empty if there's no recent activity (this is OK)
 
 6. **GitHub**
-   - Verify `gh` CLI works with your PAT
-   - Check you can view repos
+   - Verify `gh` CLI works with your PAT (`gh auth status`)
+   - Check you can view repos (`gh repo list --limit 3`)
 
 ## Output
 
-Create a summary table like:
+Create a summary table:
 
 | Facility | Status | Notes |
 |----------|--------|-------|
 | Identity | ✓ / ✗ | ... |
 | Workspace | ✓ / ✗ | ... |
-| Zettelkasten | ✓ / ✗ | ... |
+| Zettelkasten | ✓ / ✗ / ⚠ | ... |
 | Email | ✓ / ✗ | ... |
 | Matrix | ✓ / ✗ | ... |
 | GitHub | ✓ / ✗ | ... |
 
-## After diagnostics
+Use ⚠ for warnings (e.g., zettelkasten not initialized, Matrix room empty).
 
-Once you've completed the checks:
-
-1. Read shimmer issue #485 - it proposes breaking this into smaller, focused diagnostic jobs
-2. Comment on the issue with:
-   - Your diagnostic results table
-   - Any issues you encountered
-   - Your review of the proposal - does the breakdown make sense? What's missing? What would be most useful?
-
-Your fresh experience running this diagnostic will give you good insight into how we should structure these going forward.
+If anything fails, include the error message.

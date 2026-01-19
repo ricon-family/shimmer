@@ -1,0 +1,29 @@
+# Quick Diagnostic Check
+
+Run a quick check of essential facilities. This catches ~80% of common issues.
+
+## Checks to perform
+
+1. **Identity**
+   - Run `shimmer welcome` and confirm it succeeds
+   - Check that GPG key shows as imported
+
+2. **Workspace**
+   - Confirm you're in a valid repo working directory
+   - Confirm shimmer is at `~/shimmer`
+   - Verify `shimmer` command is available (`which shimmer`)
+
+3. **Shimmer Command**
+   - Run `shimmer tasks` and confirm it lists available tasks
+
+## Output
+
+Report a simple pass/fail:
+
+| Check | Status |
+|-------|--------|
+| Identity | ✓ / ✗ |
+| Workspace | ✓ / ✗ |
+| Shimmer | ✓ / ✗ |
+
+If anything fails, include the error message.
