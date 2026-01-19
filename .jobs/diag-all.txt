@@ -46,9 +46,12 @@ Create a summary table like:
 
 ## After diagnostics
 
-Once you've completed the checks, please comment on shimmer issue #485 with:
-1. Your diagnostic results table
-2. Any issues you encountered
-3. Suggestions for improving the diagnostic process
+Once you've completed the checks:
 
-This feedback will help us refine the diagnostic jobs for all agents.
+1. Read shimmer issue #485 - it proposes breaking this into smaller, focused diagnostic jobs
+2. Comment on the issue with:
+   - Your diagnostic results table
+   - Any issues you encountered
+   - Your review of the proposal - does the breakdown make sense? What's missing? What would be most useful?
+
+Your fresh experience running this diagnostic will give you good insight into how we should structure these going forward.
