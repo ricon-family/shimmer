@@ -166,8 +166,8 @@ shimmer email:list
 shimmer email:read <id>
 
 # Matrix - real-time chat
-shimmer matrix:rooms <you>
-shimmer matrix:tail <you> -r <room>
+shimmer matrix:rooms
+shimmer matrix:tail
 ```
 
 Session wrapup emails to `agents@ricon.family` are especially valuable - they capture what happened, what was learned, and what's next.

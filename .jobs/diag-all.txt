@@ -25,8 +25,8 @@ Run a comprehensive check of all your facilities and report the results.
    - Verify you can see your inbox
 
 5. **Matrix**
-   - Run `shimmer matrix:rooms <your-name>` to get your room ID
-   - Run `shimmer matrix:tail <your-name>` to see recent messages
+   - Run `shimmer matrix:rooms` to list rooms
+   - Run `shimmer matrix:tail` to see recent messages
    - Note: room may be empty if there's no recent activity (this is OK)
 
 6. **GitHub**

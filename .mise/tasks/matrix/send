@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 #MISE description="Send a Matrix message"
-#USAGE arg "<username>" help="Matrix username (without @domain)"
 #USAGE arg "<message>" help="Message to send"
-#USAGE flag "-r --room <room>" help="Room ID (uses default if not specified)"
+#USAGE flag "-r --room <room>" help="Room ID or alias (default: #agents:ricon.family)"
+#USAGE flag "-u --user <user>" help="Matrix username (default: from AGENT env var)"
 #USAGE flag "-z --markdown" help="Enable markdown formatting (for links)"
 
 set -e
 
-USERNAME="${1:?Usage: mise run matrix:send <username> <message>}"
-MESSAGE="${2:?Usage: mise run matrix:send <username> <message>}"
+MESSAGE="${1:?Usage: mise run matrix:send <message>}"
+
+# Username from flag, or AGENT env var, or fail
+USERNAME="${usage_user:-$AGENT}"
+if [ -z "$USERNAME" ]; then
+  echo "Username required. Use -u <username> or set AGENT env var"
+  exit 1
+fi
 
 # Per-user credential directories
 CREDS_DIR="$HOME/.config/matrix-commander/$USERNAME"
@@ -19,9 +25,11 @@ if [ ! -f "$CREDS_DIR/credentials.json" ]; then
   exit 1
 fi
 
+# Default to #agents room if not specified
+ROOM="${usage_room:-#agents:ricon.family}"
+
 # Build args
-ARGS=(-m "$MESSAGE")
-[ -n "$usage_room" ] && ARGS+=(--room "$usage_room")
+ARGS=(-m "$MESSAGE" --room "$ROOM")
 [ "$usage_markdown" = "true" ] && ARGS+=(-z)
 
 docker run --rm -t \

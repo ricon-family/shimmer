@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 #MISE description="Accept pending Matrix room invites"
-#USAGE arg "<username>" help="Matrix username (without @domain)"
+#USAGE flag "-u --user <user>" help="Matrix username (default: from AGENT env var)"
 
 set -e
 
-USERNAME="${1:?Usage: mise run matrix:invites <username>}"
+# Username from flag, or AGENT env var, or fail
+USERNAME="${usage_user:-$AGENT}"
+if [ -z "$USERNAME" ]; then
+  echo "Username required. Use -u <username> or set AGENT env var"
+  exit 1
+fi
 
 # Per-user credential directories
 CREDS_DIR="$HOME/.config/matrix-commander/$USERNAME"
