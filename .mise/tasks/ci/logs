@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-#MISE description="View logs from a workflow run"
-#USAGE arg "[workflow_or_run_id]" help="Workflow name (e.g., pr-check.yml) or run ID (numeric)"
-#USAGE arg "[lines]" help="Number of log lines to show (default: 100)"
+#MISE description="View logs from a workflow run with windowing support"
+#USAGE arg "<run_id>" help="Run ID (numeric) or workflow name"
+#USAGE flag "--offset <n>" help="Start at line N (default: 1)"
+#USAGE flag "--limit <n>" help="Number of lines to show (default: 100)"
+#USAGE flag "--tail" help="Show last N lines instead of offset-based window"
+#USAGE flag "--no-cache" help="Force re-fetch of logs"
+#USAGE flag "--info" help="Show log metadata (total lines, jobs) without content"
 
 set -e
 
@@ -10,18 +14,94 @@ TARGET_DIR="${PROJECT_DIR:-${SHIMMER_CALLER_PWD:-.}}"
 SCRIPT_DIR="$(dirname "$0")"
 REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
 
-ARG1="${1:-pr-check.yml}"
-LINES="${2:-100}"
+# Defaults
+ARG1="${1:-}"
+OFFSET=1
+LIMIT=100
+TAIL_MODE=false
+NO_CACHE=false
+INFO_ONLY=false
+
+# Parse flags
+shift || true
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --offset)
+      OFFSET="$2"
+      shift 2
+      ;;
+    --limit)
+      LIMIT="$2"
+      shift 2
+      ;;
+    --tail)
+      TAIL_MODE=true
+      shift
+      ;;
+    --no-cache)
+      NO_CACHE=true
+      shift
+      ;;
+    --info)
+      INFO_ONLY=true
+      shift
+      ;;
+    *)
+      # Backwards compat: second positional arg is lines
+      if [[ "$1" =~ ^[0-9]+$ ]]; then
+        LIMIT="$1"
+        TAIL_MODE=true
+      fi
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$ARG1" ]]; then
+  echo "Usage: ci:logs <run_id> [--offset N] [--limit N] [--tail] [--info]"
+  exit 1
+fi
 
 # Detect if first arg is a run ID (numeric) or workflow name
 if [[ "$ARG1" =~ ^[0-9]+$ ]]; then
   RUN_ID="$ARG1"
-  WORKFLOW="(run $RUN_ID)"
 else
   WORKFLOW="$ARG1"
   RUN_ID=$(gh run list --repo "$REPO" --workflow="$WORKFLOW" --limit 1 --json databaseId -q '.[0].databaseId')
 fi
-JOB_ID=$(gh run view "$RUN_ID" --repo "$REPO" --json jobs -q '.jobs[0].databaseId')
 
-echo "=== $REPO - $WORKFLOW (last $LINES lines) ==="
-gh run view --repo "$REPO" --job="$JOB_ID" --log 2>&1 | tail -"$LINES"
+# Cache directory
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/shimmer/ci-logs"
+mkdir -p "$CACHE_DIR"
+CACHE_FILE="$CACHE_DIR/${REPO//\//_}_${RUN_ID}.log"
+
+# Fetch or use cached log
+if [[ -f "$CACHE_FILE" ]] && [[ "$NO_CACHE" != "true" ]]; then
+  LOG_SOURCE="(cached)"
+else
+  # Get first job ID
+  JOB_ID=$(gh run view "$RUN_ID" --repo "$REPO" --json jobs -q '.jobs[0].databaseId')
+  gh run view --repo "$REPO" --job="$JOB_ID" --log 2>&1 > "$CACHE_FILE"
+  LOG_SOURCE="(fetched)"
+fi
+
+TOTAL_LINES=$(wc -l < "$CACHE_FILE" | tr -d ' ')
+
+# Info mode - just show metadata
+if [[ "$INFO_ONLY" == "true" ]]; then
+  echo "Run ID: $RUN_ID"
+  echo "Repo: $REPO"
+  echo "Total lines: $TOTAL_LINES"
+  echo "Cache: $CACHE_FILE"
+  exit 0
+fi
+
+# Output header
+if [[ "$TAIL_MODE" == "true" ]]; then
+  echo "=== $REPO run $RUN_ID $LOG_SOURCE - last $LIMIT of $TOTAL_LINES lines ==="
+  tail -n "$LIMIT" "$CACHE_FILE" | nl -ba -v $((TOTAL_LINES - LIMIT + 1))
+else
+  END_LINE=$((OFFSET + LIMIT - 1))
+  echo "=== $REPO run $RUN_ID $LOG_SOURCE - lines $OFFSET-$END_LINE of $TOTAL_LINES ==="
+  sed -n "${OFFSET},${END_LINE}p" "$CACHE_FILE" | nl -ba -v "$OFFSET"
+fi
