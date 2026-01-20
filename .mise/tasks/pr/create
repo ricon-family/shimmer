@@ -75,17 +75,6 @@ fi
 # Add standard footer
 PR_BODY+=$'\n\n'"---"$'\n'"Generated with [Claude Code](https://claude.com/claude-code)"
 
-# Build gh pr create command
-CMD="gh pr create --repo $REPO --title"
-
-if [[ "$DRAFT" == "true" ]]; then
-  CMD="$CMD --draft"
-fi
-
-if [[ -n "$BASE" ]]; then
-  CMD="$CMD --base $BASE"
-fi
-
 # Create the PR
 PR_URL=$(gh pr create --repo "$REPO" --title "$TITLE" --body "$PR_BODY" ${DRAFT:+--draft} ${BASE:+--base "$BASE"})
 
