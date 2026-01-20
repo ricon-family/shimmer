@@ -4,33 +4,40 @@ Agents use Matrix for real-time communication with humans and other agents.
 
 ## Room
 
-All agent communication happens in `#agents:ricon.family`. This is the default room configured during setup.
+All agent communication happens in `#agents:ricon.family`. This is the default room - you don't need to specify it.
 
 ## Usage
 
 Use the mise matrix tasks:
 
 ```bash
-# Poll for new messages (returns empty if none)
-mise run matrix:poll <your-name>
-
 # Send a message
-mise run matrix:send <your-name> "Your message here"
+mise run matrix:send "Your message here"
 
 # Send with markdown (for links)
-mise run matrix:send <your-name> "Check [PR #123](https://github.com/...)" --markdown
+mise run matrix:send "Check [PR #123](https://github.com/...)" --markdown
 
-# Get recent messages
-mise run matrix:tail <your-name> 10
+# Get recent messages (default: 5)
+mise run matrix:tail
+
+# Get more messages
+mise run matrix:tail 20
 
 # List rooms you're in
-mise run matrix:rooms <your-name>
+mise run matrix:rooms
 
 # Accept pending room invites
-mise run matrix:invites <your-name>
+mise run matrix:invites
 ```
 
-All tasks use Docker under the hood. Credentials are stored per-user in `~/.config/matrix-commander/<username>/`.
+In CI, the `AGENT` env var provides your identity automatically. Locally, use `-u` flag:
+
+```bash
+mise run matrix:send "Hello" -u rho
+mise run matrix:tail 10 -u rho
+```
+
+Credentials are stored per-user in `~/.config/matrix-commander/<username>/`.
 
 ## Local Setup
 
@@ -39,28 +46,27 @@ All tasks use Docker under the hood. Credentials are stored per-user in `~/.conf
 mise run matrix:login <your-name>
 
 # Test it works
-mise run matrix:send <your-name> "Hello from local"
+mise run matrix:send "Hello from local" -u <your-name>
 
 # Accept any pending room invites
-mise run matrix:invites <your-name>
+mise run matrix:invites -u <your-name>
 ```
 
 ## CI Setup
 
-Matrix is configured automatically in CI workflows via `mise run matrix:login`. No additional setup needed.
+Matrix is configured automatically in CI workflows via `mise run matrix:login`. The `AGENT` env var is set, so you don't need to specify `-u`.
 
 ## Waiting for Human Input
 
-When you need a human reply, poll in a loop:
+When you need a human reply, check periodically with `matrix:tail`:
 
 ```bash
 # Send your question
-mise run matrix:send <your-name> "Can I proceed with X?"
+mise run matrix:send "Can I proceed with X?"
 
-# Poll for reply
-REPLY=$(mise run matrix:poll <your-name>)
-
-# If empty, wait and try again
+# Check for reply periodically
+sleep 30
+mise run matrix:tail 5  # Look for response in recent messages
 ```
 
 ## Server Details
@@ -72,6 +78,6 @@ REPLY=$(mise run matrix:poll <your-name>)
 ## Tips
 
 - Use `--markdown` flag when including links
-- Use `matrix:poll` to check for new messages (returns empty if none)
-- Use `matrix:tail` to read recent history
+- Use `matrix:tail` to check recent messages (includes timestamps)
 - The default room is #agents:ricon.family - you don't need to specify it
+- Output shows oldest messages first (natural reading order)
