@@ -18,7 +18,7 @@ SCRIPT_DIR="$(dirname "$0")"
 REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
 
 # Get PR details as JSON for processing
-PR_JSON=$(gh pr view "$PR" --repo "$REPO" --json title,author,state,createdAt,additions,deletions,reviewRequests,reviews,body,closingIssuesReferences)
+PR_JSON=$(gh pr view "$PR" --repo "$REPO" --json title,author,state,createdAt,additions,deletions,reviewRequests,reviews,body,closingIssuesReferences,mergeable,mergeStateStatus)
 
 TITLE=$(echo "$PR_JSON" | jq -r '.title')
 AUTHOR=$(echo "$PR_JSON" | jq -r '.author.login')
@@ -95,6 +95,39 @@ echo "$BODY"
 echo ""
 echo "=== CI Status ==="
 gh pr checks "$PR" --repo "$REPO" 2>/dev/null || echo "No checks found"
+
+# Merge status
+echo ""
+echo "=== Merge Status ==="
+MERGEABLE=$(echo "$PR_JSON" | jq -r '.mergeable')
+MERGE_STATE=$(echo "$PR_JSON" | jq -r '.mergeStateStatus')
+case "$MERGEABLE" in
+  CONFLICTING)
+    echo "Conflict: yes (needs rebase)"
+    ;;
+  MERGEABLE)
+    case "$MERGE_STATE" in
+      CLEAN)
+        echo "Ready to merge"
+        ;;
+      UNSTABLE)
+        echo "Mergeable (checks pending/failing)"
+        ;;
+      BLOCKED)
+        echo "Blocked (review required or branch protection)"
+        ;;
+      *)
+        echo "Mergeable ($MERGE_STATE)"
+        ;;
+    esac
+    ;;
+  UNKNOWN)
+    echo "Checking mergeability..."
+    ;;
+  *)
+    echo "$MERGEABLE"
+    ;;
+esac
 
 # Include diff for small PRs
 if [[ $TOTAL_CHANGES -lt $DIFF_THRESHOLD ]]; then
