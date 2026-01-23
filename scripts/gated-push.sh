@@ -60,6 +60,11 @@ should_gate() {
 }
 
 main() {
+    # CI environments don't have biometric - rely on workflow-level controls
+    if [[ -n "${CI:-}" ]]; then
+        exec git push "$@"
+    fi
+
     if ! should_gate "$@"; then
         # Regular push, no gate
         exec git push "$@"
