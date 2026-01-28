@@ -4,6 +4,9 @@
 
 set -e
 
+# Suppress himalaya debug warnings (still shows errors)
+export RUST_LOG=error
+
 IDS=("${usage_ids[@]}")
 
 if [ ${#IDS[@]} -eq 0 ]; then
@@ -29,6 +32,5 @@ if [ ! -f "$CONFIG_FILE" ] || ! grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/
   exit 1
 fi
 
-# Suppress himalaya's IMAP debug warnings
-RUST_LOG=error himalaya message delete -a "$AGENT" "${IDS[@]}"
+himalaya message delete -a "$AGENT" "${IDS[@]}"
 echo "Moved ${#IDS[@]} message(s) to Trash"

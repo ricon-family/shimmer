@@ -4,6 +4,9 @@
 
 set -e
 
+# Suppress himalaya debug warnings (still shows errors)
+export RUST_LOG=error
+
 ID="${usage_id:-$1}"
 
 if [ -z "$ID" ]; then

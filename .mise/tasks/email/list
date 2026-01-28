@@ -6,6 +6,9 @@
 
 set -e
 
+# Suppress himalaya debug warnings (still shows errors)
+export RUST_LOG=error
+
 LIMIT="${usage_limit:-10}"
 UNREAD="${usage_unread:-false}"
 COUNT_ONLY="${usage_count:-false}"
@@ -33,7 +36,7 @@ if [ "$UNREAD" = "true" ]; then
 fi
 
 # List envelopes with account selection
-OUTPUT=$(himalaya envelope list -a "$AGENT" -w 120 --page-size "$LIMIT" $QUERY 2>/dev/null)
+OUTPUT=$(himalaya envelope list -a "$AGENT" -w 120 --page-size "$LIMIT" $QUERY)
 
 if [ "$COUNT_ONLY" = "true" ]; then
   # Count lines, skipping 3 header rows (blank + column headers + separator)

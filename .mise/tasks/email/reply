@@ -6,6 +6,9 @@
 
 set -e
 
+# Suppress himalaya debug warnings (still shows errors)
+export RUST_LOG=error
+
 ID="${usage_id:-$1}"
 # Body can come from: positional arg, -b flag, or stdin
 BODY="${usage_body:-${2:-}}"
