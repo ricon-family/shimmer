@@ -1,48 +1,59 @@
 #!/usr/bin/env bash
-#MISE description="Show agent job schedules"
+#MISE description="Show agent workflow schedules"
 
 set -e
 
-cd "$(git rev-parse --show-toplevel)"
+# Get the caller's directory (where shimmer was invoked from)
+CALLER_DIR="${SHIMMER_CALLER_PWD:-$(pwd)}"
+cd "$CALLER_DIR"
+
+# Check for workflows.yaml
+if [ ! -f "workflows.yaml" ]; then
+  echo "No workflows.yaml found in $CALLER_DIR"
+  exit 1
+fi
 
 # Fetch all workflow states upfront
-workflow_data=$(gh api repos/:owner/:repo/actions/workflows --jq '.workflows[] | "\(.path)\t\(.state)"' 2>/dev/null || true)
+REPO=$(git remote get-url origin 2>/dev/null | sed 's/.*github.com[:/]//' | sed 's/\.git$//')
+workflow_data=$(gh api "repos/$REPO/actions/workflows" --jq '.workflows[] | "\(.path)\t\(.state)"' 2>/dev/null || true)
 
 echo "Agent Schedules"
 echo "==============="
 echo ""
-printf "%-8s %-10s %-20s %-20s %s\n" "STATUS" "AGENT" "JOB" "SCHEDULE" "DESCRIPTION"
-printf "%-8s %-10s %-20s %-20s %s\n" "------" "-----" "---" "--------" "-----------"
+printf "%-8s %-12s %-10s %-24s %s\n" "STATUS" "NAME" "AGENT" "SCHEDULE" "MESSAGE"
+printf "%-8s %-12s %-10s %-24s %s\n" "------" "----" "-----" "--------" "-------"
 
-# Parse workflow files and extract schedule info
-for workflow in .github/workflows/*.yml; do
-  # Skip non-agent workflows
-  filename=$(basename "$workflow")
-  basename="${filename%.yml}"
-  [[ "$basename" == "agent-run" || "$basename" == "pr-check" || "$basename" == "test-agent-identity" ]] && continue
+# Read workflows from yaml
+WORKFLOW_COUNT=$(yq -r '.workflows | length' workflows.yaml 2>/dev/null || echo "0")
 
-  # Check if it has a schedule
-  if grep -q "schedule:" "$workflow"; then
-    # Extract agent and job from filename (format: agent-job.yml)
-    agent=$(echo "$basename" | cut -d'-' -f1)
-    job=$(echo "$basename" | cut -d'-' -f2-)
+if [ "$WORKFLOW_COUNT" -eq 0 ]; then
+  echo "(no scheduled workflows)"
+  exit 0
+fi
 
-    # Extract cron and comment
-    cron_line=$(grep -A1 "schedule:" "$workflow" | grep "cron:" | head -1)
-    cron=$(echo "$cron_line" | sed "s/.*cron: *['\"]\\([^'\"]*\\)['\"].*/\\1/")
-    comment=$(echo "$cron_line" | sed "s/.*# *\\(.*\\)/\\1/" | grep -v "cron:" || echo "")
+for i in $(seq 0 $((WORKFLOW_COUNT - 1))); do
+  NAME=$(yq -r ".workflows[$i].name" workflows.yaml)
+  AGENT=$(yq -r ".workflows[$i].agent" workflows.yaml)
+  SCHEDULE=$(yq -r ".workflows[$i].schedule" workflows.yaml)
+  MESSAGE=$(yq -r ".workflows[$i].message" workflows.yaml | head -1 | cut -c1-40)
 
-    # Get workflow state from cached data
-    state=$(echo "$workflow_data" | grep "\.github/workflows/${filename}" | cut -f2)
-
-    if [[ "$state" == "active" ]]; then
-      status="✓"
-    elif [[ "$state" == "disabled_manually" ]]; then
-      status="✗"
-    else
-      status="?"
-    fi
-
-    printf "%-8s %-10s %-20s %-20s %s\n" "$status" "$agent" "$job" "$cron" "$comment"
+  # Truncate message if too long
+  if [ ${#MESSAGE} -ge 40 ]; then
+    MESSAGE="${MESSAGE}..."
   fi
-done | sort -k2
+
+  # Get workflow state from cached data
+  state=$(echo "$workflow_data" | grep "\.github/workflows/${NAME}.yml" | cut -f2)
+
+  if [[ "$state" == "active" ]]; then
+    status="✓"
+  elif [[ "$state" == "disabled_manually" ]]; then
+    status="✗"
+  elif [[ -z "$state" ]]; then
+    status="-"  # Workflow file doesn't exist yet
+  else
+    status="?"
+  fi
+
+  printf "%-8s %-12s %-10s %-24s %s\n" "$status" "$NAME" "$AGENT" "$SCHEDULE" "$MESSAGE"
+done
