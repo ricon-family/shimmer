@@ -67,9 +67,16 @@ fi
 if [[ "$AGENT_ONLY" == "true" ]]; then
   echo "=== $REPO run $RUN_ID $LOG_SOURCE - agent session ==="
   if grep -q "### AGENT SESSION START ###" "$CACHE_FILE"; then
-    sed -n '/### AGENT SESSION START ###/,/### AGENT SESSION END ###/p' "$CACHE_FILE" \
-      | grep -v "### AGENT SESSION" \
-      | sed 's/^[^Z]*Z //'
+    # Use awk to match only lines where the marker is the entire content (after prefix)
+    awk '
+      {
+        content = $0
+        sub(/^[^Z]*Z /, "", content)
+        if (content == "### AGENT SESSION START ###") { capturing = 1; next }
+        if (content == "### AGENT SESSION END ###") { capturing = 0; next }
+        if (capturing) print content
+      }
+    ' "$CACHE_FILE"
   else
     echo "No agent session markers found in this run."
     echo "Markers are only present in runs after the template was updated."
