@@ -6,6 +6,7 @@
 #USAGE flag "--tail" help="Show last N lines instead of offset-based window"
 #USAGE flag "--no-cache" help="Force re-fetch of logs"
 #USAGE flag "--info" help="Show log metadata (total lines, jobs) without content"
+#USAGE flag "--agent" help="Show only the agent session (between markers)"
 
 set -e
 
@@ -14,59 +15,25 @@ TARGET_DIR="${PROJECT_DIR:-${SHIMMER_CALLER_PWD:-.}}"
 SCRIPT_DIR="$(dirname "$0")"
 REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
 
-# Defaults
-ARG1="${1:-}"
-OFFSET=1
-LIMIT=100
-TAIL_MODE=false
-NO_CACHE=false
-INFO_ONLY=false
+# Get values from mise usage variables
+RUN_ID_ARG="${usage_run_id:-}"
+OFFSET="${usage_offset:-1}"
+LIMIT="${usage_limit:-100}"
+TAIL_MODE="${usage_tail:-false}"
+NO_CACHE="${usage_no_cache:-false}"
+INFO_ONLY="${usage_info:-false}"
+AGENT_ONLY="${usage_agent:-false}"
 
-# Parse flags
-shift || true
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --offset)
-      OFFSET="$2"
-      shift 2
-      ;;
-    --limit)
-      LIMIT="$2"
-      shift 2
-      ;;
-    --tail)
-      TAIL_MODE=true
-      shift
-      ;;
-    --no-cache)
-      NO_CACHE=true
-      shift
-      ;;
-    --info)
-      INFO_ONLY=true
-      shift
-      ;;
-    *)
-      # Backwards compat: second positional arg is lines
-      if [[ "$1" =~ ^[0-9]+$ ]]; then
-        LIMIT="$1"
-        TAIL_MODE=true
-      fi
-      shift
-      ;;
-  esac
-done
-
-if [[ -z "$ARG1" ]]; then
-  echo "Usage: ci:logs <run_id> [--offset N] [--limit N] [--tail] [--info]"
+if [[ -z "$RUN_ID_ARG" ]]; then
+  echo "Usage: ci:logs <run_id> [--offset N] [--limit N] [--tail] [--info] [--agent]"
   exit 1
 fi
 
 # Detect if first arg is a run ID (numeric) or workflow name
-if [[ "$ARG1" =~ ^[0-9]+$ ]]; then
-  RUN_ID="$ARG1"
+if [[ "$RUN_ID_ARG" =~ ^[0-9]+$ ]]; then
+  RUN_ID="$RUN_ID_ARG"
 else
-  WORKFLOW="$ARG1"
+  WORKFLOW="$RUN_ID_ARG"
   RUN_ID=$(gh run list --repo "$REPO" --workflow="$WORKFLOW" --limit 1 --json databaseId -q '.[0].databaseId')
 fi
 
@@ -93,6 +60,21 @@ if [[ "$INFO_ONLY" == "true" ]]; then
   echo "Repo: $REPO"
   echo "Total lines: $TOTAL_LINES"
   echo "Cache: $CACHE_FILE"
+  exit 0
+fi
+
+# Agent mode - extract only the agent session between markers
+if [[ "$AGENT_ONLY" == "true" ]]; then
+  echo "=== $REPO run $RUN_ID $LOG_SOURCE - agent session ==="
+  if grep -q "### AGENT SESSION START ###" "$CACHE_FILE"; then
+    sed -n '/### AGENT SESSION START ###/,/### AGENT SESSION END ###/p' "$CACHE_FILE" \
+      | grep -v "### AGENT SESSION" \
+      | sed 's/^[^Z]*Z //'
+  else
+    echo "No agent session markers found in this run."
+    echo "Markers are only present in runs after the template was updated."
+    exit 1
+  fi
   exit 0
 fi
 
