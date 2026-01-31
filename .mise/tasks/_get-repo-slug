@@ -1,10 +1,15 @@
 #!/bin/bash
-# Helper: Get repo name (owner/repo) for a target directory
-# Usage: REPO=$("$SCRIPT_DIR/_get-repo" "$TARGET_DIR")
+#MISE description="Get the GitHub repo slug (owner/repo) for a directory"
+#MISE hide=true
+# Usage: REPO=$(.mise/tasks/_get-repo-slug [dir])
 #
+# Returns the repo slug (e.g., "ricon-family/shimmer") for the given directory.
 # Checks in order:
 # 1. .project.toml in target dir
 # 2. gh repo view (from git remote)
+#
+# Fails with exit 1 if repo cannot be determined.
+
 set -eo pipefail
 
 TARGET_DIR="${1:-.}"

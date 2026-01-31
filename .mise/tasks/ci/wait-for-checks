@@ -6,7 +6,7 @@ set -e
 # Determine target directory and repo
 TARGET_DIR="${PROJECT_DIR:-${SHIMMER_CALLER_PWD:-.}}"
 SCRIPT_DIR="$(dirname "$0")"
-REPO=$("$SCRIPT_DIR/../pm/_get-repo" "$TARGET_DIR")
+REPO=$("$SCRIPT_DIR/../_get-repo-slug" "$TARGET_DIR")
 
 PR_NUMBER="${1:-$(gh pr view --repo "$REPO" --json number -q .number 2>/dev/null)}"
 
