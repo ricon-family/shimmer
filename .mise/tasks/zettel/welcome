@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Zettelkasten intro and current status"
+#MISE description="Zettelkasten status and recent activity"
 
 set -e
 
@@ -16,27 +16,13 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHIMMER_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
-# Check for zettelkasten tooling
-ZETTEL_TOOLING="$HOME/zettelkasten-tooling"
-HAS_ZETTEL_TOOL=false
-if [ -d "$ZETTEL_TOOLING/.mise/tasks" ]; then
-  HAS_ZETTEL_TOOL=true
-fi
-
-echo ""
-echo "Zettelkasten"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-echo "A zettelkasten (\"slip-box\") is your external memory. Each session"
-echo "starts fresh, but your zettelkasten persists - letting you build on"
-echo "previous experience instead of starting from zero."
-echo ""
-echo "Document people, patterns, lessons, and tools. Link notes together."
-echo "The web of knowledge compounds over time."
-echo ""
-
 if [ -z "$AGENT" ]; then
-  echo "⚠ No agent identity detected. Run: eval \$(shimmer as <agent>)"
+  echo ""
+  echo "Zettelkasten"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "  No agent identity detected."
+  echo "  Run: eval \$(shimmer as <agent>)"
   echo ""
   exit 0
 fi
@@ -44,101 +30,157 @@ fi
 ZETTEL_DIR="$HOME/agents/$AGENT/zettelkasten"
 export ZETTEL_ROOT="$ZETTEL_DIR"
 
-echo "Your zettelkasten: $ZETTEL_DIR"
-echo ""
-
 # Check if it exists
 if [ ! -d "$ZETTEL_DIR" ]; then
-  echo "Status: ✗ not created yet"
   echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "Getting Started:"
+  echo "Zettelkasten"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
-  if [ "$HAS_ZETTEL_TOOL" = true ]; then
-    echo "  Create your zettelkasten with the zettel tool:"
-    echo "    ZETTEL_ROOT=\"$ZETTEL_DIR\" mise -C $ZETTEL_TOOLING run init \"$ZETTEL_DIR\""
-    echo ""
-    echo "  Or manually:"
-  else
-    echo "  1. Create your zettelkasten:"
-  fi
-  echo "     mkdir -p $ZETTEL_DIR"
-  echo "     cd $ZETTEL_DIR && git init"
+  echo "  No zettelkasten found at: $ZETTEL_DIR"
   echo ""
-  echo "  2. Create an index.md as your entry point"
+  echo "  A zettelkasten is your external memory - it persists across"
+  echo "  sessions so you can build on previous experience."
   echo ""
-  echo "  3. Explore your world and document what you find:"
-  echo "     - Read colleagues' zettelkastens in ~/agents/*/"
-  echo "     - Check your email for context and history"
-  echo "     - Find your identity in ~/shimmer/cli/priv/prompts/agents/"
-  echo "     - Review your GitHub activity with gh pr list --author @me"
+  echo "  To create one:"
+  echo "    mkdir -p $ZETTEL_DIR"
+  echo "    cd $ZETTEL_DIR && git init"
+  echo "    echo '# README' > README.md"
   echo ""
-  echo "  4. Consider creating your own repo:"
-  echo "     gh repo create <your-github>/zettelkasten --private --source . --push"
-  echo ""
-  echo "Full guide: $SHIMMER_DIR/docs/agent-zettelkasten.md"
+  echo "  Then explore your world and document what you find."
+  echo "  Full guide: $SHIMMER_DIR/docs/agent-zettelkasten.md"
   echo ""
   exit 0
 fi
 
-echo "Status: ✓ exists"
+cd "$ZETTEL_DIR"
+
+# Check for README.md entry point
+HAS_README=false
+if [ -f "$ZETTEL_DIR/README.md" ]; then
+  HAS_README=true
+fi
+
+echo ""
+echo "Zettelkasten"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Count notes and show structure
-NOTE_COUNT=$(find "$ZETTEL_DIR" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-TOTAL_FILES=$(find "$ZETTEL_DIR" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-
-echo "Notes: $NOTE_COUNT in root ($TOTAL_FILES total)"
+# Path and entry point at top
+echo "  Path:      $ZETTEL_DIR"
+if [ "$HAS_README" = true ]; then
+  echo "  README.md: ✓"
+else
+  echo "  README.md: ✗"
+fi
 echo ""
 
-# Check for git repo
+# Last active (most recent file modification)
 if [ -d "$ZETTEL_DIR/.git" ]; then
-  cd "$ZETTEL_DIR"
-  REMOTE=$(git remote get-url origin 2>/dev/null || echo "none")
-  if [ "$REMOTE" != "none" ]; then
-    echo "Git: ✓ repo with remote"
-    echo "     $REMOTE"
-  else
-    echo "Git: ✓ local repo (no remote)"
+  LAST_COMMIT=$(git log -1 --format="%ar" 2>/dev/null || echo "")
+  if [ -n "$LAST_COMMIT" ]; then
+    echo "  Last active: $LAST_COMMIT"
   fi
 else
-  echo "Git: ✗ not a git repo"
+  # Fall back to file modification time
+  NEWEST=$(find "$ZETTEL_DIR" -name "*.md" -type f -exec stat -f "%m" {} \; 2>/dev/null | sort -rn | head -1)
+  if [ -n "$NEWEST" ]; then
+    NOW=$(date +%s)
+    DIFF=$((NOW - NEWEST))
+    if [ $DIFF -lt 3600 ]; then
+      echo "  Last active: $((DIFF / 60)) minutes ago"
+    elif [ $DIFF -lt 86400 ]; then
+      echo "  Last active: $((DIFF / 3600)) hours ago"
+    else
+      echo "  Last active: $((DIFF / 86400)) days ago"
+    fi
+  fi
 fi
 echo ""
 
-# Show recent notes
-echo "Recent notes:"
-RECENT=$(find "$ZETTEL_DIR" -maxdepth 1 -name "*.md" -type f -exec stat -f "%m %N" {} \; 2>/dev/null | sort -rn | head -5 | cut -d' ' -f2-)
-if [ -n "$RECENT" ]; then
-  echo "$RECENT" | while read -r note; do
-    basename "$note" | sed 's/^/  /'
+# Recent activity with dates (across all subdirs)
+echo "  Recent activity:"
+find "$ZETTEL_DIR" -name "*.md" -type f -exec stat -f "%m %N" {} \; 2>/dev/null | \
+  sort -rn | head -7 | while read -r mtime filepath; do
+    # Format date
+    DATE=$(date -r "$mtime" "+%Y-%m-%d" 2>/dev/null || date -d "@$mtime" "+%Y-%m-%d" 2>/dev/null)
+    # Get relative path
+    RELPATH="${filepath#$ZETTEL_DIR/}"
+    echo "    $DATE  $RELPATH"
   done
-else
-  echo "  (none found)"
+echo ""
+
+# Structure - show expected directories with counts
+echo "  Structure:"
+
+# Gather counts
+NOTES_DIR=""
+NOTES_COUNT=0
+for dir in notes 10_Zettelkasten; do
+  if [ -d "$ZETTEL_DIR/$dir" ]; then
+    NOTES_DIR="$dir"
+    NOTES_COUNT=$(find "$ZETTEL_DIR/$dir" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    break
+  fi
+done
+
+SESSIONS_DIR=""
+SESSIONS_COUNT=0
+if [ -d "$ZETTEL_DIR/sessions" ]; then
+  SESSIONS_DIR="sessions"
+  SESSIONS_COUNT=$(find "$ZETTEL_DIR/sessions" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
 fi
+
+INBOX_DIR=""
+INBOX_COUNT=0
+for dir in inbox 00_Inbox; do
+  if [ -d "$ZETTEL_DIR/$dir" ]; then
+    INBOX_DIR="$dir"
+    INBOX_COUNT=$(find "$ZETTEL_DIR/$dir" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    break
+  fi
+done
+
+# Inbox first - encourages processing pending items
+if [ -n "$INBOX_DIR" ]; then
+  printf "    %-12s → %s/\n" "$INBOX_COUNT pending" "$INBOX_DIR"
+else
+  printf "    %-12s → %s/\n" "-" "inbox"
+fi
+
+# Sessions (more likely to be reviewed than notes)
+if [ -n "$SESSIONS_DIR" ]; then
+  printf "    %-12s → %s/\n" "$SESSIONS_COUNT sessions" "$SESSIONS_DIR"
+else
+  printf "    %-12s → %s/\n" "-" "sessions"
+fi
+
+# Notes (permanent atomic notes)
+if [ -n "$NOTES_DIR" ]; then
+  printf "    %-12s → %s/\n" "$NOTES_COUNT notes" "$NOTES_DIR"
+else
+  printf "    %-12s → %s/\n" "-" "notes"
+fi
+
+# Uncategorized (files not in standard dirs, excluding README.md)
+TOTAL_COUNT=$(find "$ZETTEL_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+CATEGORIZED=$((NOTES_COUNT + SESSIONS_COUNT + INBOX_COUNT))
+[ "$HAS_README" = true ] && CATEGORIZED=$((CATEGORIZED + 1))
+UNCATEGORIZED=$((TOTAL_COUNT - CATEGORIZED))
+if [ "$UNCATEGORIZED" -gt 0 ]; then
+  printf "    %-12s %s\n" "$UNCATEGORIZED other" "(in root or other dirs)"
+fi
+
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Commands:"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-echo "  shimmer zettel:welcome       This overview"
-echo "  shimmer zettel:search <q>    Search your notes"
-echo ""
+# Git status (brief) - only show if there's something notable
+if [ -d "$ZETTEL_DIR/.git" ]; then
+  if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+    echo "  Git: uncommitted changes"
+    echo ""
+  fi
+fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Self-Discovery Procedure:"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "  If starting fresh, explore your world:"
-echo ""
-echo "  1. Orient:        shimmer welcome"
-echo "  2. Colleagues:    find ~/agents -path '*/zettelkasten/*.md' | head -20"
-echo "  3. Email:         shimmer email:list"
-echo "  4. Identity:      cat ~/shimmer/cli/priv/prompts/agents/$AGENT.txt"
-echo "  5. History:       gh pr list --author @me --state all"
-echo "  6. Document:      Create atomic notes, link with [[wikilinks]]"
-echo ""
-echo "Full guide: $SHIMMER_DIR/docs/agent-zettelkasten.md"
+echo "  Search: shimmer zettel:search <query>"
 echo ""
