@@ -46,6 +46,18 @@ fi
 echo "Status: ✓ configured"
 echo ""
 
+# Show quota
+echo "Quota: $(mise run -q email:quota 2>/dev/null || echo "unknown")"
+echo ""
+
+# Show folder summary
+echo "Folders:"
+for folder in INBOX Sent Trash Archive; do
+  count=$(himalaya envelope list -a "$AGENT" -f "$folder" --page-size 1000 2>/dev/null | tail -n +4 | wc -l | tr -d ' ')
+  printf "  %-10s %s messages\n" "$folder" "$count"
+done
+echo ""
+
 # Show recent messages
 echo "Recent messages:"
 if command -v himalaya &> /dev/null; then
