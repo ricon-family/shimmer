@@ -95,10 +95,17 @@ if [ -n "$AGENT" ]; then
   # Email check
   CONFIG_FILE="${HOME}/.config/himalaya/config.toml"
   if [ -f "$CONFIG_FILE" ] && grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/null; then
-    # Count unread emails using email:list task
-    UNREAD_COUNT=$(mise run -q email:list --unread --count 2>/dev/null || echo "0")
-    if [ -n "$UNREAD_COUNT" ] && [ "$UNREAD_COUNT" -gt 0 ]; then
-      print_status "Email" "✓" "$UNREAD_COUNT unread" "shimmer email:welcome"
+    # Get quota info (run from shimmer dir to find task)
+    QUOTA_OUTPUT=$(cd "$SHIMMER_DIR" && mise run -q email:quota 2>/dev/null || echo "")
+    QUOTA_PERCENT=$(echo "$QUOTA_OUTPUT" | grep -oE '[0-9]+%' | tr -d '%')
+
+    # Determine status based on quota
+    if [ -n "$QUOTA_PERCENT" ] && [ "$QUOTA_PERCENT" -ge 95 ]; then
+      print_status "Email" "✗" "quota ${QUOTA_PERCENT}%" "shimmer email:purge"
+    elif [ -n "$QUOTA_PERCENT" ] && [ "$QUOTA_PERCENT" -ge 80 ]; then
+      print_status "Email" "⚠" "quota ${QUOTA_PERCENT}%" "shimmer email:welcome"
+    elif [ -n "$QUOTA_PERCENT" ]; then
+      print_status "Email" "✓" "quota ${QUOTA_PERCENT}%" "shimmer email:welcome"
     else
       print_status "Email" "✓" "configured" "shimmer email:welcome"
     fi

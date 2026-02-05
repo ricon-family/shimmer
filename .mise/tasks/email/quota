@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#MISE description="Show email storage quota usage"
+
+set -e
+
+# Suppress himalaya debug warnings (still shows errors)
+export RUST_LOG=error
+
+# Determine current agent from environment or git config
+if [ -n "$GIT_AUTHOR_EMAIL" ]; then
+  AGENT=$(echo "$GIT_AUTHOR_EMAIL" | sed 's/@ricon\.family$//')
+elif git config user.email 2>/dev/null | grep -q '@ricon.family'; then
+  AGENT=$(git config user.email | sed 's/@ricon\.family$//')
+else
+  echo "No agent identity detected. Run: eval \$(shimmer as <agent>)"
+  exit 1
+fi
+
+CONFIG_FILE="${HOME}/.config/himalaya/config.toml"
+if [ ! -f "$CONFIG_FILE" ] || ! grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/null; then
+  echo "Email not configured for $AGENT. Run: shimmer email:setup $AGENT"
+  exit 1
+fi
+
+# Get password from himalaya config
+PASS=$(grep -A30 "accounts.$AGENT" "$CONFIG_FILE" | grep 'auth.raw' | head -1 | sed 's/.*= *"//' | sed 's/"$//')
+
+if [ -z "$PASS" ]; then
+  echo "Could not read email password from config"
+  exit 1
+fi
+
+# Query IMAP for quota using GETQUOTAROOT command
+QUOTA_OUTPUT=$({
+  sleep 0.3
+  echo "a LOGIN ${AGENT}@ricon.family $PASS"
+  sleep 0.3
+  echo "b GETQUOTAROOT INBOX"
+  sleep 0.3
+  echo "c LOGOUT"
+} | openssl s_client -connect mail.ricon.family:993 -quiet 2>/dev/null)
+
+# Parse: * QUOTA "User quota" (STORAGE <used_kb> <limit_kb>)
+QUOTA_LINE=$(echo "$QUOTA_OUTPUT" | grep "^\* QUOTA")
+
+if [ -z "$QUOTA_LINE" ]; then
+  echo "Could not retrieve quota information"
+  exit 1
+fi
+
+# Extract used and limit values
+USED_KB=$(echo "$QUOTA_LINE" | grep -oE 'STORAGE [0-9]+ [0-9]+' | awk '{print $2}')
+LIMIT_KB=$(echo "$QUOTA_LINE" | grep -oE 'STORAGE [0-9]+ [0-9]+' | awk '{print $3}')
+
+if [ -z "$USED_KB" ] || [ -z "$LIMIT_KB" ]; then
+  echo "Could not parse quota values"
+  exit 1
+fi
+
+# Calculate human-readable values
+USED_MB=$((USED_KB / 1024))
+LIMIT_MB=$((LIMIT_KB / 1024))
+PERCENT=$((USED_KB * 100 / LIMIT_KB))
+
+echo "Storage: ${USED_MB}MB / ${LIMIT_MB}MB (${PERCENT}%)"
+
+if [ $PERCENT -ge 100 ]; then
+  echo "⚠️  Quota exceeded! Run: shimmer email:purge"
+elif [ $PERCENT -ge 90 ]; then
+  echo "⚠️  Warning: Quota nearly full. Run: shimmer email:purge"
+fi
