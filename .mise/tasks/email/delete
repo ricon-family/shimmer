@@ -1,16 +1,35 @@
 #!/usr/bin/env bash
 #MISE description="Delete email message(s) (moves to Trash)"
-#USAGE arg "<ids>" var=#true help="Message ID(s) to delete"
+#USAGE arg "[ids...]" var=#true help="Message ID(s) to delete"
+#USAGE flag "--all" help="Delete all messages in folder"
+#USAGE flag "-f --folder <folder>" help="Folder to operate on (default: INBOX)"
 
 set -e
 
 # Suppress himalaya debug warnings (still shows errors)
 export RUST_LOG=error
 
-IDS=("${usage_ids[@]}")
+ALL="${usage_all:-false}"
+FOLDER="${usage_folder:-INBOX}"
 
-if [ ${#IDS[@]} -eq 0 ]; then
+# Parse variadic args - mise passes them as a shell-escaped string, not an array
+# Validate before eval: IDs should only contain digits and whitespace
+if [ -n "$usage_ids" ] && [[ ! "$usage_ids" =~ ^[0-9[:space:]]+$ ]]; then
+  echo "Error: IDs must be numeric (got: $usage_ids)"
+  exit 1
+fi
+eval "IDS=($usage_ids)"
+
+# Reject operating on Trash - use email:purge instead
+if echo "$FOLDER" | grep -qi '^trash$'; then
+  echo "Error: Cannot delete from Trash (messages are already there)"
+  echo "Use: shimmer email:purge to permanently empty Trash"
+  exit 1
+fi
+
+if [ ${#IDS[@]} -eq 0 ] && [ "$ALL" != "true" ]; then
   echo "Usage: shimmer email:delete <id> [id...]"
+  echo "       shimmer email:delete --all [-f <folder>]"
   echo ""
   echo "Moves message(s) to Trash. Find IDs with: shimmer email:list"
   exit 1
@@ -32,5 +51,20 @@ if [ ! -f "$CONFIG_FILE" ] || ! grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/
   exit 1
 fi
 
-himalaya message delete -a "$AGENT" "${IDS[@]}"
+# --all mode: enumerate all IDs from the folder
+if [ "$ALL" = "true" ]; then
+  IDS=()
+  while IFS= read -r id; do
+    [ -n "$id" ] && IDS+=("$id")
+  done < <(himalaya envelope list -a "$AGENT" -f "$FOLDER" --page-size 1000 2>/dev/null \
+    | tail -n +4 | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}' | grep -E '^[0-9]+$')
+
+  if [ ${#IDS[@]} -eq 0 ]; then
+    echo "$FOLDER is empty"
+    exit 0
+  fi
+  echo "Deleting ${#IDS[@]} message(s) from $FOLDER..."
+fi
+
+himalaya message delete -a "$AGENT" -f "$FOLDER" "${IDS[@]}"
 echo "Moved ${#IDS[@]} message(s) to Trash"

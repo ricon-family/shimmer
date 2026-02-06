@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-#MISE description="List inbox messages"
+#MISE description="List email messages"
 #USAGE flag "-n --limit <limit>" help="Number of messages to show (default: 10)"
+#USAGE flag "-f --folder <folder>" help="Folder to list (default: INBOX)"
+#USAGE flag "-p --page <page>" help="Page number, starting from 1 (default: 1)"
 #USAGE flag "--unread" help="Only show unread messages"
 #USAGE flag "--count" help="Just output the count (useful for scripts)"
 
@@ -10,6 +12,8 @@ set -e
 export RUST_LOG=error
 
 LIMIT="${usage_limit:-10}"
+FOLDER="${usage_folder:-INBOX}"
+PAGE="${usage_page:-1}"
 UNREAD="${usage_unread:-false}"
 COUNT_ONLY="${usage_count:-false}"
 
@@ -36,12 +40,21 @@ if [ "$UNREAD" = "true" ]; then
 fi
 
 # List envelopes with account selection
-OUTPUT=$(himalaya envelope list -a "$AGENT" -w 120 --page-size "$LIMIT" $QUERY)
+# Fetch one extra to detect if there are more messages beyond the limit
+OUTPUT=$(himalaya envelope list -a "$AGENT" -f "$FOLDER" -p "$PAGE" -w 120 --page-size "$((LIMIT + 1))" $QUERY)
+
+# Count data rows (skip 3 header rows: blank + column headers + separator)
+DATA_ROWS=$(echo "$OUTPUT" | tail -n +4 | wc -l | tr -d ' ')
 
 if [ "$COUNT_ONLY" = "true" ]; then
-  # Count lines, skipping 3 header rows (blank + column headers + separator)
-  echo "$OUTPUT" | tail -n +4 | wc -l | tr -d ' '
+  # himalaya has no dedicated count command, so fetch with a large page size
+  # TODO: replace with a proper count API if himalaya adds one
+  COUNT_OUTPUT=$(himalaya envelope list -a "$AGENT" -f "$FOLDER" -w 120 --page-size 10000 $QUERY)
+  echo "$COUNT_OUTPUT" | tail -n +4 | wc -l | tr -d ' '
 else
-  # Add 3 to limit to account for header rows (blank + column headers + separator)
+  # Show up to LIMIT rows (plus 3 header rows)
   echo "$OUTPUT" | head -$((LIMIT + 3))
+  if [ "$DATA_ROWS" -gt "$LIMIT" ]; then
+    echo "(showing $LIMIT, more available — use -n or -p to see more)"
+  fi
 fi

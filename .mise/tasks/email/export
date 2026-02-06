@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 #MISE description="Export emails to a directory"
-#USAGE arg "[ids...]" var=#true help="Message IDs to export (or 'all' for entire folder)"
+#USAGE arg "[ids...]" var=#true help="Message IDs to export"
+#USAGE flag "--all" help="Export all messages in folder"
 #USAGE flag "-d --destination <path>" help="Directory to export to (default: ./emails)"
 #USAGE flag "-f --folder <folder>" help="Folder to export from (default: INBOX)"
-#USAGE flag "-n --limit <limit>" help="Limit number of emails when using 'all' (default: 500)"
+#USAGE flag "-n --limit <limit>" help="Limit number of emails when using --all (default: 500)"
 
 set -e
 
@@ -13,7 +14,15 @@ export RUST_LOG=error
 DEST="${usage_destination:-./emails}"
 FOLDER="${usage_folder:-INBOX}"
 LIMIT="${usage_limit:-500}"
-IDS=("${usage_ids[@]}")
+ALL="${usage_all:-false}"
+
+# Parse variadic args - mise passes them as a shell-escaped string, not an array
+# Validate before eval: IDs should only contain digits and whitespace
+if [ -n "$usage_ids" ] && [[ ! "$usage_ids" =~ ^[0-9[:space:]]+$ ]]; then
+  echo "Error: IDs must be numeric (got: $usage_ids)"
+  exit 1
+fi
+eval "IDS=($usage_ids)"
 
 # Determine current agent from environment or git config
 if [ -n "$GIT_AUTHOR_EMAIL" ]; then
@@ -35,7 +44,7 @@ fi
 mkdir -p "$DEST"
 
 # Get message IDs - either from args or fetch all from folder
-if [ ${#IDS[@]} -eq 0 ] || [ "${IDS[0]}" = "all" ]; then
+if [ ${#IDS[@]} -eq 0 ] || [ "$ALL" = "true" ]; then
   echo "Fetching message list from $FOLDER..."
   # Get IDs from envelope list, skip header rows (3 lines), extract ID column (pipe-delimited)
   IDS=()
