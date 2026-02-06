@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Read an email message"
 #USAGE arg "<id>" help="Message ID to read"
+#USAGE flag "-f --folder <folder>" help="Folder to read from (default: INBOX)"
 
 set -e
 
@@ -8,6 +9,7 @@ set -e
 export RUST_LOG=error
 
 ID="${usage_id:-$1}"
+FOLDER="${usage_folder:-INBOX}"
 
 if [ -z "$ID" ]; then
   echo "Usage: shimmer email:read <id>"
@@ -32,4 +34,4 @@ if [ ! -f "$CONFIG_FILE" ] || ! grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/
   exit 1
 fi
 
-himalaya message read -a "$AGENT" "$ID"
+himalaya message read -a "$AGENT" -f "$FOLDER" "$ID"
