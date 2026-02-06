@@ -47,12 +47,23 @@ CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/shimmer/ci-logs"
 mkdir -p "$CACHE_DIR"
 CACHE_FILE="$CACHE_DIR/${REPO//\//_}_${RUN_ID}.log"
 
-# Fetch or use cached log
-if [[ -f "$CACHE_FILE" ]] && [[ "$NO_CACHE" != "true" ]]; then
+# Check run status
+RUN_STATUS=$(gh run view "$RUN_ID" --repo "$REPO" --json status -q '.status')
+
+# Fetch or use cached log (only use cache for completed runs)
+if [[ -f "$CACHE_FILE" ]] && [[ "$NO_CACHE" != "true" ]] && [[ "$RUN_STATUS" == "completed" ]]; then
   LOG_SOURCE="(cached)"
 else
-  # Get first job ID
-  JOB_ID=$(gh run view "$RUN_ID" --repo "$REPO" --json jobs -q '.jobs[0].databaseId')
+  # Get first job ID and its status
+  JOB_INFO=$(gh run view "$RUN_ID" --repo "$REPO" --json jobs -q '.jobs[0] | {id: .databaseId, status: .status}')
+  JOB_ID=$(echo "$JOB_INFO" | jq -r '.id')
+  JOB_STATUS=$(echo "$JOB_INFO" | jq -r '.status')
+
+  if [[ "$JOB_STATUS" == "in_progress" ]] || [[ "$JOB_STATUS" == "queued" ]]; then
+    echo "job $JOB_ID is still $JOB_STATUS; logs will be available when it is complete"
+    exit 1
+  fi
+
   gh run view --repo "$REPO" --job="$JOB_ID" --log 2>&1 > "$CACHE_FILE"
   LOG_SOURCE="(fetched)"
 fi

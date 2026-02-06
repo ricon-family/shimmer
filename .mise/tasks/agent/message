@@ -74,14 +74,19 @@ fi
 
 gh workflow run "$WORKFLOW" -R "$REPO" -f agent="$AGENT" -f message="$MESSAGE" $MODEL_ARG
 
-echo "Sent message to $AGENT on $REPO"
-
-# Wait briefly for GitHub to register the run, then get the URL
+# Wait briefly for GitHub to register the run, then get the URL and ID
 sleep 2
-RUN_URL=$(gh run list -R "$REPO" --workflow="$WORKFLOW" --limit 1 --json url --jq '.[0].url' 2>/dev/null)
+RUN_INFO=$(gh run list -R "$REPO" --workflow="$WORKFLOW" --limit 1 --json url,databaseId 2>/dev/null)
+RUN_URL=$(echo "$RUN_INFO" | jq -r '.[0].url // empty')
+RUN_ID=$(echo "$RUN_INFO" | jq -r '.[0].databaseId // empty')
 
-if [ -n "$RUN_URL" ]; then
-  echo "View at: $RUN_URL"
+if [ -n "$RUN_ID" ]; then
+  echo "✓ Sent to $AGENT (run $RUN_ID)"
+  if [ -n "$RUN_URL" ]; then
+    echo "  → $RUN_URL"
+  fi
+  echo "  → shimmer ci:logs $RUN_ID --agent --repo $REPO"
 else
-  echo "View at: https://github.com/$REPO/actions/workflows/$WORKFLOW"
+  echo "✓ Sent to $AGENT"
+  echo "  → https://github.com/$REPO/actions/workflows/$WORKFLOW"
 fi
