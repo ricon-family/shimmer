@@ -85,7 +85,7 @@ if [ -n "$RUN_ID" ]; then
   if [ -n "$RUN_URL" ]; then
     echo "  → $RUN_URL"
   fi
-  echo "  → shimmer ci:logs $RUN_ID --agent --repo $REPO"
+  echo "  → shimmer ci:logs $RUN_ID --agent --repo $REPO (add --wait to poll until done)"
 else
   echo "✓ Sent to $AGENT"
   echo "  → https://github.com/$REPO/actions/workflows/$WORKFLOW"
