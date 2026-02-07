@@ -86,6 +86,8 @@ if [ -n "$RUN_ID" ]; then
     echo "  → $RUN_URL"
   fi
   echo "  → shimmer ci:logs $RUN_ID --agent --repo $REPO"
+  echo ""
+  echo "  Did you know? You can add --wait to ci:logs to wait for the agent to finish."
 else
   echo "✓ Sent to $AGENT"
   echo "  → https://github.com/$REPO/actions/workflows/$WORKFLOW"
