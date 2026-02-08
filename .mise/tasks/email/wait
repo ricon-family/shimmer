@@ -52,7 +52,7 @@ get_ids() {
 }
 
 # Debug mode (set DEBUG=1 to enable)
-debug() { [ "${DEBUG:-}" = "1" ] && echo "[debug] $*" >&2; }
+debug() { [ "${DEBUG:-}" = "1" ] && echo "[debug] $*" >&2 || true; }
 
 # Snapshot current state
 INITIAL_IDS=$(get_ids | sort)
