@@ -12,19 +12,30 @@ export RUST_LOG=error
 
 TO="${usage_to:-$1}"
 SUBJECT="${usage_subject:-$2}"
-# Body can come from: positional arg, -b flag, or stdin
-BODY="${usage_body:-${3:-}}"
 
 if [ -z "$TO" ] || [ -z "$SUBJECT" ]; then
   echo "Usage: shimmer email:send <to> <subject> [body]"
   echo ""
-  echo "Examples:"
-  echo "  shimmer email:send admin@ricon.family 'Question' 'Hello!'"
-  echo "  shimmer email:send admin@ricon.family 'Question' --body 'Hello!'"
-  echo "  echo 'Hello!' | shimmer email:send admin@ricon.family 'Question'"
+  echo "Body can be provided exactly one way:"
+  echo "  shimmer email:send admin@ricon.family 'Subject' 'inline body'"
+  echo "  shimmer email:send admin@ricon.family 'Subject' -b 'flag body'"
+  echo "  echo 'piped body' | shimmer email:send admin@ricon.family 'Subject'"
   echo ""
   echo "Messages are GPG-signed automatically."
   exit 1
+fi
+
+# Body from explicit arg (mise maps both positional [body] and -b flag to usage_body).
+# Treat "-" as "read from stdin" (standard Unix convention).
+BODY="${usage_body:-${3:-}}"
+[ "$BODY" = "-" ] && BODY=""
+
+# If no body arg, read from stdin (piped) or prompt interactively.
+if [ -z "$BODY" ]; then
+  if [ -t 0 ]; then
+    echo "Enter message body (Ctrl+D when done):"
+  fi
+  BODY=$(cat)
 fi
 
 # Determine current agent from environment or git config
@@ -45,15 +56,7 @@ if [ ! -f "$CONFIG_FILE" ] || ! grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/
   exit 1
 fi
 
-# Read body from stdin if not provided via flag
-if [ -z "$BODY" ]; then
-  if [ -t 0 ]; then
-    echo "Enter message body (Ctrl+D when done):"
-  fi
-  BODY=$(cat)
-fi
-
-if [ -z "$BODY" ]; then
+if [ -z "${BODY:-}" ]; then
   echo "Error: Message body is required"
   exit 1
 fi
