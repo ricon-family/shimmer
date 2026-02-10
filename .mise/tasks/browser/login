@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-#MISE description="Interactive browser login to save auth for a site"
+#MISE description="Browser login to save auth for a site (auto or interactive)"
 #USAGE arg "<site>" help="Site to authenticate with (e.g. github.com)"
+#USAGE flag "--interactive" help="Force interactive login (skip credential auto-detection)"
 
 set -e
 
@@ -33,20 +34,77 @@ fi
 if [ -f "$AUTH_FILE" ]; then
   echo "Existing auth found for $AGENT @ $SITE"
   echo "  $AUTH_FILE"
-  echo "Will be overwritten on browser close."
+  echo "Will be overwritten."
   echo ""
 fi
 
-echo "Opening browser for $AGENT to log in to $SITE..."
-echo "Log in manually, then close the browser window."
-echo ""
+INTERACTIVE="${usage_interactive:-false}"
+
+# --- Credential resolution: env var > 1Password > interactive ---
+# Site-specific env var prefix: github.com → BROWSER_GITHUB_COM
+SITE_UPPER=$(echo "$SITE" | tr '.-' '_' | tr '[:lower:]' '[:upper:]')
+ENV_USER="BROWSER_${SITE_UPPER}_USERNAME"
+ENV_PASS="BROWSER_${SITE_UPPER}_PASSWORD"
+
+LOGIN_USER=""
+LOGIN_PASS=""
+
+if [ "$INTERACTIVE" = "true" ]; then
+  echo "Interactive mode — skipping credential auto-detection."
+else
+  LOGIN_USER="${!ENV_USER:-}"
+  LOGIN_PASS="${!ENV_PASS:-}"
+
+  if [ -n "$LOGIN_USER" ] && [ -n "$LOGIN_PASS" ]; then
+    echo "Using credentials from environment ($ENV_USER)"
+  fi
+fi
+
+# Try 1Password if no env vars (and not --interactive)
+if [ "$INTERACTIVE" != "true" ] && { [ -z "$LOGIN_USER" ] || [ -z "$LOGIN_PASS" ]; }; then
+  if command -v op &> /dev/null && op account get &> /dev/null; then
+    # Map site to 1Password item name
+    case "$SITE" in
+      github.com) OP_ITEM="${AGENT} - GitHub" ;;
+      *)          OP_ITEM="" ;;
+    esac
+
+    if [ -n "$OP_ITEM" ]; then
+      OP_USER=$(op item get "$OP_ITEM" --vault Agents --fields username --reveal 2>/dev/null || true)
+      OP_PASS=$(op item get "$OP_ITEM" --vault Agents --fields password --reveal 2>/dev/null || true)
+      if [ -n "$OP_USER" ] && [ -n "$OP_PASS" ]; then
+        LOGIN_USER="$OP_USER"
+        LOGIN_PASS="$OP_PASS"
+        echo "Using credentials from 1Password ($OP_ITEM)"
+      fi
+    fi
+  fi
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-node "$SCRIPT_DIR/scripts/_harness.mjs" \
-  --mode login \
-  --site "$SITE" \
-  --auth-file "$AUTH_FILE"
+if [ -n "$LOGIN_USER" ] && [ -n "$LOGIN_PASS" ]; then
+  # Automated login (headless)
+  echo "Logging in to $SITE as $LOGIN_USER (automated)..."
+  echo ""
+
+  node "$SCRIPT_DIR/scripts/_harness.mjs" \
+    --mode login \
+    --site "$SITE" \
+    --auth-file "$AUTH_FILE" \
+    --username "$LOGIN_USER" \
+    --password "$LOGIN_PASS"
+else
+  # Interactive login (headed browser)
+  echo "Opening browser for $AGENT to log in to $SITE..."
+  echo "Log in manually, then close the browser window."
+  echo ""
+
+  node "$SCRIPT_DIR/scripts/_harness.mjs" \
+    --mode login \
+    --site "$SITE" \
+    --auth-file "$AUTH_FILE"
+fi
 
 if [ -f "$AUTH_FILE" ]; then
   echo ""
