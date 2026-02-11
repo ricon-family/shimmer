@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+#MISE description="Launch a browser instance for this agent"
+
+set -e
+
+# Determine agent identity
+if [ -n "$GIT_AUTHOR_EMAIL" ]; then
+  AGENT=$(echo "$GIT_AUTHOR_EMAIL" | sed 's/@ricon\.family$//')
+elif git config user.email 2>/dev/null | grep -q '@ricon.family'; then
+  AGENT=$(git config user.email | sed 's/@ricon\.family$//')
+else
+  echo "No agent identity detected. Run: eval \$(shimmer as <agent>)" >&2
+  exit 1
+fi
+
+# Browser cache
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/shimmer/browser"
+export PLAYWRIGHT_BROWSERS_PATH="$CACHE_DIR"
+
+if [ ! -d "$CACHE_DIR" ] || ! ls "$CACHE_DIR"/chromium-* &>/dev/null; then
+  echo "Chromium not installed. Run: shimmer browser:setup" >&2
+  exit 1
+fi
+
+# Per-agent port: hash agent name to a port in range 9200-9399
+PORT=$(echo -n "$AGENT" | cksum | awk '{print 9200 + ($1 % 200)}')
+PID_FILE="/tmp/shimmer-browser-${AGENT}.json"
+
+# Check if already running
+if [ -f "$PID_FILE" ]; then
+  EXISTING_PID=$(jq -r '.pid' "$PID_FILE" 2>/dev/null || echo "")
+  if [ -n "$EXISTING_PID" ] && kill -0 "$EXISTING_PID" 2>/dev/null; then
+    EXISTING_PORT=$(jq -r '.port' "$PID_FILE")
+    echo "Browser already running for $AGENT (pid $EXISTING_PID, port $EXISTING_PORT)"
+    exit 0
+  fi
+  # Stale PID file
+  rm -f "$PID_FILE"
+fi
+
+# Find Chromium binary via Playwright (run from scripts/ where node_modules lives)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHROMIUM_PATH=$(cd "$SCRIPT_DIR/scripts" && node -e "
+  import { chromium } from 'playwright';
+  console.log(chromium.executablePath());
+" 2>/dev/null) || true
+
+if [ -z "$CHROMIUM_PATH" ] || [ ! -f "$CHROMIUM_PATH" ]; then
+  echo "Could not find Chromium binary. Run: shimmer browser:setup" >&2
+  exit 1
+fi
+
+# Launch Chromium with remote debugging
+"$CHROMIUM_PATH" \
+  --remote-debugging-port="$PORT" \
+  --no-first-run \
+  --no-default-browser-check \
+  --headless=new \
+  &>/dev/null &
+
+BROWSER_PID=$!
+
+# Wait briefly for startup
+sleep 1
+
+if ! kill -0 "$BROWSER_PID" 2>/dev/null; then
+  echo "Failed to launch Chromium" >&2
+  exit 1
+fi
+
+# Write PID file
+echo "{\"pid\": $BROWSER_PID, \"port\": $PORT, \"agent\": \"$AGENT\"}" > "$PID_FILE"
+
+echo "Browser launched for $AGENT"
+echo "  PID:  $BROWSER_PID"
+echo "  Port: $PORT"
