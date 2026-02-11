@@ -19,7 +19,8 @@ if [ -z "$TO" ] || [ -z "$SUBJECT" ]; then
   echo "Body can be provided exactly one way:"
   echo "  shimmer email:send admin@ricon.family 'Subject' 'inline body'"
   echo "  shimmer email:send admin@ricon.family 'Subject' -b 'flag body'"
-  echo "  echo 'piped body' | shimmer email:send admin@ricon.family 'Subject'"
+  echo "  shimmer email:send admin@ricon.family 'Subject' -b /path/to/file.txt"
+  echo "  cat body.txt | shimmer email:send admin@ricon.family 'Subject'"
   echo ""
   echo "Messages are GPG-signed automatically."
   exit 1
@@ -29,6 +30,11 @@ fi
 # Treat "-" as "read from stdin" (standard Unix convention).
 BODY="${usage_body:-${3:-}}"
 [ "$BODY" = "-" ] && BODY=""
+
+# If BODY looks like a file path and the file exists, read its contents
+if [ -n "$BODY" ] && [ -f "$BODY" ]; then
+  BODY=$(cat "$BODY")
+fi
 
 # If no body arg, read from stdin (piped) or prompt interactively.
 if [ -z "$BODY" ]; then
