@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#MISE description="Close this agent's browser instance"
+
+set -e
+
+# Determine agent identity
+if [ -n "$GIT_AUTHOR_EMAIL" ]; then
+  AGENT=$(echo "$GIT_AUTHOR_EMAIL" | sed 's/@ricon\.family$//')
+elif git config user.email 2>/dev/null | grep -q '@ricon.family'; then
+  AGENT=$(git config user.email | sed 's/@ricon\.family$//')
+else
+  echo "No agent identity detected. Run: eval \$(shimmer as <agent>)" >&2
+  exit 1
+fi
+
+PID_FILE="/tmp/shimmer-browser-${AGENT}.json"
+
+if [ ! -f "$PID_FILE" ]; then
+  echo "No browser running for $AGENT"
+  exit 0
+fi
+
+PID=$(jq -r '.pid' "$PID_FILE" 2>/dev/null || echo "")
+
+if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+  kill "$PID" 2>/dev/null || true
+  echo "Browser closed for $AGENT (pid $PID)"
+else
+  echo "Browser was not running (stale PID file)"
+fi
+
+rm -f "$PID_FILE"

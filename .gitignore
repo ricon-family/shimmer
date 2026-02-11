@@ -21,4 +21,4 @@ Thumbs.db
 cli/shimmer
 
 # Browser automation (symlink to mise-installed playwright)
-.mise/tasks/browser/scripts/node_modules
+node_modules

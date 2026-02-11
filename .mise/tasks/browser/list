@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#MISE description="List running browser instances"
+
+set -e
+
+FOUND=false
+
+for pidfile in /tmp/shimmer-browser-*.json; do
+  [ -f "$pidfile" ] || continue
+  FOUND=true
+
+  AGENT=$(jq -r '.agent' "$pidfile" 2>/dev/null || basename "$pidfile" | sed 's/shimmer-browser-//;s/\.json//')
+  PID=$(jq -r '.pid' "$pidfile" 2>/dev/null || echo "?")
+  PORT=$(jq -r '.port' "$pidfile" 2>/dev/null || echo "?")
+
+  if kill -0 "$PID" 2>/dev/null; then
+    STATUS="running"
+  else
+    STATUS="dead"
+  fi
+
+  echo "$AGENT  pid=$PID  port=$PORT  $STATUS"
+done
+
+if [ "$FOUND" = "false" ]; then
+  echo "No browser instances running."
+fi
