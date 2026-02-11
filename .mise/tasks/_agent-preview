@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Preview script for the interactive agent picker (shimmer as)
+# Called by fzf: _agent-preview <agent> <agents_dir>
+
+AGENT="$1"
+AGENTS_DIR="$2"
+
+echo "$AGENT@ricon.family"
+echo ""
+
+# Identity snippet
+IDENTITY_FILE="$AGENTS_DIR/$AGENT.txt"
+if [ -f "$IDENTITY_FILE" ]; then
+  head -8 "$IDENTITY_FILE"
+  echo ""
+fi
+
+# Workspace info
+WORKSPACE="$HOME/agents/$AGENT"
+if [ -d "$WORKSPACE" ]; then
+  # Zettelkasten
+  ZETTEL_DIR="$WORKSPACE/zettelkasten"
+  if [ -d "$ZETTEL_DIR" ]; then
+    NOTE_COUNT=$(find "$ZETTEL_DIR/notes" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    SESSION_COUNT=$(find "$ZETTEL_DIR/sessions" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    echo "Zettelkasten: ${NOTE_COUNT} notes, ${SESSION_COUNT} sessions"
+  fi
+
+  # Repos in workspace
+  REPOS=$(find "$WORKSPACE" -maxdepth 2 -name ".git" -type d 2>/dev/null | while read gitdir; do
+    dirname "$gitdir" | xargs basename
+  done | sort)
+  if [ -n "$REPOS" ]; then
+    echo ""
+    echo "Repos:"
+    echo "$REPOS" | while read repo; do
+      echo "  $repo"
+    done
+  fi
+else
+  echo "(no workspace)"
+fi
