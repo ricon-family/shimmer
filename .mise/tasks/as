@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Switch to an agent's identity for local work"
-#USAGE arg "<agent>" help="Agent to switch to (e.g., quick, brownie)"
+#USAGE arg "[agent]" help="Agent to switch to (omit for interactive picker)"
 
 set -e
 
@@ -18,6 +18,45 @@ get_agents() {
 }
 
 AGENT="$usage_agent"
+
+# Interactive picker when no agent specified
+if [ -z "$AGENT" ]; then
+  if ! command -v fzf &> /dev/null; then
+    echo "ERROR: fzf not found. Either specify an agent or install fzf." >&2
+    exit 1
+  fi
+
+  AGENT=$(get_agents | fzf \
+    --style=full \
+    --height=100% \
+    --layout=reverse \
+    --border=rounded \
+    --border-label=" shimmer as " \
+    --border-label-pos=3 \
+    --preview-label=" Activity " \
+    --pointer="▸" \
+    --prompt="  " \
+    --ghost="Type to filter..." \
+    --margin=5% \
+    --padding=1,2 \
+    --color="
+      bg:-1,bg+:#2a2d3d
+      border:dim,preview-border:dim
+      label:bold,preview-label:bold
+      pointer:bright-cyan
+      gutter:-1
+      info:dim
+    " \
+    --preview="$SCRIPT_DIR/_agent-preview {} '$AGENTS_DIR'" \
+    --preview-window="right,55%,border-rounded,wrap,<60(down,50%,border-horizontal)" \
+  ) || exit 1
+
+  if [ -z "$AGENT" ]; then
+    echo "No agent selected." >&2
+    exit 1
+  fi
+fi
+
 EMAIL="${AGENT}@ricon.family"
 VAULT="Agents"
 
