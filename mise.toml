@@ -12,4 +12,3 @@ jq = "1.8.1"                              # JSON processing
 yq = "4.50.1"                             # YAML processing
 "npm:playwright" = "1.58"                 # Browser automation
 fzf = "0.67.0"                            # Fuzzy finder for interactive pickers
-gum = "0.17.0"                            # Terminal UI components

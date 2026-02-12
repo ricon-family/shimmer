@@ -21,14 +21,14 @@ if [ -d "$WORKSPACE" ]; then
   # Zettelkasten
   ZETTEL_DIR="$WORKSPACE/zettelkasten"
   if [ -d "$ZETTEL_DIR" ]; then
-    NOTE_COUNT=$(find "$ZETTEL_DIR/notes" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-    SESSION_COUNT=$(find "$ZETTEL_DIR/sessions" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    NOTE_COUNT=$(find "$ZETTEL_DIR/notes" -mindepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    SESSION_COUNT=$(find "$ZETTEL_DIR/sessions" -mindepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
     echo "Zettelkasten: ${NOTE_COUNT} notes, ${SESSION_COUNT} sessions"
   fi
 
   # Repos in workspace
-  REPOS=$(find "$WORKSPACE" -maxdepth 2 -name ".git" -type d 2>/dev/null | while read gitdir; do
-    dirname "$gitdir" | xargs basename
+  REPOS=$(find "$WORKSPACE" -maxdepth 2 -name ".git" -type d 2>/dev/null | while read -r gitdir; do
+    basename "$(dirname "$gitdir")"
   done | sort)
   if [ -n "$REPOS" ]; then
     echo ""
