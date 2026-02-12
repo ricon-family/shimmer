@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#MISE hide=true
 # Preview script for the interactive agent picker (shimmer as)
 # Called by fzf: _agent-preview <agent> <agents_dir>
 
