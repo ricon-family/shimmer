@@ -32,7 +32,7 @@ defmodule Cli do
   @logger_connect_retries 10
   @logger_connect_interval_ms 200
   @logger_connect_timeout_ms 100
-  @default_model "claude-opus-4-5-20251101"
+  @default_model "claude-opus-4-6"
   @truncate_edit_limit 60
   @truncate_prompt_limit 100
   @buffer_flush_timeout_ms 100
@@ -200,7 +200,7 @@ defmodule Cli do
     Options:
       --agent <name>           Agent name for logging (optional, display only)
       --passphrase <phrase>    Admin override passphrase (injected into prompt)
-      --model <model>          Claude model to use (default: claude-opus-4-5-20251101)
+      --model <model>          Claude model to use (default: claude-opus-4-6)
       --cwd <path>             Working directory for claude (default: current dir)
       --log-context            Enable context logging via proxy
       -h, --help               Show this help message

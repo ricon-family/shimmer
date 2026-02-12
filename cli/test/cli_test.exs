@@ -622,7 +622,7 @@ defmodule CliTest do
             "cache_creation_input_tokens" => 300
           },
           "modelUsage" => %{
-            "claude-opus-4-5-20251101" => %{"inputTokens" => 100}
+            "claude-opus-4-6" => %{"inputTokens" => 100}
           }
         })
 
@@ -634,7 +634,7 @@ defmodule CliTest do
       assert result_state.usage.num_turns == 1
       assert result_state.usage.usage["input_tokens"] == 100
       assert result_state.usage.usage["output_tokens"] == 50
-      assert result_state.usage.model_usage["claude-opus-4-5-20251101"]["inputTokens"] == 100
+      assert result_state.usage.model_usage["claude-opus-4-6"]["inputTokens"] == 100
     end
   end
 

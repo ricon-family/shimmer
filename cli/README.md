@@ -40,7 +40,7 @@ Most agent runs go through `mise run agent:run`, which handles:
 | `--timeout <seconds>` | Required. Timeout in seconds for Claude |
 | `--agent <name>` | Optional. Agent name for logging (display only) |
 | `--passphrase <phrase>` | Optional. Admin override passphrase (injected into prompt) |
-| `--model <model>` | Optional. Claude model (default: `claude-opus-4-5-20251101`) |
+| `--model <model>` | Optional. Claude model (default: `claude-opus-4-6`) |
 | `--log-context` | Enables context logging via claude-code-logger proxy |
 
 ## Adding a New Agent
