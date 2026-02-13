@@ -59,7 +59,7 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-MESSAGE="$1"
+MESSAGE="$usage_message"
 STAGGER="${usage_stagger:-30}"
 DRY_RUN="${usage_dry_run:-false}"
 MODEL="${usage_model:-}"
