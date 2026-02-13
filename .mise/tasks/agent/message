@@ -16,13 +16,11 @@ fi
 validate_agent_home() {
   if [ ! -d "$AGENT_HOME/agents" ]; then
     echo "Error: No agents/ directory in $AGENT_HOME" >&2
-    echo "Run this from an agent home (a codebase with agents/ and agent workflows)" >&2
     exit 1
   fi
 
   if [ ! -f "$AGENT_HOME/.github/workflows/agent-message.yml" ]; then
     echo "Error: No agent-message.yml workflow in $AGENT_HOME" >&2
-    echo "Run this from an agent home (a codebase with agents/ and agent workflows)" >&2
     exit 1
   fi
 }
