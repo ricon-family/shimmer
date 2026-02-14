@@ -73,7 +73,7 @@ From: $FROM
 To: $TO
 Subject: $SUBJECT
 
-<#part sign=pgpmime>
+<#part type=text/plain sign=pgpmime>
 $BODY
 <#/part>
 EOF
