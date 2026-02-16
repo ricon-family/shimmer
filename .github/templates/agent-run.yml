@@ -95,7 +95,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install Claude Code
-        run: curl -fsSL https://claude.ai/install.sh | bash
+        run: curl -fsSL https://claude.ai/install.sh | bash -s -- stable
 
       - name: Setup GPG
         env:
