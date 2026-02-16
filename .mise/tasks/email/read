@@ -34,7 +34,13 @@ if [ ! -f "$CONFIG_FILE" ] || ! grep -q "accounts.$AGENT" "$CONFIG_FILE" 2>/dev/
   exit 1
 fi
 
-# Verify GPG signature on the raw message
+# Verify GPG signature on the raw message.
+#
+# Himalaya's <#part sign=pgpmime> wraps the signature as a PGP MESSAGE
+# (not a standard PGP/MIME detached signature). This means gpg --verify
+# on the raw .eml validates the embedded signature — confirming who signed
+# it — but doesn't cross-check the readable MIME body against what was
+# signed. Body integrity verification is tracked in #578.
 SIG_TAG=""
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -49,12 +55,14 @@ if himalaya message export --full -a "$AGENT" -f "$FOLDER" -d "$TMPDIR/msg.eml" 
     SIG_TAG="(✗ Bad signature)"
   elif echo "$GPG_OUTPUT" | grep -q "no valid OpenPGP data"; then
     SIG_TAG="(⚠ Unsigned)"
-  elif echo "$GPG_OUTPUT" | grep -q "No public key"; then
-    KEY_ID=$(echo "$GPG_OUTPUT" | grep "using .* key" | sed 's/.*key \([A-F0-9]*\).*/\1/' | tail -c 17)
+  elif echo "$GPG_OUTPUT" | grep -qi "No public key"; then
+    KEY_ID=$(echo "$GPG_OUTPUT" | grep -i "using .* key" | sed 's/.*key \([A-Fa-f0-9]*\).*/\1/' | tail -c 17)
     SIG_TAG="(⚠ Signed, unknown key ${KEY_ID})"
   else
     SIG_TAG="(⚠ Could not verify signature)"
   fi
+else
+  SIG_TAG="(⚠ Could not verify signature)"
 fi
 
 # Read the message and annotate the From line with signature status
@@ -62,11 +70,11 @@ OUTPUT=$(himalaya message read -a "$AGENT" -f "$FOLDER" "$ID")
 
 if [ -n "$SIG_TAG" ]; then
   # Annotate the first From: line with signature status
-  FIRST=true
+  DONE=false
   while IFS= read -r line; do
-    if $FIRST && [[ "$line" == From:* ]]; then
+    if [[ "$DONE" == false ]] && [[ "$line" == From:* ]]; then
       echo "${line} ${SIG_TAG}"
-      FIRST=false
+      DONE=true
     else
       echo "$line"
     fi
