@@ -51,6 +51,8 @@ if [ -z "$EMAIL_PASSWORD" ]; then
 fi
 
 mkdir -p "$CONFIG_DIR"
+DOWNLOADS_DIR="${HOME}/agents/${AGENT}/downloads"
+mkdir -p "$DOWNLOADS_DIR"
 
 # Escape password for TOML basic string: backslash first, then quotes
 ESCAPED_PASSWORD=$(printf '%s' "$EMAIL_PASSWORD" | sed 's/\\/\\\\/g; s/"/\\"/g')
@@ -77,6 +79,9 @@ message.send.backend.encryption.type = "tls"
 message.send.backend.login = "$EMAIL"
 message.send.backend.auth.type = "password"
 message.send.backend.auth.raw = "$ESCAPED_PASSWORD"
+
+# Attachments download to agent workspace
+downloads-dir = "$HOME/agents/$AGENT/downloads"
 
 # GPG signing (requires gpg:setup first)
 pgp.type = "commands"

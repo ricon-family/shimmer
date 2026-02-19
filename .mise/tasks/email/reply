@@ -3,6 +3,7 @@
 #USAGE arg "<id>" help="Message ID to reply to"
 #USAGE arg "[body]" help="Reply body (optional, or use -b flag or stdin)"
 #USAGE flag "-b --body <body>" help="Reply body (alternative to positional arg)"
+#USAGE flag "-a --attach <attach>" help="File path to attach (repeatable)" var=#true
 #USAGE flag "--allow-short" help="Allow short reply bodies (under 50 chars)"
 
 set -e
@@ -21,6 +22,7 @@ if [ -z "$ID" ]; then
   echo "  shimmer email:reply 42 'Thanks for the info!'"
   echo "  shimmer email:reply 42 --body 'Thanks for the info!'"
   echo "  echo 'Thanks!' | shimmer email:reply 42"
+  echo "  shimmer email:reply 42 'body' -a /path/to/file.pdf"
   echo ""
   echo "Find message IDs with: shimmer email:list"
   exit 1
@@ -68,19 +70,39 @@ if [ "$BODY_LEN" -lt 50 ] && [ "${usage_allow_short:-false}" != "true" ]; then
   exit 1
 fi
 
+# Build attachment MML parts and validate files
+ATTACH_MML=""
+if [ -n "${usage_attach:-}" ]; then
+  eval "ATTACHMENTS=($usage_attach)"
+  for filepath in "${ATTACHMENTS[@]}"; do
+    # Resolve to absolute path
+    if [[ "$filepath" != /* ]]; then
+      filepath="$(cd "$(dirname "$filepath")" && pwd)/$(basename "$filepath")"
+    fi
+    if [ ! -f "$filepath" ]; then
+      echo "Error: Attachment not found: $filepath"
+      exit 1
+    fi
+    ATTACH_MML="${ATTACH_MML}
+<#part filename=${filepath}><#/part>"
+    echo "Attaching: $(basename "$filepath") ($(du -h "$filepath" | cut -f1 | tr -d ' '))"
+  done
+fi
+
 # Get reply template headers
 REPLY_TEMPLATE=$(himalaya template reply -a "$AGENT" "$ID" "")
 
 # Extract just the headers (everything before the first blank line)
 HEADERS=$(echo "$REPLY_TEMPLATE" | sed '/^$/q')
 
-# Build the full message with signed body
+# Build the full message with signed body and optional attachments
 {
   echo "$HEADERS"
-  echo ""  # blank line between headers and body
-  echo "<#part sign=pgpmime>"
+  echo ""
+  echo "<#multipart type=mixed sign=pgpmime>"
   echo "$BODY"
-  echo "<#/part>"
+  echo "$ATTACH_MML"
+  echo "<#/multipart>"
 } | himalaya template send -a "$AGENT"
 
 echo "Reply sent"

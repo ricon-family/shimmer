@@ -2,6 +2,7 @@
 #MISE description="Read an email message"
 #USAGE arg "<id>" help="Message ID to read"
 #USAGE flag "-f --folder <folder>" help="Folder to read from (default: INBOX)"
+#USAGE flag "-s --save-attachments" help="Download attachments to agent workspace"
 
 set -e
 
@@ -81,4 +82,19 @@ if [ -n "$SIG_TAG" ]; then
   done <<< "$OUTPUT"
 else
   echo "$OUTPUT"
+fi
+
+# Check for attachments
+HAS_ATTACHMENT=$(himalaya envelope list -a "$AGENT" -f "$FOLDER" --page-size 1000 -o json \
+  | jq -r --arg id "$ID" '[.[] | select(.id == $id)] | if length > 0 then .[0].has_attachment else false end' 2>/dev/null || echo "false")
+
+if [ "$HAS_ATTACHMENT" = "true" ]; then
+  if [ "${usage_save_attachments:-false}" = "true" ]; then
+    echo ""
+    echo "Attachments:"
+    himalaya attachment download -a "$AGENT" -f "$FOLDER" "$ID" 2>&1 | grep -v "^$"
+  else
+    echo ""
+    echo "This message has attachments. Use -s to download to ~/agents/$AGENT/downloads/"
+  fi
 fi
