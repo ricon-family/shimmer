@@ -5,7 +5,12 @@
 GROUP="${usage_group:-$1}"
 
 if [ -n "$GROUP" ]; then
-  mise tasks | grep "^${GROUP}:"
+  RESULTS=$(mise tasks | grep "^${GROUP}:")
+  if [ -n "$RESULTS" ]; then
+    echo "$RESULTS"
+  else
+    echo "No tasks found for group: $GROUP"
+  fi
 else
   mise tasks
 fi
