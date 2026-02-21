@@ -66,8 +66,10 @@ else
   SIG_TAG="(⚠ Could not verify signature)"
 fi
 
-# Read the message and annotate the From line with signature status
-OUTPUT=$(himalaya message read -a "$AGENT" -f "$FOLDER" "$ID")
+# Read the message, stripping MML tags that himalaya renders for non-text MIME parts
+# (e.g. <#part type=application/pdf filename="..."><#/part>)
+OUTPUT=$(himalaya message read -a "$AGENT" -f "$FOLDER" "$ID" \
+  | sed -E '/^[[:space:]]*<#\/?part/d; /^[[:space:]]*<#\/?multipart/d')
 
 if [ -n "$SIG_TAG" ]; then
   # Annotate the first From: line with signature status
@@ -90,9 +92,35 @@ HAS_ATTACHMENT=$(himalaya envelope list -a "$AGENT" -f "$FOLDER" --page-size 100
 
 if [ "$HAS_ATTACHMENT" = "true" ]; then
   if [ "${usage_save_attachments:-false}" = "true" ]; then
+    DOWNLOADS_DIR="${HOME}/agents/${AGENT}/downloads"
+    mkdir -p "$DOWNLOADS_DIR"
+
+    # Snapshot existing files before download
+    BEFORE=$(ls -1 "$DOWNLOADS_DIR" 2>/dev/null || true)
+
+    himalaya attachment download -a "$AGENT" -f "$FOLDER" -o plain "$ID" >/dev/null 2>&1
+
+    # Find newly downloaded files and filter out GPG signature blobs
+    AFTER=$(ls -1 "$DOWNLOADS_DIR" 2>/dev/null || true)
+    NEW_FILES=$(comm -13 <(echo "$BEFORE") <(echo "$AFTER"))
+
+    FOUND=0
     echo ""
     echo "Attachments:"
-    himalaya attachment download -a "$AGENT" -f "$FOLDER" "$ID" 2>&1 | grep -v "^$"
+    while IFS= read -r fname; do
+      [ -n "$fname" ] || continue
+      f="$DOWNLOADS_DIR/$fname"
+      if file -b "$f" | grep -qi "pgp\|gpg"; then
+        rm -f "$f"
+      else
+        FOUND=$((FOUND + 1))
+        echo "  $fname ($(du -h "$f" | cut -f1 | tr -d ' '))"
+      fi
+    done <<< "$NEW_FILES"
+
+    if [ "$FOUND" -eq 0 ]; then
+      echo "  (no attachments after filtering signatures)"
+    fi
   else
     echo ""
     echo "This message has attachments. Use -s to download to ~/agents/$AGENT/downloads/"
