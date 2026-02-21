@@ -73,8 +73,8 @@ fi
 # Build attachment MML parts and validate files
 ATTACH_MML=""
 if [ -n "${usage_attach:-}" ]; then
-  eval "ATTACHMENTS=($usage_attach)"
-  for filepath in "${ATTACHMENTS[@]}"; do
+  # Parse mise's shell-quoted variadic flag safely (no eval)
+  while IFS= read -r filepath; do
     # Resolve to absolute path
     if [[ "$filepath" != /* ]]; then
       filepath="$(cd "$(dirname "$filepath")" && pwd)/$(basename "$filepath")"
@@ -84,9 +84,9 @@ if [ -n "${usage_attach:-}" ]; then
       exit 1
     fi
     ATTACH_MML="${ATTACH_MML}
-<#part filename=${filepath}><#/part>"
+<#part filename=\"${filepath}\"><#/part>"
     echo "Attaching: $(basename "$filepath") ($(du -h "$filepath" | cut -f1 | tr -d ' '))"
-  done
+  done < <(echo "$usage_attach" | xargs -n1 printf '%s\n')
 fi
 
 # Get reply template headers

@@ -67,7 +67,10 @@ else
 fi
 
 # Read the message, stripping MML tags that himalaya renders for non-text MIME parts
-# (e.g. <#part type=application/pdf filename="..."><#/part>)
+# (e.g. <#part type=application/pdf filename="..."><#/part>).
+# Himalaya places these tags on their own lines, so full-line deletion is safe here.
+# If himalaya ever renders them inline with body text, this would need to switch to
+# a substitution approach (s/<#...>//g) instead.
 OUTPUT=$(himalaya message read -a "$AGENT" -f "$FOLDER" "$ID" \
   | sed -E '/^[[:space:]]*<#\/?part/d; /^[[:space:]]*<#\/?multipart/d')
 
@@ -86,9 +89,12 @@ else
   echo "$OUTPUT"
 fi
 
-# Check for attachments
-HAS_ATTACHMENT=$(himalaya envelope list -a "$AGENT" -f "$FOLDER" --page-size 1000 -o json \
-  | jq -r --arg id "$ID" '[.[] | select(.id == $id)] | if length > 0 then .[0].has_attachment else false end' 2>/dev/null || echo "false")
+# Check for attachments using the already-exported raw message (from GPG verification above).
+# This avoids querying the full envelope list just to check one message.
+HAS_ATTACHMENT="false"
+if [ -f "$TMPDIR/msg.eml" ] && grep -qi "^Content-Disposition: attachment" "$TMPDIR/msg.eml"; then
+  HAS_ATTACHMENT="true"
+fi
 
 if [ "$HAS_ATTACHMENT" = "true" ]; then
   if [ "${usage_save_attachments:-false}" = "true" ]; then
@@ -102,7 +108,7 @@ if [ "$HAS_ATTACHMENT" = "true" ]; then
 
     # Find newly downloaded files and filter out GPG signature blobs
     AFTER=$(ls -1 "$DOWNLOADS_DIR" 2>/dev/null || true)
-    NEW_FILES=$(comm -13 <(echo "$BEFORE") <(echo "$AFTER"))
+    NEW_FILES=$(comm -13 <(echo "$BEFORE" | sort) <(echo "$AFTER" | sort))
 
     FOUND=0
     echo ""
