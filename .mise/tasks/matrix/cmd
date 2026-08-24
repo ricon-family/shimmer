@@ -2,6 +2,7 @@
 #MISE description="Run matrix-commander via Docker (pass args after --)"
 #USAGE arg "<username>" help="Matrix username (without @domain)"
 #USAGE arg "[args...]" help="Arguments to pass to matrix-commander"
+#USAGE example "mise run matrix:cmd zeke --version" header="Run matrix-commander"
 
 # Run matrix-commander in Docker with per-user credentials
 # Usage: mise run matrix:cmd quick -- -m "Hello"

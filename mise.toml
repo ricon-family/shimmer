@@ -2,12 +2,13 @@
 quiet = true
 task_output = "interleave"
 experimental = true
+aqua.registries = ["https://github.com/KnickKnackLabs/bats-core"]
 
 [plugins]
 shiv = "https://github.com/KnickKnackLabs/vfox-shiv"
 
 [tools]
-"shiv:codebase" = "0.3"                   # Codebase linting + migrations
+"shiv:codebase" = "0.4"                   # Codebase linting + migrations
 node = "22"                               # LTS
 "github:pimalaya/himalaya" = "1.2.0"      # Email CLI for agents
 "1password-cli" = "2.32.0"                # Credential management
@@ -17,7 +18,7 @@ jq = "1.8.1"                              # JSON processing
 yq = "4.50.1"                             # YAML processing
 fzf = "0.67.0"                            # Fuzzy finder for interactive pickers
 gum = "0.17.0"                            # Terminal UI components (tables, spinners, etc.)
-bats = "1.13.0"                           # Bash Automated Testing System
+"aqua:KnickKnackLabs/bats-core" = "1.14.0-kkl.1" # Bash Automated Testing System
 "aqua:shenwei356/rush" = "0.9.0"          # Cross-file BATS parallel runner
 "shiv:secrets" = "0.1"                    # Provider-based secret management (keychain, 1password)
 "shiv:emails" = "0.3"
@@ -27,7 +28,8 @@ bats = "1.13.0"                           # Bash Automated Testing System
 "shiv:readme" = "0.3"                     # README.tsx -> README.md generation
 
 [_.codebase]
-lint = ["mise-settings", "gum-table", "bats-test-helper", "mcr-scope", "or-true", "shellcheck", "caller-pwd-contract", "github-actions"]
+name = "shimmer"
+lint = ["@all"]
 
 [_.codebase.scope]
 gum-table = ".mise/tasks"

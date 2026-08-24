@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Switch to an agent's identity for local work"
 #USAGE arg "[agent]" default="" help="Agent to switch to (omit for interactive picker)"
+#USAGE example "mise run as zeke" header="Select an agent identity"
 
 set -euo pipefail
 

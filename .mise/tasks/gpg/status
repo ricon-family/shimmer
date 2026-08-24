@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Check GPG setup status for an agent"
 #USAGE arg "<agent>" help="Agent name (e.g., quick, x1f9)"
+#USAGE example "mise run gpg:status zeke" header="Check agent signing"
 
 set -e
 

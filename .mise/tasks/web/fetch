@@ -3,6 +3,7 @@
 #USAGE arg "<url>" help="URL to fetch"
 #USAGE flag "-H --header… <header>" help="Additional header (repeatable)"
 #USAGE flag "-q --quiet" help="Suppress HTTP status info"
+#USAGE example "mise run web:fetch https://example.com" header="Fetch a URL"
 
 set -euo pipefail
 
@@ -24,4 +25,4 @@ if [[ "$QUIET" != "true" ]]; then
   echo "Fetching: ${URL}" >&2
 fi
 
-curl "${CURL_ARGS[@]}" "$URL"
+curl ${CURL_ARGS[@]+"${CURL_ARGS[@]}"} "$URL"

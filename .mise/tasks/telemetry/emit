@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Emit a telemetry event to the agent's telemetry file"
 #USAGE arg "<event>" help="JSON event object (required fields: tool, cmd)"
+#USAGE example "mise run telemetry:emit '{\"tool\":\"shimmer\",\"cmd\":\"doctor\"}'" header="Emit a telemetry event"
 set -euo pipefail
 
 # No-op when telemetry is off

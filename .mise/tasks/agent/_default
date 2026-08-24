@@ -6,6 +6,7 @@
 #USAGE flag "--timeout <seconds>" default="" help="Timeout in seconds (headless only, stored as session metadata — not yet enforced by sessions wake)"
 #USAGE flag "--model <model>" default="" help="Model to use (required; provider-qualified, e.g. openai-codex/gpt-5.5)"
 #USAGE arg "[message]" default="" help="Initial message (required for --headless, optional for interactive)"
+#USAGE example "mise run agent --model openai-codex/gpt-5.5 \"Inspect the failing workflow.\"" header="Start an interactive agent session"
 
 set -euo pipefail
 
@@ -83,7 +84,7 @@ if [ -n "$SESSION" ]; then
   fi
 else
   NEW_ARGS=("$SESSION_NAME" --cwd "$CWD" --meta "agent.name=$GIT_AUTHOR_NAME")
-  SESSION_ID=$(sessions new "${NEW_ARGS[@]}")
+  SESSION_ID=$(sessions new ${NEW_ARGS[@]+"${NEW_ARGS[@]}"})
 fi
 
 # Keep foreground interactive wakes attached to the caller's TTY. Headless
@@ -97,4 +98,4 @@ else
   [ -n "$MESSAGE" ] && WAKE_ARGS+=(--message "$MESSAGE")
 fi
 
-exec sessions wake "${WAKE_ARGS[@]}"
+exec sessions wake ${WAKE_ARGS[@]+"${WAKE_ARGS[@]}"}

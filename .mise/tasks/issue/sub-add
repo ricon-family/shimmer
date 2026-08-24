@@ -2,6 +2,7 @@
 #MISE description="Link an existing issue as sub-issue to a parent"
 #USAGE arg "<parent>" help="Parent issue number"
 #USAGE arg "<child>" help="Child issue number to link"
+#USAGE example "mise run issue:sub-add 123 124" header="Link a sub-issue"
 set -eo pipefail
 
 PARENT="${usage_parent:-$1}"

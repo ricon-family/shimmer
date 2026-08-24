@@ -1,6 +1,7 @@
 #!/bin/bash
 #MISE description="Generate workflow files from workflows.yaml"
 #USAGE flag "--check" default=#false help="Check mode: fail if generated files differ from committed"
+#USAGE example "mise run workflows:generate --check" header="Check generated workflows"
 set -euo pipefail
 
 # Determine target directory (caller's directory when using shimmer alias)

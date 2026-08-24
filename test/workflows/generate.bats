@@ -17,7 +17,7 @@ make_target_repo() {
 quiet = true
 task_output = "interleave"
 EOF
-  mise trust "$TARGET_REPO/mise.toml" >/dev/null 2>&1
+  export MISE_TRUSTED_CONFIG_PATHS="$TARGET_REPO${MISE_TRUSTED_CONFIG_PATHS:+:$MISE_TRUSTED_CONFIG_PATHS}"
 
   cat > "$TARGET_REPO/.mise/tasks/agent/list" <<'EOF'
 #!/usr/bin/env bash

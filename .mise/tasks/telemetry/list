@@ -5,6 +5,7 @@
 #USAGE flag "--limit <limit>" help="Number of events to show (default: 20, 0 for all)"
 #USAGE flag "--json" help="Output raw JSONL instead of formatted table"
 #USAGE flag "--since <since>" help="Show events since date (ISO 8601, e.g. 2026-04-04)"
+#USAGE example "mise run telemetry:list --tool shimmer --limit 10" header="List recent telemetry"
 set -euo pipefail
 
 if [ -z "${TELEMETRY_FILE:-}" ]; then
@@ -40,7 +41,7 @@ if [ -n "$SINCE" ]; then
 fi
 
 # Apply filter
-EVENTS=$(jq "${JQ_ARGS[@]}" "$FILTER" "$TELEMETRY_FILE")
+EVENTS=$(jq ${JQ_ARGS[@]+"${JQ_ARGS[@]}"} "$FILTER" "$TELEMETRY_FILE")
 
 # Apply limit (0 = all)
 if [ "$LIMIT" != "0" ]; then

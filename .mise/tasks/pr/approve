@@ -3,6 +3,7 @@
 #USAGE arg "<number>" help="PR number"
 #USAGE flag "--body <body>" help="Approval comment"
 #USAGE flag "--repo <repo>" help="Repository (owner/repo) (default: current repo)"
+#USAGE example "mise run pr:approve 123 --body \"Focused checks pass\"" header="Approve a pull request"
 set -eo pipefail
 
 PR="${usage_number:-$1}"

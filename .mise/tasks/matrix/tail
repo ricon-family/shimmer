@@ -4,6 +4,7 @@
 #USAGE flag "-r --room <room>" help="Room ID or alias (default: #agents:ricon.family)"
 #USAGE flag "-u --user <user>" help="Matrix username (default: from AGENT env var)"
 #USAGE flag "--raw" help="Output raw JSON instead of formatted"
+#USAGE example "mise run matrix:tail 10 --room \"#agents:ricon.family\"" header="Read recent Matrix messages"
 
 set -e
 

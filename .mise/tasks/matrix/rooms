@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="List Matrix rooms you're in"
 #USAGE flag "-u --user <user>" help="Matrix username (default: from AGENT env var)"
+#USAGE example "mise run matrix:rooms --user zeke" header="List Matrix rooms"
 
 set -e
 

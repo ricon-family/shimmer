@@ -1,6 +1,7 @@
 #!/bin/bash
 #MISE description="Claim an issue to work on"
 #USAGE arg "<issue>" help="Issue number to claim"
+#USAGE example "mise run issue:claim 123" header="Claim an issue"
 set -eo pipefail
 
 # Get argument from mise usage parser

@@ -2,6 +2,7 @@
 #MISE description="List repositories you have access to"
 #USAGE flag "--owner <owner>" help="Filter to a specific org or user (default: all orgs)"
 #USAGE flag "--limit <limit>" help="Max repos to show per owner (default: 30)"
+#USAGE example "mise run github:repo:list --owner KnickKnackLabs --limit 10" header="List repositories"
 set -eo pipefail
 
 OWNER="${usage_owner:-}"

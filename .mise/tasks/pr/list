@@ -2,6 +2,7 @@
 #MISE description="List open pull requests for review"
 #USAGE flag "--all" help="Show all open PRs (default: prioritized for review)"
 #USAGE flag "--repo <repo>" help="Repository (owner/repo) (default: current repo)"
+#USAGE example "mise run pr:list --repo KnickKnackLabs/shimmer" header="List pull requests"
 set -eo pipefail
 
 # Determine repo: explicit flag > current directory

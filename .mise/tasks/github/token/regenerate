@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Open browser to regenerate an existing personal token for an agent"
 #USAGE arg "<agent>" help="Agent name (e.g., c0da, brownie)"
+#USAGE example "mise run github:token:regenerate zeke" header="Regenerate a token"
 
 set -e
 

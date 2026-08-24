@@ -5,6 +5,7 @@
 #USAGE flag "--agents <list>" help="Comma-separated list of agents (default: all)"
 #USAGE flag "--dry-run" help="Show what would be done without triggering"
 #USAGE flag "--model <model>" help="Model to use (required; provider-qualified, e.g. openai-codex/gpt-5.5)"
+#USAGE example "mise run agent:broadcast \"Check your current queue\" --dry-run --model openai-codex/gpt-5.5" header="Preview a broadcast"
 
 set -e
 

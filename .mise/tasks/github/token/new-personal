@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Open browser to create a full-access personal token for an agent"
 #USAGE arg "<agent>" help="Agent name (e.g., k7r2, brownie)"
+#USAGE example "mise run github:token:new-personal zeke" header="Create a personal token"
 #MISE raw=true
 
 set -e

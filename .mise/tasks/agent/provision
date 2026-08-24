@@ -5,6 +5,7 @@
 #USAGE flag "-p --secrets <provider>" help="Secret provider: 1password or keychain (overrides SECRETS_PROVIDER)"
 #USAGE flag "--skip-org-sign" help="Skip org key signing (use when org key is unavailable)"
 #USAGE flag "--skip-gh-secrets" help="Skip storing GPG keys as GitHub repo secrets"
+#USAGE example "mise run agent:provision zeke --skip-org-sign --skip-gh-secrets" header="Skip org signing and GitHub secret writes"
 
 set -e
 

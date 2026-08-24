@@ -2,6 +2,7 @@
 #MISE description="Find an agent's home repository"
 #USAGE arg "<agent>" help="Agent name (e.g., zeke, baby-joel)"
 #USAGE flag "--repo <repo>" help="Override: use this repo directly instead of discovering"
+#USAGE example "mise run agent:find zeke" header="Find an agent workflow"
 
 set -e
 

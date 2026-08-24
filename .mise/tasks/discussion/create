@@ -3,6 +3,7 @@
 #USAGE arg "<title>" help="Discussion title"
 #USAGE flag "-c --category <category>" help="Category name (required)"
 #USAGE flag "-b --body <body>" help="Discussion body (or reads from stdin)"
+#USAGE example "mise run discussion:create \"Design question\" --category Ideas --body \"What should we change?\"" header="Create a discussion"
 set -eo pipefail
 
 TITLE="${usage_title:-$1}"

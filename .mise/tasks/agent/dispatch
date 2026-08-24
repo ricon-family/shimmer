@@ -5,6 +5,7 @@
 #USAGE flag "--message-file <path>" default="" help="Read message for the agent from a file"
 #USAGE flag "--model <model>" default="" help="Model to use (required; provider-qualified, e.g. openai-codex/gpt-5.5)"
 #USAGE flag "--repo <repo>" default="" help="Target repository (owner/name) — skip agent discovery"
+#USAGE example "mise run agent:dispatch zeke --repo ricon-family/fold --model openai-codex/gpt-5.5 \"Inspect issue #123\"" header="Dispatch a hosted agent"
 
 set -e
 

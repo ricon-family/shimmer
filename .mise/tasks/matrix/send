@@ -4,6 +4,7 @@
 #USAGE flag "-r --room <room>" help="Room ID or alias (default: #agents:ricon.family)"
 #USAGE flag "-u --user <user>" help="Matrix username (default: from AGENT env var)"
 #USAGE flag "-z --markdown" help="Enable markdown formatting (for links)"
+#USAGE example "mise run matrix:send \"Build finished\" --room \"#agents:ricon.family\"" header="Send a Matrix message"
 
 set -e
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Setup GPG signing for an agent (one-time local setup)"
 #USAGE arg "<agent>" help="Agent name (e.g., quick, x1f9)"
+#USAGE example "mise run gpg:setup zeke" header="Set up an agent signing key"
 
 set -e
 

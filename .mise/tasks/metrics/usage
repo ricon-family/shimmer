@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Show workflow usage and estimated compute minutes"
 #USAGE arg "[days]" help="Number of days to look back (default: 1)"
+#USAGE example "mise run metrics:usage 7" header="Show seven days of usage"
 
 set -e
 

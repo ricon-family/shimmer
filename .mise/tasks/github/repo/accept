@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Accept a pending repository invitation"
 #USAGE arg "<repo>" help="Repository (owner/repo) to accept invitation from"
+#USAGE example "mise run github:repo:accept KnickKnackLabs/shimmer" header="Accept a repository invitation"
 
 set -e
 

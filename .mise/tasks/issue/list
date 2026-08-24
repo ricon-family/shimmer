@@ -2,6 +2,7 @@
 #MISE description="List issues available to work on"
 #USAGE flag "--unassigned" help="Only show unassigned issues"
 #USAGE flag "--repo <repo>" help="Repository (owner/repo) (default: current repo)"
+#USAGE example "mise run issue:list --unassigned --repo KnickKnackLabs/shimmer" header="List unassigned issues"
 set -eo pipefail
 
 # Determine repo: explicit flag > current directory

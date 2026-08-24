@@ -2,6 +2,7 @@
 #MISE description="Store a GitHub PAT in the secret provider"
 #USAGE arg "<agent>" help="Agent name (e.g., k7r2, brownie)"
 #USAGE arg "<token>" help="The GitHub PAT to store"
+#USAGE example "mise run github:token:store zeke ghp_example" header="Store an agent token"
 
 set -e
 

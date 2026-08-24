@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Accept a pending organization invitation"
 #USAGE arg "<org>" help="Organization name to accept invitation from"
+#USAGE example "mise run github:org:accept KnickKnackLabs" header="Accept an organization invitation"
 
 set -e
 

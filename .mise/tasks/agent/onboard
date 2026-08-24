@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Interactive onboarding for a new agent"
 #USAGE arg "<agent-name>" help="Name of the agent to onboard"
+#USAGE example "mise run agent:onboard zeke" header="Onboard an agent"
 #MISE raw=true
 
 set -e

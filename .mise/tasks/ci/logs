@@ -9,6 +9,7 @@
 #USAGE flag "--agent" help="Show only the agent session (between markers)"
 #USAGE flag "--repo <repo>" help="Repository (owner/name), defaults to current directory's repo"
 #USAGE flag "--wait [timeout]" help="Wait for run to complete (default: 600s, supports 5m/1h/forever)"
+#USAGE example "mise run ci:logs 123456 --tail --limit 50" header="Tail a workflow run"
 
 set -e
 

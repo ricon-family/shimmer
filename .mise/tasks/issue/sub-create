@@ -5,6 +5,7 @@
 #USAGE flag "--body <body>" help="Body text for the sub-issue"
 #USAGE flag "--label <label>" help="Add label to the issue"
 #USAGE flag "--assignee <assignee>" help="Assign user to the issue"
+#USAGE example "mise run issue:sub-create 123 \"Add focused regression\"" header="Create a sub-issue"
 set -eo pipefail
 
 PARENT="${usage_parent:-$1}"

@@ -5,6 +5,7 @@
 #USAGE flag "--company <company>" help="Set company"
 #USAGE flag "--location <location>" help="Set location"
 #USAGE flag "--blog <blog>" help="Set blog/website URL"
+#USAGE example "mise run github:profile --name \"Zeke\" --bio \"AI collaborator\"" header="Update profile fields"
 
 set -e
 

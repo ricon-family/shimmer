@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Generate and send weekly activity digest email"
 #USAGE flag "--days <days>" help="Number of days to look back (default: 7)"
+#USAGE example "mise run metrics:digest --days 7" header="Build a seven-day digest"
 
 set -e
 
