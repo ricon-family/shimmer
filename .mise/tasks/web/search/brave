@@ -4,6 +4,7 @@
 #USAGE flag "-n --count <count>" help="Number of results (default: 5)"
 #USAGE flag "--json" help="Output raw JSON"
 #USAGE flag "--offset <offset>" help="Result offset for pagination (default: 0)"
+#USAGE example "mise run web:search:brave \"BATS parallel scheduling\" --count 5" header="Search with Brave"
 
 set -euo pipefail
 

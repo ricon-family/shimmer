@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Wait for PR checks to complete (timeout 3 min)"
 #USAGE arg "[pr_number]" help="PR number (defaults to current branch PR)"
+#USAGE example "mise run ci:wait-for-checks 123" header="Wait for pull-request checks"
 
 set -e
 

@@ -2,6 +2,7 @@
 #MISE description="List discussions in a repository"
 #USAGE flag "-c --category <category>" help="Filter by category name"
 #USAGE flag "-n --limit <limit>" help="Number of discussions to show (default: 10)"
+#USAGE example "mise run discussion:list --category Ideas --limit 5" header="List discussions"
 set -eo pipefail
 
 # Determine target directory and repo

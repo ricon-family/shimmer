@@ -1,6 +1,7 @@
 #!/bin/bash
 #MISE description="View a discussion and its comments"
 #USAGE arg "<number>" help="Discussion number"
+#USAGE example "mise run discussion:view 42" header="View a discussion"
 set -eo pipefail
 
 NUMBER="${usage_number:-$1}"

@@ -59,9 +59,9 @@ else
 fi
 
 if command -v gum >/dev/null 2>&1; then
-  printf '%s\n' "${rows[@]}" | gum table -s "$SEP" -c "CHECK,STATUS,DETAIL" -p --border normal
+  printf '%s\n' ${rows[@]+"${rows[@]}"} | gum table -s "$SEP" -c "CHECK,STATUS,DETAIL" -p --border normal
 else
-  for row in "${rows[@]}"; do
+  for row in ${rows[@]+"${rows[@]}"}; do
     IFS="$SEP" read -r name status message <<< "$row"
     echo "$status $name - $message"
   done
@@ -69,7 +69,7 @@ fi
 
 if [ ${#details[@]} -gt 0 ]; then
   echo ""
-  for detail in "${details[@]}"; do
+  for detail in ${details[@]+"${details[@]}"}; do
     printf '%s\n' "$detail"
   done
 fi

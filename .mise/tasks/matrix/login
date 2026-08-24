@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Login to Matrix (creates local credentials for a user)"
 #USAGE arg "<username>" help="Matrix username (without @domain)"
+#USAGE example "mise run matrix:login zeke" header="Log in to Matrix"
 
 set -e
 

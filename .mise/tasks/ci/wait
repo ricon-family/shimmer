@@ -4,6 +4,7 @@
 #USAGE flag "--timeout <duration>" help="Max wait time (default: 600s, supports 5m/1h/forever)"
 #USAGE flag "--interval <seconds>" help="Poll interval in seconds (default: 10)"
 #USAGE flag "--repo <repo>" help="Repository (owner/name), defaults to current directory's repo"
+#USAGE example "mise run ci:wait 123456 --timeout 5m" header="Wait for a workflow run"
 
 set -e
 

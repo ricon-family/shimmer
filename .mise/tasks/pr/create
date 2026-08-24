@@ -5,6 +5,7 @@
 #USAGE flag "--draft" help="Create as draft PR"
 #USAGE flag "--base <base>" help="Base branch (default: repo default)"
 #USAGE flag "--issue <issue>" help="Link to issue number (adds 'Fixes #N')"
+#USAGE example "mise run pr:create \"Improve task help\" --draft" header="Create a draft pull request"
 set -eo pipefail
 
 # Determine target directory and repo

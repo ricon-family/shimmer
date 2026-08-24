@@ -2,6 +2,7 @@
 #MISE description="Fetch a file from projects"
 #USAGE arg "<file>" help="File path to fetch (e.g. README.md)"
 #USAGE flag "--repo <repo>" help="Specific repo (default: all known projects)"
+#USAGE example "mise run repo:file README.md --repo KnickKnackLabs/shimmer" header="Read a repository file"
 
 set -e
 

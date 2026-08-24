@@ -3,6 +3,7 @@
 #USAGE flag "-m --model <model>" help="Model used (e.g., opus, sonnet)"
 #USAGE flag "-a --agent <agent>" help="Agent identity (defaults to AGENT env var)"
 #USAGE flag "--json" help="Output as JSON"
+#USAGE example "mise run session:info --agent zeke --model openai-codex/gpt-5.5 --json" header="Show session metadata"
 
 set -e
 

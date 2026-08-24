@@ -75,8 +75,8 @@ EOF
   git -C "$OVERLAY" init -q -b main
   git -C "$OVERLAY" config user.email "test@test.com"
   git -C "$OVERLAY" config user.name "Test"
-  mise trust "$OVERLAY/mise.toml" 2>/dev/null
 
+  export MISE_TRUSTED_CONFIG_PATHS="$OVERLAY${MISE_TRUSTED_CONFIG_PATHS:+:$MISE_TRUSTED_CONFIG_PATHS}"
   export OVERLAY
 }
 

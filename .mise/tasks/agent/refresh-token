@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Refresh the Anthropic API key in GitHub secrets"
 #USAGE flag "--repo <repo>" help="Target repo (default: current directory's repo)"
+#USAGE example "mise run agent:refresh-token --repo ricon-family/fold" header="Refresh a repository token"
 # Note: This can also be triggered via `agent:sync-secrets --with-api-key`
 #
 # The token is obtained from Claude Code's OAuth flow (claude setup-token).

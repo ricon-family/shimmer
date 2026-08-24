@@ -3,6 +3,7 @@
 #USAGE arg "<field_name>" help="Name of the field (e.g., Status, Priority)"
 #USAGE arg "<options>" help="Comma-separated options (e.g., 'Backlog,Ready,Done')"
 #USAGE arg "[colors]" help="Comma-separated colors (GRAY,RED,ORANGE,YELLOW,GREEN,BLUE,PURPLE,PINK)"
+#USAGE example "mise run pm:field-options Status \"Backlog,Ready,Done\"" header="Set project field options"
 set -eo pipefail
 
 FIELD_NAME="${usage_field_name:-$1}"

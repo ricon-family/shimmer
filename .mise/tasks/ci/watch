@@ -2,6 +2,7 @@
 #MISE description="Watch the latest workflow run until completion"
 #USAGE arg "<agent>" help="Agent name"
 #USAGE arg "<job>" help="Job name"
+#USAGE example "mise run ci:watch zeke critic" header="Watch an agent job"
 
 set -e
 

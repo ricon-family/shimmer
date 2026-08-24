@@ -33,7 +33,17 @@ SH
 }
 
 run_test_task() {
-  (cd "$REPO_DIR" && mise run -q test "$@")
+  if [ "${RUN_TEST_TASK_CLEAN_ENV:-false}" = true ]; then
+    env -i \
+      HOME="$HOME" \
+      PATH="$PATH" \
+      TMPDIR="${TMPDIR:-/tmp}" \
+      MISE_TRUSTED_CONFIG_PATHS="$REPO_DIR" \
+      PROBE_DIR="${PROBE_DIR:-}" \
+      bash -c 'cd "$1" && shift && mise run -q test "$@"' _ "$REPO_DIR" "$@"
+  else
+    (cd "$REPO_DIR" && mise run -q test "$@")
+  fi
 }
 
 log_value() {
@@ -53,10 +63,10 @@ logged_arguments() {
 @test "test task defaults to four Rush jobs across files" {
   run run_test_task
   [ "$status" -eq 0 ]
-  [[ "$output" == *"4 jobs across files"* ]]
+  [[ "$output" == *"4 jobs across and within isolated files"* ]]
   [ "$(log_value jobs)" = "4" ]
   [ "$(log_value runner)" = "$MOCK_DIR/rush" ]
-  [ "$(arg_count --no-parallelize-within-files)" -eq 1 ]
+  [ "$(arg_count --no-parallelize-within-files)" -eq 0 ]
   [ "$(arg_count --recursive)" -eq 1 ]
   [ "$(arg_count "$REPO_DIR/test/")" -eq 1 ]
 }
@@ -73,11 +83,11 @@ logged_arguments() {
 @test "explicit jobs override is forwarded once" {
   run run_test_task --jobs 3 gpg
   [ "$status" -eq 0 ]
-  [[ "$output" == *"3 jobs across files"* ]]
+  [[ "$output" == *"3 jobs across and within isolated files"* ]]
   [ "$(log_value jobs)" = "" ]
   [ "$(arg_count --jobs)" -eq 1 ]
   [ "$(arg_count 3)" -eq 1 ]
-  [ "$(arg_count --no-parallelize-within-files)" -eq 1 ]
+  [ "$(arg_count --no-parallelize-within-files)" -eq 0 ]
 }
 
 @test "environment jobs override the detected default" {
@@ -85,7 +95,7 @@ logged_arguments() {
 
   run run_test_task gpg
   [ "$status" -eq 0 ]
-  [[ "$output" == *"2 jobs across files"* ]]
+  [[ "$output" == *"2 jobs across and within isolated files"* ]]
   [ "$(log_value jobs)" = "2" ]
   [ "$(arg_count --jobs)" -eq 0 ]
 }
@@ -158,7 +168,6 @@ logged_arguments() {
   [ "$status" -eq 0 ]
   [ "$(logged_arguments)" = "$(printf '%s\n' \
     --print-output-on-failure \
-    --no-parallelize-within-files \
     --filter \
     --jobs \
     "$REPO_DIR/test/gpg")" ]
@@ -169,13 +178,12 @@ logged_arguments() {
   [ "$status" -eq 0 ]
   [ "$(logged_arguments)" = "$(printf '%s\n' \
     --print-output-on-failure \
-    --no-parallelize-within-files \
     --filter \
     gpg \
     "$REPO_DIR/test/agent")" ]
 }
 
-@test "canonical task runs separate BATS files concurrently" {
+@test "canonical task schedules isolated tests within a BATS file" {
   probe_dir="$BATS_TEST_TMPDIR/parallel-probe"
   barrier_dir="$BATS_TEST_TMPDIR/barrier"
   mkdir -p "$probe_dir" "$barrier_dir"
@@ -193,10 +201,6 @@ logged_arguments() {
   false
 }
 BATS
-  } > "$probe_dir/one.bats"
-
-  {
-    printf '%s\n' '#!/usr/bin/env bats'
     printf '%s\n' "$test_keyword \"second worker observes first worker\" {"
     cat <<'BATS'
   touch "$PROBE_DIR/two"
@@ -207,16 +211,12 @@ BATS
   false
 }
 BATS
-  } > "$probe_dir/two.bats"
+  } > "$probe_dir/within-file.bats"
 
-  run env -i \
-    HOME="$HOME" \
-    PATH="$PATH" \
-    TMPDIR="${TMPDIR:-/tmp}" \
-    MISE_TRUSTED_CONFIG_PATHS="$REPO_DIR" \
-    PROBE_DIR="$barrier_dir" \
-    bash -c 'cd "$1" && mise run -q test "$2"' _ "$REPO_DIR" "$probe_dir"
+  unset BATS_COMMAND RUSH_COMMAND
+  export RUN_TEST_TASK_CLEAN_ENV=true PROBE_DIR="$barrier_dir"
+  run run_test_task "$probe_dir/within-file.bats"
 
   [ "$status" -eq 0 ]
-  [[ "$output" == *"jobs across files"* ]]
+  [[ "$output" == *"jobs across and within isolated files"* ]]
 }

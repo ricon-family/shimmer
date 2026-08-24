@@ -1,5 +1,5 @@
 setup_suite() {
-  REPO_DIR="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
+  REPO_DIR="$(cd "$BATS_TEST_DIRNAME/.." && pwd -P)"
   export REPO_DIR
 
   bats_libexec="${BATS_LIBEXEC:-}"

@@ -1,5 +1,6 @@
 /** @jsxImportSource jsx-md */
 
+import { execFileSync } from "child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join, resolve } from "path";
 
@@ -121,7 +122,24 @@ function configuredLints(): string[] {
   }
 
   const list = block.join("\n").match(/lint\s*=\s*\[([\s\S]*?)\]/)?.[1] ?? "";
-  return [...list.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  const selectors = [...list.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  if (!selectors.some((selector) => selector.startsWith("@"))) return selectors;
+
+  const groups = new Map<string, string[]>();
+  let currentGroup = "";
+  const output = execFileSync("codebase", ["lint:groups"], { cwd: REPO_DIR, encoding: "utf8" });
+  for (const line of output.split("\n")) {
+    if (line.startsWith("@")) {
+      currentGroup = line.trim();
+      groups.set(currentGroup, []);
+    } else if (currentGroup && line.startsWith("  ")) {
+      groups.get(currentGroup)?.push(line.trim());
+    } else if (!line.trim()) {
+      currentGroup = "";
+    }
+  }
+
+  return selectors.flatMap((selector) => groups.get(selector) ?? [selector]);
 }
 
 function toolVersion(name: string): string {

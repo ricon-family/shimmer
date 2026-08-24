@@ -4,6 +4,7 @@
 #USAGE arg "[inputs...]" help="Workflow inputs as key=value pairs"
 #USAGE flag "--repo <repo>" help="Repository (owner/name), defaults to current directory's repo"
 #USAGE flag "--timeout <seconds>" help="Max time to wait for run to appear (default: 120)"
+#USAGE example "mise run ci:dispatch zeke.yml message=hello" header="Dispatch a workflow"
 
 set -e
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 #MISE description="List sub-issues of a parent issue"
 #USAGE arg "<parent>" help="Parent issue number"
+#USAGE example "mise run issue:sub-list 123" header="List sub-issues"
 set -eo pipefail
 
 PARENT="${usage_parent:-$1}"

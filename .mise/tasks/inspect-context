@@ -2,6 +2,7 @@
 #MISE description="Inspect the context being sent to Claude"
 #USAGE flag "--agent <name>" help="Agent to use (default: quick)"
 #USAGE arg "[message]" help="Message to send (default: Say hello)"
+#USAGE example "mise run inspect-context --agent quick \"Summarize the active context\"" header="Inspect an agent context"
 
 set -e
 

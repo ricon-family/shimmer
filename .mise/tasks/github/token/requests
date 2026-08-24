@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Open browser to view/approve pending PAT requests (admin only)"
 #USAGE arg "<org>" help="Organization to check (e.g., ricon-family)"
+#USAGE example "mise run github:token:requests KnickKnackLabs" header="List token requests"
 
 set -e
 

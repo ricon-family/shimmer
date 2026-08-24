@@ -3,6 +3,7 @@
 #USAGE arg "<query>" help="Search query"
 #USAGE flag "-n --count <count>" help="Number of results (default: 5)"
 #USAGE flag "--json" help="Output raw JSON"
+#USAGE example "mise run web:search \"BATS parallel scheduling\" --count 5" header="Search the web"
 
 set -euo pipefail
 
@@ -13,4 +14,4 @@ args=("${usage_query}")
 [[ -n "${usage_count:-}" ]] && args+=(-n "${usage_count}")
 [[ "${usage_json:-false}" == "true" ]] && args+=(--json)
 
-exec mise run web:search:brave "${args[@]}"
+exec mise run web:search:brave ${args[@]+"${args[@]}"}

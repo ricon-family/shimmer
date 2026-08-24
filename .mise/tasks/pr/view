@@ -2,6 +2,7 @@
 #MISE description="View pull request details"
 #USAGE arg "<number>" help="PR number"
 #USAGE flag "--repo <repo>" help="Repository (owner/repo) (default: current repo)"
+#USAGE example "mise run pr:view 123 --repo KnickKnackLabs/shimmer" header="View a pull request"
 set -eo pipefail
 
 PR="${usage_number:-$1}"

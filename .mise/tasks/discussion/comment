@@ -2,6 +2,7 @@
 #MISE description="Add a comment to a discussion"
 #USAGE arg "<number>" help="Discussion number"
 #USAGE flag "-b --body <body>" help="Comment body (or reads from stdin)"
+#USAGE example "mise run discussion:comment 42 --body \"Thanks for the update\"" header="Comment on a discussion"
 set -eo pipefail
 
 NUMBER="${usage_number:-$1}"

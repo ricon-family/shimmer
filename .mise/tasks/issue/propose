@@ -5,6 +5,7 @@
 #USAGE flag "--assignee <assignee>" help="Assign to a specific user (GitHub username)"
 #USAGE flag "--self" help="Assign to yourself (@me)"
 #USAGE flag "--repo <repo>" help="Repository (owner/repo) (default: current repo)"
+#USAGE example "mise run issue:propose \"Improve task help\" --self" header="Propose an issue"
 set -eo pipefail
 
 # Determine repo: explicit flag > current directory

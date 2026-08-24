@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Accept pending Matrix room invites"
 #USAGE flag "-u --user <user>" help="Matrix username (default: from AGENT env var)"
+#USAGE example "mise run matrix:invites --user zeke" header="List Matrix invitations"
 
 set -e
 
