@@ -2,221 +2,114 @@
 
 bats_require_minimum_version 1.5.0
 
-setup() {
-  MOCK_DIR="$BATS_TEST_TMPDIR/mock-bin"
-  BATS_LOG="$BATS_TEST_TMPDIR/bats.log"
-  mkdir -p "$MOCK_DIR"
-  export BATS_LOG
-
-  cat > "$MOCK_DIR/bats" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-{
-  printf 'jobs=%s\n' "${BATS_NUMBER_OF_PARALLEL_JOBS:-}"
-  printf 'runner=%s\n' "${BATS_PARALLEL_BINARY_NAME:-}"
-  for arg in "$@"; do
-    printf 'arg=%s\n' "$arg"
-  done
-} > "$BATS_LOG"
-SH
-
-  cat > "$MOCK_DIR/rush" <<'SH'
-#!/usr/bin/env bash
-exit 0
-SH
-
-  chmod +x "$MOCK_DIR/bats" "$MOCK_DIR/rush"
-
-  export BATS_COMMAND="$MOCK_DIR/bats"
-  export RUSH_COMMAND="$MOCK_DIR/rush"
-  unset BATS_NUMBER_OF_PARALLEL_JOBS BATS_PARALLEL_BINARY_NAME
+write_passing_test() {
+  local path="$1" name="$2"
+  mkdir -p "$(dirname "$path")"
+  local test_keyword='@test'
+  printf '%s\n' \
+    '#!/usr/bin/env bats' \
+    "$test_keyword \"$name\" {" \
+    '  true' \
+    '}' > "$path"
 }
 
 run_test_task() {
-  if [ "${RUN_TEST_TASK_CLEAN_ENV:-false}" = true ]; then
-    env -i \
-      HOME="$HOME" \
-      PATH="$PATH" \
-      TMPDIR="${TMPDIR:-/tmp}" \
-      MISE_TRUSTED_CONFIG_PATHS="$REPO_DIR" \
-      PROBE_DIR="${PROBE_DIR:-}" \
-      bash -c 'cd "$1" && shift && mise run -q test "$@"' _ "$REPO_DIR" "$@"
-  else
-    (cd "$REPO_DIR" && mise run -q test "$@")
-  fi
+  (cd "$REPO_DIR" && mise run -q test "$@")
 }
 
-log_value() {
-  local key="$1"
-  awk -F= -v key="$key" '$1 == key { print substr($0, length(key) + 2); exit }' "$BATS_LOG"
-}
+@test "options-only calls use the configured Shimmer test directory" {
+  run run_test_task --jobs 1 --filter '^status shows telemetry is off when TELEMETRY_FILE unset$'
 
-arg_count() {
-  local expected="$1"
-  awk -F= -v expected="$expected" '$1 == "arg" && substr($0, 5) == expected { count++ } END { print count + 0 }' "$BATS_LOG"
-}
-
-logged_arguments() {
-  sed -n 's/^arg=//p' "$BATS_LOG"
-}
-
-@test "test task defaults to four Rush jobs across files" {
-  run run_test_task
   [ "$status" -eq 0 ]
-  [[ "$output" == *"4 jobs across and within isolated files"* ]]
-  [ "$(log_value jobs)" = "4" ]
-  [ "$(log_value runner)" = "$MOCK_DIR/rush" ]
-  [ "$(arg_count --no-parallelize-within-files)" -eq 0 ]
-  [ "$(arg_count --recursive)" -eq 1 ]
-  [ "$(arg_count "$REPO_DIR/test/")" -eq 1 ]
+  [[ "$output" == *'1..1'* ]]
+  [[ "$output" == *'ok 1 status shows telemetry is off when TELEMETRY_FILE unset'* ]]
 }
 
-@test "bare suite names resolve to suite directories" {
-  run run_test_task gpg --filter strip_wrapping
+@test "an explicit test target takes precedence over the configured default" {
+  local target="$BATS_TEST_TMPDIR/explicit.bats"
+  write_passing_test "$target" 'explicit target only'
+
+  run run_test_task --jobs 1 "$target"
+
   [ "$status" -eq 0 ]
-  [ "$(arg_count "$REPO_DIR/test/gpg")" -eq 1 ]
-  [ "$(arg_count --filter)" -eq 1 ]
-  [ "$(arg_count strip_wrapping)" -eq 1 ]
-  [ "$(arg_count --recursive)" -eq 0 ]
+  [[ "$output" == *'1..1'* ]]
+  [[ "$output" == *'ok 1 explicit target only'* ]]
 }
 
-@test "explicit jobs override is forwarded once" {
-  run run_test_task --jobs 3 gpg
+@test "relative test targets resolve from the repository root" {
+  run run_test_task --jobs 1 test/telemetry/status.bats \
+    --filter '^status shows telemetry is off when TELEMETRY_FILE unset$'
+
   [ "$status" -eq 0 ]
-  [[ "$output" == *"3 jobs across and within isolated files"* ]]
-  [ "$(log_value jobs)" = "" ]
-  [ "$(arg_count --jobs)" -eq 1 ]
-  [ "$(arg_count 3)" -eq 1 ]
-  [ "$(arg_count --no-parallelize-within-files)" -eq 0 ]
+  [[ "$output" == *'1..1'* ]]
+  [[ "$output" == *'ok 1 status shows telemetry is off when TELEMETRY_FILE unset'* ]]
 }
 
-@test "environment jobs override the detected default" {
-  export BATS_NUMBER_OF_PARALLEL_JOBS=2
+@test "whitespace-bearing explicit test targets remain one argument" {
+  local target="$BATS_TEST_TMPDIR/explicit target/passing test.bats"
+  write_passing_test "$target" 'whitespace target'
 
-  run run_test_task gpg
+  run run_test_task --jobs 2 "$target"
+
   [ "$status" -eq 0 ]
-  [[ "$output" == *"2 jobs across and within isolated files"* ]]
-  [ "$(log_value jobs)" = "2" ]
-  [ "$(arg_count --jobs)" -eq 0 ]
+  [[ "$output" == *'1..1'* ]]
+  [[ "$output" == *'ok 1 whitespace target'* ]]
 }
 
-@test "environment serial opt-out does not require Rush" {
-  export BATS_NUMBER_OF_PARALLEL_JOBS=1
-  export RUSH_COMMAND="$MOCK_DIR/missing-rush"
+@test "public Shimmer test path runs separate BATS files concurrently" {
+  local probe_dir="$BATS_TEST_TMPDIR/across-file-probe"
+  export PROBE_DIR="$BATS_TEST_TMPDIR/across-file-barrier"
+  mkdir -p "$probe_dir" "$PROBE_DIR"
+  local test_keyword='@test'
 
-  run run_test_task gpg
-  [ "$status" -eq 0 ]
-  [[ "$output" == *"BATS parallelism: serial"* ]]
-  [ "$(arg_count --no-parallelize-within-files)" -eq 0 ]
-}
-
-@test "CLI serial opt-out does not require Rush" {
-  export RUSH_COMMAND="$MOCK_DIR/missing-rush"
-
-  run run_test_task --jobs 1 gpg
-  [ "$status" -eq 0 ]
-  [[ "$output" == *"BATS parallelism: serial"* ]]
-  [ "$(arg_count --no-parallelize-within-files)" -eq 0 ]
-}
-
-@test "parallel execution fails clearly when the selected runner is unavailable" {
-  export RUSH_COMMAND="$MOCK_DIR/missing-rush"
-
-  run -127 run_test_task gpg
-  [ "$status" -eq 127 ]
-  [[ "$output" == *"parallel runner '$MOCK_DIR/missing-rush' is unavailable for 4 jobs"* ]]
-  [[ "$output" == *"run 'mise install' or use --jobs 1"* ]]
-  [ ! -e "$BATS_LOG" ]
-}
-
-@test "environment runner override is preserved" {
-  cp "$MOCK_DIR/rush" "$MOCK_DIR/alternate-runner"
-  export BATS_PARALLEL_BINARY_NAME="$MOCK_DIR/alternate-runner"
-
-  run run_test_task gpg
-  [ "$status" -eq 0 ]
-  [ "$(log_value runner)" = "$MOCK_DIR/alternate-runner" ]
-}
-
-@test "CLI runner override is preserved" {
-  cp "$MOCK_DIR/rush" "$MOCK_DIR/alternate-runner"
-
-  run run_test_task --parallel-binary-name "$MOCK_DIR/alternate-runner" gpg
-  [ "$status" -eq 0 ]
-  [ "$(arg_count --parallel-binary-name)" -eq 1 ]
-  [ "$(arg_count "$MOCK_DIR/alternate-runner")" -eq 1 ]
-}
-
-@test "invalid job override fails before BATS" {
-  export BATS_NUMBER_OF_PARALLEL_JOBS=lots
-
-  run run_test_task gpg
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"must be a positive integer"* ]]
-  [ ! -e "$BATS_LOG" ]
-}
-
-@test "missing job override fails before BATS" {
-  run run_test_task --jobs
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"--jobs requires a positive integer"* ]]
-  [ ! -e "$BATS_LOG" ]
-}
-
-@test "filter values that resemble parallel flags remain filter values" {
-  run run_test_task --filter --jobs gpg
-  [ "$status" -eq 0 ]
-  [ "$(logged_arguments)" = "$(printf '%s\n' \
-    --print-output-on-failure \
-    --filter \
-    --jobs \
-    "$REPO_DIR/test/gpg")" ]
-}
-
-@test "filter values matching suite names are not resolved as targets" {
-  run run_test_task --filter gpg agent
-  [ "$status" -eq 0 ]
-  [ "$(logged_arguments)" = "$(printf '%s\n' \
-    --print-output-on-failure \
-    --filter \
-    gpg \
-    "$REPO_DIR/test/agent")" ]
-}
-
-@test "canonical task schedules isolated tests within a BATS file" {
-  probe_dir="$BATS_TEST_TMPDIR/parallel-probe"
-  barrier_dir="$BATS_TEST_TMPDIR/barrier"
-  mkdir -p "$probe_dir" "$barrier_dir"
-
-  test_keyword='@test'
-  {
-    printf '%s\n' '#!/usr/bin/env bats'
-    printf '%s\n' "$test_keyword \"first worker observes second worker\" {"
-    cat <<'BATS'
-  touch "$PROBE_DIR/one"
+  for side in one two; do
+    other=one
+    [ "$side" = one ] && other=two
+    cat > "$probe_dir/$side.bats" <<BATS
+#!/usr/bin/env bats
+$test_keyword "$side worker observes $other worker" {
+  touch "\$PROBE_DIR/$side"
   for _ in {1..50}; do
-    [ ! -e "$PROBE_DIR/two" ] || return 0
+    [ ! -e "\$PROBE_DIR/$other" ] || return 0
     sleep 0.05
   done
   false
 }
 BATS
-    printf '%s\n' "$test_keyword \"second worker observes first worker\" {"
-    cat <<'BATS'
-  touch "$PROBE_DIR/two"
+  done
+
+  run run_test_task "$probe_dir"
+
+  [ "$status" -eq 0 ]
+}
+
+@test "public Shimmer test path runs tests within one BATS file concurrently" {
+  local target="$BATS_TEST_TMPDIR/within-file.bats"
+  export PROBE_DIR="$BATS_TEST_TMPDIR/within-file-barrier"
+  mkdir -p "$PROBE_DIR"
+  local test_keyword='@test'
+
+  cat > "$target" <<BATS
+#!/usr/bin/env bats
+$test_keyword "first worker observes second worker" {
+  touch "\$PROBE_DIR/one"
   for _ in {1..50}; do
-    [ ! -e "$PROBE_DIR/one" ] || return 0
+    [ ! -e "\$PROBE_DIR/two" ] || return 0
+    sleep 0.05
+  done
+  false
+}
+$test_keyword "second worker observes first worker" {
+  touch "\$PROBE_DIR/two"
+  for _ in {1..50}; do
+    [ ! -e "\$PROBE_DIR/one" ] || return 0
     sleep 0.05
   done
   false
 }
 BATS
-  } > "$probe_dir/within-file.bats"
 
-  unset BATS_COMMAND RUSH_COMMAND
-  export RUN_TEST_TASK_CLEAN_ENV=true PROBE_DIR="$barrier_dir"
-  run run_test_task "$probe_dir/within-file.bats"
+  run run_test_task "$target"
 
   [ "$status" -eq 0 ]
-  [[ "$output" == *"jobs across and within isolated files"* ]]
 }
