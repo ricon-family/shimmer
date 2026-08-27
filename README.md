@@ -11,7 +11,7 @@ Identity, dispatch, generated CI, and session plumbing for agent homes.
 <p dir="rtl"><em>إلى ريموند — العمل شرف</em></p>
 
 ![tasks: 86](https://img.shields.io/badge/tasks-86-4EAA25?style=flat&logo=gnubash&logoColor=white)
-[![tests: 203](https://img.shields.io/badge/tests-203-brightgreen?style=flat)](test/)
+[![tests: 195](https://img.shields.io/badge/tests-195-brightgreen?style=flat)](test/)
 ![lints: 17](https://img.shields.io/badge/lints-17-blue?style=flat)
 ![workflow templates: 3](https://img.shields.io/badge/workflow%20templates-3-8b5cf6?style=flat)
 [![sessions: 659](https://img.shields.io/badge/sessions-659-64748b?style=flat)](https://github.com/KnickKnackLabs/shimmer/issues/794)
