@@ -34,13 +34,29 @@ if ! echo "$AGENTS" | grep -qx "$AGENT"; then
   exit 1
 fi
 
-# Get the repo slug from the agent home
-REPO=$(git -C "$AGENT_HOME_DIR" remote get-url origin 2>/dev/null \
-  | sed 's/.*github.com[:/]//' \
-  | sed 's/\.git$//')
+sanitize_github_repo_slug() {
+  local remote_url="$1"
+  local repo_slug
 
-if [[ -z "$REPO" ]]; then
-  echo "Error: could not determine repo for $AGENT_HOME_DIR" >&2
+  case "$remote_url" in
+    https://github.com/*) repo_slug="${remote_url#https://github.com/}" ;;
+    https://*@github.com/*) repo_slug="${remote_url#*@github.com/}" ;;
+    git@github.com:*) repo_slug="${remote_url#git@github.com:}" ;;
+    ssh://git@github.com/*) repo_slug="${remote_url#ssh://git@github.com/}" ;;
+    git://github.com/*) repo_slug="${remote_url#git://github.com/}" ;;
+    *) return 1 ;;
+  esac
+
+  repo_slug="${repo_slug%.git}"
+  [[ "$repo_slug" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || return 1
+  printf '%s\n' "$repo_slug"
+}
+
+# Return only an owner/repository slug. Never expose credentials embedded in a
+# remote URL through this discovery task's output.
+REMOTE_URL=$(git -C "$AGENT_HOME_DIR" remote get-url origin 2>/dev/null) || REMOTE_URL=""
+if ! REPO=$(sanitize_github_repo_slug "$REMOTE_URL"); then
+  echo "Error: could not determine a GitHub repo for $AGENT_HOME_DIR" >&2
   exit 1
 fi
 

@@ -38,11 +38,17 @@ require_command() {
 }
 
 parse_session_args() {
+  local session_args_file="$TMP_DIR/session-args"
+
   if [ -n "$SESSION_IDS_RAW" ]; then
+    if ! printf '%s' "$SESSION_IDS_RAW" | xargs printf '%s\n' > "$session_args_file"; then
+      printf_error "could not parse session IDs"
+      exit 1
+    fi
     while IFS= read -r session_id; do
       [ -n "$session_id" ] || continue
       SESSION_IDS+=("$session_id")
-    done < <(printf '%s' "$SESSION_IDS_RAW" | xargs printf '%s\n')
+    done < "$session_args_file"
   fi
 }
 
