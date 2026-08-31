@@ -16,12 +16,13 @@ shimmer_mise_data_dir() {
 }
 
 shimmer_scrub_caller_pwd_env() {
-  local name
+  local name environment_names
+  environment_names=$(compgen -e) || return 0
   while IFS= read -r name; do
     case "$name" in
       CALLER_PWD|*_CALLER_PWD) unset "$name" ;;
     esac
-  done < <(compgen -e)
+  done <<< "$environment_names"
 }
 
 shimmer_canonical_directory() {
@@ -80,7 +81,8 @@ shimmer_require_agent_home_path() {
 }
 
 shimmer_scrub_mise_task_env() {
-  local name
+  local name environment_names
+  environment_names=$(compgen -e) || return 0
   while IFS= read -r name; do
     case "$name" in
       # These describe the mise task currently launching the agent. Leaving them
@@ -88,7 +90,7 @@ shimmer_scrub_mise_task_env() {
       # shimmer's task root.
       MISE_CONFIG_ROOT|MISE_ORIGINAL_CWD|MISE_PROJECT_ROOT|MISE_TASK_*|usage_*) unset "$name" ;;
     esac
-  done < <(compgen -e)
+  done <<< "$environment_names"
 }
 
 shimmer_path_contains() {

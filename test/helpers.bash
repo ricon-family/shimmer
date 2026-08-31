@@ -21,13 +21,14 @@ SHIMMER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # start from a predictable empty command-scope config, and can still set their
 # own GIT_CONFIG_* values inside individual tests.
 _clear_ambient_git_config_for_tests() {
-  local name _value
+  local name _value environment
   unset GIT_CONFIG_COUNT GIT_CONFIG_PARAMETERS
+  environment=$(env) || return 1
   while IFS='=' read -r name _value; do
     case "$name" in
       GIT_CONFIG_KEY_*|GIT_CONFIG_VALUE_*) unset "$name" ;;
     esac
-  done < <(env)
+  done <<< "$environment"
 }
 _clear_ambient_git_config_for_tests
 
